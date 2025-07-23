@@ -1,0 +1,242 @@
+/******************************************************************************
+    Copyright (C) 2025 by Daniil Nabiulin
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+#ifndef GOOGLESETTINGSDIALOG_H
+#define GOOGLESETTINGSDIALOG_H
+
+#include <QDialog>
+#include <QComboBox>
+
+#include "google.h"
+
+class GoogleSettingsDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit GoogleSettingsDialog(const QString &sourceLang, const QString &TargetLang, Google *google, QWidget *parent = nullptr);
+    ~GoogleSettingsDialog();
+
+    QString getSourceLang() const;
+    QString getTargetLang() const;
+
+private:
+    Google *m_google;
+
+    QComboBox *sourceComboBox;
+    QComboBox *targetComboBox;
+
+    QMap<QString, QString> languages = {
+        {"ab", "Abkhaz"},
+        {"ace", "Acehnese"},
+        {"ach", "Acholi"},
+        {"af", "Afrikaans"},
+        {"al", "Albanian"},
+        {"alz", "Alur"},
+        {"am", "Amharic"},
+        {"ar", "Arabic"},
+        {"arm", "Armenian"},
+        {"as", "Assamese"},
+        {"awa", "Awadhi"},
+        {"ay", "Aymara"},
+        {"az", "Azerbaijani"},
+        {"ban", "Balinese"},
+        {"bm", "Bambara"},
+        {"ba", "Bashkir"},
+        {"eu", "Basque"},
+        {"btx", "Batak Karo"},
+        {"bts", "Batak Simalungun"},
+        {"bbc", "Batak Toba"},
+        {"be", "Belarusian"},
+        {"bem", "Bemba"},
+        {"bn", "Bengali"},
+        {"bew", "Betawi"},
+        {"bho", "Bhojpuri"},
+        {"bik", "Bikol"},
+        {"bs", "Bosnian"},
+        {"br", "Breton"},
+        {"bg", "Bulgarian"},
+        {"bua", "Buryat"},
+        {"yue", "Cantonese"},
+        {"ca", "Catalan"},
+        {"ceb", "Cebuano"},
+        {"ny", "Chichewa (Nyanja)"},
+        {"zh-CN", "Chinese (Simplified)"},
+        {"zh-TW", "Chinese (Traditional)"},
+        {"cv", "Chuvash"},
+        {"co", "Corsican"},
+        {"crh", "Crimean Tatar"},
+        {"hr", "Croatian"},
+        {"cs", "Czech"},
+        {"da", "Danish"},
+        {"din", "Dinka"},
+        {"dv", "Divehi"},
+        {"doi", "Dogri"},
+        {"dov", "Dombe"},
+        {"nl", "Dutch"},
+        {"dz", "Dzongkha"},
+        {"en", "English"},
+        {"eo", "Esperanto"},
+        {"et", "Estonian"},
+        {"ee", "Ewe"},
+        {"fj", "Fijian"},
+        {"fil", "Filipino (Tagalog)"},
+        {"fi", "Finnish"},
+        {"fr", "French"},
+        {"fr-FR", "French (France)"},
+        {"fr-CA", "French (Canada)"},
+        {"fy", "Frisian"},
+        {"ff", "Fulfulde"},
+        {"ga", "Ga"},
+        {"gaa", "Galician"},
+        {"lg", "Ganda (Luganda)"},
+        {"ka", "Georgian"},
+        {"de", "German"},
+        {"el", "Greek"},
+        {"gn", "Guarani"},
+        {"gu", "Gujarati"},
+        {"ht", "Haitian Creole"},
+        {"cnh", "Hakha Chin"},
+        {"ha", "Hausa"},
+        {"haw", "Hawaiian"},
+        {"iw", "Hebrew"},
+        {"he", "Hebrew"},
+        {"hil", "Hiligaynon"},
+        {"hi", "Hindi"},
+        {"hmn", "Hmong"},
+        {"hu", "Hungarian"},
+        {"hrx", "Hunsrik"},
+        {"is", "Icelandic"},
+        {"ig", "Igbo"},
+        {"ilo", "Iloko"},
+        {"id", "Indonesian"},
+        {"ga", "Irish"},
+        {"it", "Italian"},
+        {"ja", "Japanese"},
+        {"jw", "Javanese"},
+        {"jv", "Javanese"},
+        {"kn", "Kannada"},
+        {"pam", "Kapampangan"},
+        {"kk", "Kazakh"},
+        {"km", "Khmer"},
+        {"cgg", "Kiga"},
+        {"rw", "Kinyarwanda"},
+        {"ktu", "Kituba"},
+        {"gom", "Konkani"},
+        {"ko", "Korean"},
+        {"kri", "Krio"},
+        {"ku", "Kurdish (Kurmanji)"},
+        {"ckb", "Kurdish (Sorani)"},
+        {"ky", "Kyrgyz"},
+        {"lo", "Lao"},
+        {"ltg", "Latgalian"},
+        {"la", "Latin"},
+        {"lv", "Latvian"},
+        {"lij", "Ligurian"},
+        {"li", "Limburgan"},
+        {"ln", "Lingala"},
+        {"lt", "Lithuanian"},
+        {"lmo", "Lombard"},
+        {"luo", "Luo"},
+        {"lb", "Luxembourgish"},
+        {"mk", "Macedonian"},
+        {"mai", "Maithili"},
+        {"mak", "Makassar"},
+        {"mg", "Malagasy"},
+        {"ms", "Malay"},
+        {"ms-Arab", "Malay (Jawi)"},
+        {"ml", "Malayalam"},
+        {"mt", "Maltese"},
+        {"mi", "Maori"},
+        {"mr", "Marathi"},
+        {"chm", "Meadow Mari"},
+        {"mni-Mtei", "Meiteilon (Manipuri)"},
+        {"min", "Minang"},
+        {"lus", "Mizo"},
+        {"mn", "Mongolian"},
+        {"my", "Myanmar (Burmese)"},
+        {"nr", "Ndebele (South)"},
+        {"new", "Nepalbhasa (Newari)"},
+        {"ne", "Nepali"},
+        {"nso", "Northern Sotho (Sepedi)"},
+        {"no", "Norwegian"},
+        {"nus", "Nuer"},
+        {"oc", "Occitan"},
+        {"or", "Odia (Oriya)"},
+        {"om", "Oromo"},
+        {"pag", "Pangasinan"},
+        {"pap", "Papiamento"},
+        {"ps", "Pashto"},
+        {"fa", "Persian"},
+        {"pl", "Polish"},
+        {"pt", "Portuguese"},
+        {"pt-PT", "Portuguese (Portugal)"},
+        {"pt-BR", "Portuguese (Brazil)"},
+        {"pa", "Punjabi"},
+        {"pa-Arab", "Punjabi (Shahmukhi)"},
+        {"qu", "Quechua"},
+        {"rom", "Romani"},
+        {"ro", "Romanian"},
+        {"rn", "Rundi"},
+        {"ru", "Russian"},
+        {"sm", "Samoan"},
+        {"sg", "Sango"},
+        {"sa", "Sanskrit"},
+        {"gd", "Scots Gaelic"},
+        {"sr", "Serbian"},
+        {"st", "Sesotho"},
+        {"crs", "Seychellois Creole"},
+        {"sh", "Shan"},
+        {"sn", "Shona"},
+        {"scn", "Sicilian"},
+        {"szl", "Silesian"},
+        {"sd", "Sindhi"},
+        {"si", "Sinhala (Sinhalese)"},
+        {"sk", "Slovak"},
+        {"sl", "Slovenian"},
+        {"so", "Somali"},
+        {"su", "Sundanese"},
+        {"sw", "Swahili"},
+        {"ss", "Swati"},
+        {"sv", "Swedish"},
+        {"tg", "Tajik"},
+        {"ta", "Tamil"},
+        {"tt", "Tatar"},
+        {"te", "Telugu"},
+        {"tet", "Tetum"},
+        {"th", "Thai"},
+        {"ti", "Tigrinya"},
+        {"ts", "Tsonga"},
+        {"tn", "Tswana"},
+        {"tr", "Turkish"},
+        {"tk", "Turkmen"},
+        {"ak", "Twi (Akan)"},
+        {"uk", "Ukrainian"},
+        {"ur", "Urdu"},
+        {"ug", "Uyghur"},
+        {"uz", "Uzbek"},
+        {"vi", "Vietnamese"},
+        {"cy", "Welsh"},
+        {"xh", "Xhosa"},
+        {"yi", "Yiddish"},
+        {"yo", "Yoruba"},
+        {"yua", "Yucatec Maya"},
+        {"zu", "Zulu"}
+    };
+};
+
+#endif // GOOGLESETTINGSDIALOG_H

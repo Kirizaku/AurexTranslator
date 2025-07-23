@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>3rdparty/icons/reload.svg</file>
+        <file>3rdparty/icons/box-align-top-left.svg</file>
+        <file>3rdparty/icons/copy.svg</file>
+        <file>3rdparty/icons/settings.svg</file>
+        <file>3rdparty/icons/box-margin.svg</file>
+        <file>3rdparty/icons/square-x.svg</file>
+        <file>3rdparty/icons/history.svg</file>
+    </qresource>
+</RCC>
