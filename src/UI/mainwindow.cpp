@@ -968,9 +968,11 @@ void MainWindow::saveConfig()
     if (m_initLanguage != general["language"].toString() && !general.isEmpty()) {
 #endif
         QMessageBox msgBox;
-        msgBox.setWindowTitle(tr("Restart"));
-        msgBox.setText(tr("A restart is required. Do you want to restart now?"));
+        msgBox.setWindowTitle(tr("Restart Required"));
+        msgBox.setText(tr("Your changes will take effect the next time you start AurexTranslator."));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setButtonText(QMessageBox::Yes, tr("Restart Now"));
+        msgBox.setButtonText(QMessageBox::No, tr("Later"));
 
         int ret = msgBox.exec();
         switch (ret) {

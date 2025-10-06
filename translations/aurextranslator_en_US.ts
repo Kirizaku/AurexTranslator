@@ -368,12 +368,22 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
     </message>
     <message>
         <location filename="../src/UI/mainwindow.cpp" line="971"/>
-        <source>Restart</source>
+        <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/mainwindow.cpp" line="972"/>
-        <source>A restart is required. Do you want to restart now?</source>
+        <source>Your changes will take effect the next time you start AurexTranslator.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="974"/>
+        <source>Restart Now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="975"/>
+        <source>Later</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
