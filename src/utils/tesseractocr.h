@@ -38,7 +38,7 @@ public:
     void stop();
     std::vector<std::string> checkAvailableLanguages();
     void setTessdataPath(const QString &value) { m_tessdataPath = value; }
-    void setDelay(const double &value) { m_delay = value; }
+    void setDelay(const double &value) { m_delay = value; m_waitCondition.wakeOne(); }
     void clearCache() { cache_output.clear(); }
 
 public slots:
