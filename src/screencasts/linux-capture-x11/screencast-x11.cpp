@@ -25,6 +25,8 @@ ScreenCast::ScreenCast(QObject *parent)
         Log(Logger::Level::Critical, QString("[X11] XFixes extension not available"));
         return;
     }
+
+    Log(Logger::Level::Info, QString("[X11] Screencast initialized"));
 }
 
 void ScreenCast::stop()
