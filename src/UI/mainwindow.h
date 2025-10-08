@@ -72,7 +72,7 @@ private slots:
     void on_translatorOnlineGoogleSettingsButton_clicked();
     void on_translatorOfflineOllamaToggled_stateChanged(int arg1);
     void on_translatorOfflineOllamaSettingsButton_clicked();
-    void on_textProcessingDelaySpinBox_valueChanged(double arg1);
+    void on_textProcessingTesseractDelaySpinBox_valueChanged(double arg1);
     void on_logsNewLogMessage(const QString& message);
     void on_logsCopyAllButton_clicked();
     void on_logsOpenDirectoryButton_clicked();
@@ -93,9 +93,10 @@ private slots:
     void on_outputToggledProcessedScreencast_stateChanged(int arg1);
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
-    void on_textProcessingUpdateListLangButton_clicked();
-    void on_textProcessingSystemTessDataToggled_stateChanged(int arg1);
-    void on_textProcessingTessdataPathButton_clicked();
+    void on_textProcessingTesseractUpdateListLangButton_clicked();
+    void on_textProcessingTesseractSystemTessDataToggled_stateChanged(int arg1);
+    void on_textProcessingTesseractTessdataPathButton_clicked();
+    void on_textProcessingTesseractModeManual_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
@@ -106,6 +107,7 @@ private:
     // Global Shortcuts
     HotKeys *m_captureRegionHotKey = nullptr;
     HotKeys *m_showHistoryTranslationHotKey = nullptr;
+    HotKeys *m_manualTranslateHotKey = nullptr;
 #ifdef __linux__
     PortalHotkeys *m_portalHotKeys = nullptr;
 #endif

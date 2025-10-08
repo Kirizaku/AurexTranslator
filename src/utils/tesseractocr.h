@@ -43,6 +43,8 @@ public:
 
 public slots:
     void frameMat(const cv::Mat &image);
+    void triggerManualOCR();
+    void on_processingModeChanged(const bool &checked);
 
 signals:
     void currentStatus(const QString &status);
@@ -52,6 +54,7 @@ protected:
     void run() override;
 
 private:
+    void activateOCR();
     bool m_isRunning = false;
     QString m_tessdataPath = "";
     double m_delay = 1;
@@ -60,6 +63,15 @@ private:
     tesseract::TessBaseAPI *m_tessApi = nullptr;
     cv::Mat m_imageOcr;
     QString cache_output = "";
+
+    enum Mode {
+        Auto,
+        Manual
+    };
+
+    Mode m_mode = Mode::Auto;
+    bool m_manualTrigger = false;
+
 };
 
 #endif // OCR_H

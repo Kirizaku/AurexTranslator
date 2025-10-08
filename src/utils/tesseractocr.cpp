@@ -59,6 +59,31 @@ void TesseractOcr::init(const QString &lang)
     }
 }
 
+void TesseractOcr::frameMat(const cv::Mat &image)
+{
+    if (!image.empty()) {
+        m_imageOcr = image.clone();
+    }
+}
+
+void TesseractOcr::triggerManualOCR()
+{
+    if (m_mode == Mode::Manual) activateOCR();
+}
+
+void TesseractOcr::on_processingModeChanged(const bool &checked)
+{
+    m_mode = checked ? Mode::Auto : Mode::Manual;
+    if (m_mode == Mode::Auto) activateOCR();
+}
+
+void TesseractOcr::activateOCR()
+{
+    QMutexLocker locker(&m_mutex);
+    m_manualTrigger = true;
+    m_waitCondition.wakeOne();
+}
+
 void TesseractOcr::stop()
 {
     if (m_tessApi) {
@@ -73,20 +98,23 @@ void TesseractOcr::stop()
     }
 }
 
-void TesseractOcr::frameMat(const cv::Mat &image)
-{
-    if (!image.empty()) {
-        m_imageOcr = image.clone();
-    }
-}
-
 void TesseractOcr::run()
 {
     QString output;
 
     while (true) {
         QMutexLocker locker(&m_mutex);
-        m_waitCondition.wait(&m_mutex, m_delay * 1000);
+
+        if (m_mode == Mode::Auto) {
+            m_waitCondition.wait(&m_mutex, m_delay * 1000);
+        } else if (m_mode == Mode::Manual) {
+            while (m_isRunning && !m_manualTrigger) {
+                m_waitCondition.wait(&m_mutex);
+            }
+            if (m_manualTrigger) {
+                m_manualTrigger = false;
+            }
+        }
 
         if (!m_isRunning) break;
 

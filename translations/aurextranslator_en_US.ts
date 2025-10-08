@@ -24,9 +24,9 @@
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="94"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="395"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="833"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="982"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="405"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="843"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1118"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
@@ -57,13 +57,13 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="74"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1112"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1248"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="100"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="846"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="904"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
@@ -79,7 +79,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="166"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1035"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1171"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -89,300 +89,320 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="226"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="255"/>
         <source>[Portal] Open hotkey binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="246"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="223"/>
         <source>Show/Hide translation history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="311"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="275"/>
+        <source>Manual Translate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="321"/>
         <source>Screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="323"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="333"/>
         <source>Original screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="355"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="365"/>
         <source>Processed screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="410"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="420"/>
         <source>Open selector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="417"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="427"/>
         <source>Show original screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="427"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="437"/>
         <source>Show processed screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="437"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="447"/>
         <source>Frame rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="444"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="454"/>
         <source>Threshold method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="451"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="461"/>
         <source>Simple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="461"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="471"/>
         <source>Adaptive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="534"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="544"/>
         <source>Simple threshold settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="543"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="553"/>
         <source>Simple threshold type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="551"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="561"/>
         <source>Binary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="556"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="566"/>
         <source>Binary Inv</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="561"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="571"/>
         <source>Trunc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="566"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="576"/>
         <source>To Zero</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="571"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="581"/>
         <source>To Zero Inv</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="579"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="589"/>
         <source>Threshold value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="605"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="615"/>
         <source>Use Otsu&apos;s binarization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="629"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="639"/>
         <source>Adaptive threshold settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="638"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="648"/>
         <source>Adaptive method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="646"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="656"/>
         <source>Mean</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="651"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="661"/>
         <source>Gaussian</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="697"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="707"/>
         <source>Online</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="765"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="775"/>
         <source>Offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="839"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="943"/>
+        <source>Auto OCR Interval (sec)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="990"/>
+        <source>Automatic</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1006"/>
+        <source>Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="930"/>
+        <source>Processing Mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1047"/>
         <source>Tesseract status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="876"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="868"/>
         <source>Use system tessdata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="883"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1034"/>
         <source>&lt;b&gt;Inactive&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="890"/>
-        <source>OCR Delay (sec)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="897"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="917"/>
         <source>Update List</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="911"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="855"/>
         <source>Tessdata path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="926"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1062"/>
         <source>String replacement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="932"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1075"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="939"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1068"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="962"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1098"/>
         <source>Original content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="967"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1103"/>
         <source>Replace with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="988"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1124"/>
         <source>Use proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1005"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1141"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1015"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1151"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1025"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1161"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1083"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1219"/>
         <source>Copy all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1090"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1226"/>
         <source>Open logs directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1132"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1268"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1139"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1275"/>
         <source>Copyright (c) 2025 Daniil Nabiulin
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1185"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="292"/>
+        <location filename="../src/UI/mainwindow.cpp" line="297"/>
         <source>Server is unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="490"/>
+        <location filename="../src/UI/mainwindow.cpp" line="495"/>
         <source>Invalid Tesseract Data Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="491"/>
+        <location filename="../src/UI/mainwindow.cpp" line="496"/>
         <source>The specified Tesseract data directory does not exist or is invalid.
 Please provide a valid path or try using the system default directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="502"/>
+        <location filename="../src/UI/mainwindow.cpp" line="507"/>
         <source>No Tesseract available languages found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="503"/>
+        <location filename="../src/UI/mainwindow.cpp" line="508"/>
         <source>Tesseract could not find any language data in system locations.
 Please install Tesseract language packs or specify a custom &apos;tessdata&apos; directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="524"/>
+        <location filename="../src/UI/mainwindow.cpp" line="529"/>
         <source>Select folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="565"/>
+        <location filename="../src/UI/mainwindow.cpp" line="584"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="565"/>
+        <location filename="../src/UI/mainwindow.cpp" line="584"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="971"/>
+        <location filename="../src/UI/mainwindow.cpp" line="997"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="972"/>
+        <location filename="../src/UI/mainwindow.cpp" line="998"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="974"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1000"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="975"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1001"/>
         <source>Later</source>
         <translation type="unfinished"></translation>
     </message>
@@ -478,7 +498,7 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
     <name>TesseractOcr</name>
     <message>
         <location filename="../src/utils/tesseractocr.cpp" line="53"/>
-        <location filename="../src/utils/tesseractocr.cpp" line="72"/>
+        <location filename="../src/utils/tesseractocr.cpp" line="97"/>
         <source>&lt;b&gt;Inactive&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>

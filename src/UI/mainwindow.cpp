@@ -63,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::on_thresholdAdaptiveTypeChanged);
     connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, m_opencv, &OpenCV::on_otsuChanged);
     connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, m_opencv, &OpenCV::setCurrentThresh);
+    connect(ui->textProcessingTesseractModeAuto, &QRadioButton::toggled, m_tesseractOcr, &TesseractOcr::on_processingModeChanged);
 
     loadConfig();
 
@@ -77,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_outputWindow, &TextOutputWindow::on_retranslate, this, [this] {
         m_tesseractOcr->clearCache();
+        m_tesseractOcr->triggerManualOCR();
     });
 
     connect(m_outputWindow, &TextOutputWindow::on_selectNewRegion, this, [this] {
@@ -100,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
@@ -113,11 +116,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingDelaySpinBox, &QDoubleSpinBox::valueChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingTesseractDelaySpinBox, &QDoubleSpinBox::valueChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingLanguage, &QComboBox::currentTextChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingSystemTessDataToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTessdataPathLineEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingTesseractLanguage, &QComboBox::currentTextChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingTesseractSystemTessDataToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingTesseractTessdataPathLineEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingTesseractModeAuto, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyAddressEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyPortEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
@@ -212,6 +216,7 @@ void MainWindow::on_portalShortcutActivated(const QString &shortcutId)
 {
     if (shortcutId == "CaptureRegion") captureRegion();
     if (shortcutId == "HistoryTranslation") showHistory();
+    if (shortcutId == "ManualTranslate") m_tesseractOcr->triggerManualOCR();
 }
 
 void MainWindow::on_portalShortcutDeactivated()
@@ -331,7 +336,7 @@ void MainWindow::on_translatorOfflineOllamaSettingsButton_clicked()
     loop.exec();
 }
 
-void MainWindow::on_textProcessingDelaySpinBox_valueChanged(double arg1)
+void MainWindow::on_textProcessingTesseractDelaySpinBox_valueChanged(double arg1)
 {
     m_tesseractOcr->setDelay(arg1);
 }
@@ -421,7 +426,7 @@ void MainWindow::setCurrentProcessedFrame(const QImage &frame)
 
 void MainWindow::setCurrentStatus(const QString &status)
 {
-    ui->textProcessingStatusTesseractLabel->setText(status);
+    ui->textProcessingTesseractStatusLabel->setText(status);
 }
 
 void MainWindow::setCurrentOutputOCR(const QString &output)
@@ -476,15 +481,15 @@ void MainWindow::on_textProcessingRemoveRowButton_clicked()
     }
 }
 
-void MainWindow::on_textProcessingUpdateListLangButton_clicked()
+void MainWindow::on_textProcessingTesseractUpdateListLangButton_clicked()
 {
     m_tesseractOcr->stop();
-    ui->textProcessingLanguage->clear();
+    ui->textProcessingTesseractLanguage->clear();
     m_tesseractCurrentLang.clear();
     m_tesseractOcr->setTessdataPath("");
 
-    if (!ui->textProcessingSystemTessDataToggled->isChecked()) {
-        QString tessdataPath = ui->textProcessingTessdataPathLineEdit->text();
+    if (!ui->textProcessingTesseractSystemTessDataToggled->isChecked()) {
+        QString tessdataPath = ui->textProcessingTesseractTessdataPathLineEdit->text();
         if (!QDir(tessdataPath).exists()) {
             Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
             QMessageBox::warning(this, tr("Invalid Tesseract Data Directory"),
@@ -506,25 +511,31 @@ void MainWindow::on_textProcessingUpdateListLangButton_clicked()
     }
 
     for (const auto& language : languages) {
-        ui->textProcessingLanguage->addItem(QString::fromStdString(language));
+        ui->textProcessingTesseractLanguage->addItem(QString::fromStdString(language));
     }
 }
 
-void MainWindow::on_textProcessingSystemTessDataToggled_stateChanged(int arg1)
+void MainWindow::on_textProcessingTesseractSystemTessDataToggled_stateChanged(int arg1)
 {
     bool enabled = (arg1 == Qt::Unchecked);
 
-    ui->textProcessingTessdataPathLabel->setEnabled(enabled);
-    ui->textProcessingTessdataPathLineEdit->setEnabled(enabled);
-    ui->textProcessingTessdataPathButton->setEnabled(enabled);
+    ui->textProcessingTesseractTessdataPathLabel->setEnabled(enabled);
+    ui->textProcessingTesseractTessdataPathLineEdit->setEnabled(enabled);
+    ui->textProcessingTesseractTessdataPathButton->setEnabled(enabled);
 }
 
-void MainWindow::on_textProcessingTessdataPathButton_clicked()
+void MainWindow::on_textProcessingTesseractTessdataPathButton_clicked()
 {
     QString folderPath = QFileDialog::getExistingDirectory(nullptr, tr("Select folder"));
     if (!folderPath.isEmpty()) {
-        ui->textProcessingTessdataPathLineEdit->setText(folderPath);
+        ui->textProcessingTesseractTessdataPathLineEdit->setText(folderPath);
     }
+}
+
+void MainWindow::on_textProcessingTesseractModeManual_toggled(bool checked)
+{
+    ui->textProcessingTesseractAutoOCRIntervalLabel->setEnabled(!checked);
+    ui->textProcessingTesseractDelaySpinBox->setEnabled(!checked);
 }
 
 void MainWindow::initHotKeys()
@@ -544,6 +555,14 @@ void MainWindow::initHotKeys()
         connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, m_showHistoryTranslationHotKey, &HotKeys::setShortcut);
         connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this, [this] {
             ui->generalHotkeyHistoryTranslationEdit->clearFocus();
+        });
+
+        m_manualTranslateHotKey = new HotKeys();
+        m_manualTranslateHotKey->setShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
+        connect(m_manualTranslateHotKey, &HotKeys::activated, m_tesseractOcr, &TesseractOcr::triggerManualOCR);
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, m_manualTranslateHotKey, &HotKeys::setShortcut);
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this, [this] {
+            ui->generalHotkeyManualTranslateEdit->clearFocus();
         });
     }
 #ifdef Q_OS_LINUX
@@ -606,7 +625,7 @@ void MainWindow::initTesseractOCR()
     connect(this, &MainWindow::currentOverlayText, m_outputWindow, &TextOutputWindow::setCurrentOutputOCR);
     connect(this, &MainWindow::clearOverlayText, m_outputWindow, &TextOutputWindow::clearOverlayText);
 
-    const QString language = ui->textProcessingLanguage->currentText();
+    const QString language = ui->textProcessingTesseractLanguage->currentText();
     if (!language.isEmpty()) {
         m_tesseractOcr->init(language);
     }
@@ -698,6 +717,7 @@ void MainWindow::loadConfig()
 
     ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
     ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
+    ui->generalHotkeyManualTranslateEdit->setKeySequence(QKeySequence(general["hotkey_manual_translate"].toString()));
 
 #ifdef Q_OS_LINUX
     if (!general["hotkeys_type"].toString().isEmpty()) {
@@ -708,6 +728,7 @@ void MainWindow::loadConfig()
         ui->generalRadioHotKeyPortal->setChecked(!isX11Mode);
         ui->generalHotkeySelectNewRegionEdit->setEnabled(isX11Mode);
         ui->generalHotkeyHistoryTranslationEdit->setEnabled(isX11Mode);
+        ui->generalHotkeyManualTranslateEdit->setEnabled(isX11Mode);
         ui->generalBindShortcut->setEnabled(!isX11Mode);
     }
 #endif
@@ -777,19 +798,21 @@ void MainWindow::loadConfig()
 
     QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
     if (!textProcessing.isEmpty()) {
-        ui->textProcessingSystemTessDataToggled->setChecked(textProcessing["is_systemdata"].toBool());
-        ui->textProcessingTessdataPathLineEdit->setText(textProcessing["path_tessdata"].toString());
-        ui->textProcessingDelaySpinBox->setValue(textProcessing["delay"].toDouble());
+        ui->textProcessingTesseractSystemTessDataToggled->setChecked(textProcessing["is_systemdata"].toBool());
+        ui->textProcessingTesseractTessdataPathLineEdit->setText(textProcessing["path_tessdata"].toString());
+        ui->textProcessingTesseractDelaySpinBox->setValue(textProcessing["delay"].toDouble());
+        ui->textProcessingTesseractModeAuto->setChecked(textProcessing["is_tesseract_mode_auto"].toBool());
+        ui->textProcessingTesseractModeManual->setChecked(textProcessing["is_tesseract_mode_manual"].toBool());
 
         m_tesseractCurrentLang = textProcessing.value("tesseract_lang").toString();
 
         if (!m_tesseractOcr->isRunning() && !m_tesseractCurrentLang.isEmpty()) {
             bool tessdataPathValid = true;
-            if (ui->textProcessingSystemTessDataToggled->isChecked()) {
+            if (ui->textProcessingTesseractSystemTessDataToggled->isChecked()) {
                 m_tesseractOcr->setTessdataPath(QString());
                 QString tessdataPath = QString();
             } else {
-                QString tessdataPath = ui->textProcessingTessdataPathLineEdit->text();
+                QString tessdataPath = ui->textProcessingTesseractTessdataPathLineEdit->text();
                 QDir dir(tessdataPath);
                 if (!dir.exists()) {
                     tessdataPathValid = false;
@@ -800,16 +823,16 @@ void MainWindow::loadConfig()
 
             if (tessdataPathValid) {
                 std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
-                ui->textProcessingLanguage->clear();
+                ui->textProcessingTesseractLanguage->clear();
                 for (const auto& language : languages) {
-                    ui->textProcessingLanguage->addItem(QString::fromStdString(language));
+                    ui->textProcessingTesseractLanguage->addItem(QString::fromStdString(language));
                 }
             }
         }
 
-        int index = ui->textProcessingLanguage->findText(textProcessing.value("tesseract_lang").toString());
+        int index = ui->textProcessingTesseractLanguage->findText(textProcessing.value("tesseract_lang").toString());
         if (index != -1) {
-            ui->textProcessingLanguage->setCurrentIndex(index);
+            ui->textProcessingTesseractLanguage->setCurrentIndex(index);
         }
 
         QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
@@ -859,6 +882,7 @@ void MainWindow::saveConfig()
 
     general["hotkey_select_region"] = ui->generalHotkeySelectNewRegionEdit->keySequence().toString();
     general["hotkey_history_translation"] = ui->generalHotkeyHistoryTranslationEdit->keySequence().toString();
+    general["hotkey_manual_translate"] = ui->generalHotkeyManualTranslateEdit->keySequence().toString();
     Config::setValue("general", general);
 
     QJsonObject output;
@@ -893,10 +917,12 @@ void MainWindow::saveConfig()
     Config::setValue("translator_offline", translator_offline);
 
     QJsonObject textProcessing;
-    textProcessing["delay"] = ui->textProcessingDelaySpinBox->value();
-    textProcessing["tesseract_lang"] = ui->textProcessingLanguage->currentText();
-    textProcessing["is_systemdata"] = ui->textProcessingSystemTessDataToggled->isChecked();
-    textProcessing["path_tessdata"] = ui->textProcessingTessdataPathLineEdit->text();
+    textProcessing["delay"] = ui->textProcessingTesseractDelaySpinBox->value();
+    textProcessing["tesseract_lang"] = ui->textProcessingTesseractLanguage->currentText();
+    textProcessing["is_systemdata"] = ui->textProcessingTesseractSystemTessDataToggled->isChecked();
+    textProcessing["path_tessdata"] = ui->textProcessingTesseractTessdataPathLineEdit->text();
+    textProcessing["is_tesseract_mode_auto"] = ui->textProcessingTesseractModeAuto->isChecked();
+    textProcessing["is_tesseract_mode_manual"] = ui->textProcessingTesseractModeManual->isChecked();
 
     QJsonArray jsonArray;
     for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); i++) {
@@ -955,11 +981,11 @@ void MainWindow::saveConfig()
         QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
     }
 
-    if (ui->textProcessingLanguage->currentText() != m_tesseractCurrentLang)
+    if (ui->textProcessingTesseractLanguage->currentText() != m_tesseractCurrentLang)
     {
-        m_tesseractCurrentLang = ui->textProcessingLanguage->currentText();
+        m_tesseractCurrentLang = ui->textProcessingTesseractLanguage->currentText();
         m_tesseractOcr->stop();
-        m_tesseractOcr->init(ui->textProcessingLanguage->currentText());
+        m_tesseractOcr->init(ui->textProcessingTesseractLanguage->currentText());
     }
 
 #ifdef Q_OS_LINUX
