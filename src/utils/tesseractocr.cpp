@@ -50,10 +50,8 @@ void TesseractOcr::init(const QString &lang)
     }
 
     if (lang.isEmpty()) {
-        emit currentStatus(QString(tr("<b>Inactive</b>")));
         m_tessApi->End();
     } else {
-        emit currentStatus(QString(tr("<b>Active [%1]</b>")).arg(QString::fromUtf8(langPtr)));
         m_isRunning = true;
         start();
     }
@@ -68,19 +66,24 @@ void TesseractOcr::frameMat(const cv::Mat &image)
 
 void TesseractOcr::triggerManualOCR()
 {
-    if (m_mode == Mode::Manual) activateOCR();
+    if (m_mode == Mode::Manual) {
+        requestOCR();
+    }
 }
 
-void TesseractOcr::on_processingModeChanged(const bool &checked)
+void TesseractOcr::setMode(const int id)
 {
-    m_mode = checked ? Mode::Auto : Mode::Manual;
-    if (m_mode == Mode::Auto) activateOCR();
+    m_mode = static_cast<Mode>(id);
+    if (m_mode == Auto) {
+        m_requestOCR = true;
+        m_waitCondition.wakeOne();
+    }
 }
 
-void TesseractOcr::activateOCR()
+void TesseractOcr::requestOCR()
 {
     QMutexLocker locker(&m_mutex);
-    m_manualTrigger = true;
+    m_requestOCR = true;
     m_waitCondition.wakeOne();
 }
 
@@ -94,7 +97,6 @@ void TesseractOcr::stop()
         }
         wait();
         m_tessApi->End();
-        emit currentStatus(QString(tr("<b>Inactive</b>")));
     }
 }
 
@@ -108,11 +110,11 @@ void TesseractOcr::run()
         if (m_mode == Mode::Auto) {
             m_waitCondition.wait(&m_mutex, m_delay * 1000);
         } else if (m_mode == Mode::Manual) {
-            while (m_isRunning && !m_manualTrigger) {
+            while (m_isRunning && !m_requestOCR) {
                 m_waitCondition.wait(&m_mutex);
             }
-            if (m_manualTrigger) {
-                m_manualTrigger = false;
+            if (m_requestOCR) {
+                m_requestOCR = false;
             }
         }
 

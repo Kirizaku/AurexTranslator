@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1076</width>
+    <width>1079</width>
     <height>751</height>
    </rect>
   </property>
@@ -293,7 +293,7 @@ font-weight: 700;
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>830</width>
+              <width>833</width>
               <height>680</height>
              </rect>
             </property>
@@ -720,6 +720,19 @@ font-weight: 700;
                </property>
               </spacer>
              </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="translatorOnlineGoogleToggled">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string notr="true">Google</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="1">
               <widget class="QPushButton" name="translatorOnlineGoogleSettingsButton">
                <property name="maximumSize">
@@ -751,19 +764,6 @@ font-weight: 700;
                 </size>
                </property>
               </spacer>
-             </item>
-             <item row="1" column="0">
-              <widget class="QCheckBox" name="translatorOnlineGoogleToggled">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string notr="true">Google</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -843,151 +843,12 @@ font-weight: 700;
             <string>General</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="3" column="0">
-             <widget class="QLabel" name="textProcessingTesseractTessdataPathLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Tessdata path</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="textProcessingTesseractSystemTessDataToggled">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Use system tessdata</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QComboBox" name="textProcessingTesseractLanguage">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
-             <widget class="QPushButton" name="textProcessingTesseractTessdataPathButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string notr="true">...</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Language</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QPushButton" name="textProcessingTesseractUpdateListLangButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Update List</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Processing Mode</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="textProcessingTesseractAutoOCRIntervalLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Auto OCR Interval (sec)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1" colspan="2">
-             <widget class="QDoubleSpinBox" name="textProcessingTesseractDelaySpinBox">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="decimals">
-               <number>1</number>
-              </property>
-              <property name="minimum">
-               <double>0.100000000000000</double>
-              </property>
-              <property name="value">
-               <double>1.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="textProcessingTesseractTessdataPathLineEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string notr="true">./tessdata</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1" colspan="2">
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_6">
               <item>
-               <widget class="QRadioButton" name="textProcessingTesseractModeAuto">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
+               <widget class="QRadioButton" name="textProcessingOCREngineTesseractRadio">
                 <property name="text">
-                 <string>Automatic</string>
+                 <string notr="true">Tesseract</string>
                 </property>
                 <property name="checked">
                  <bool>true</bool>
@@ -995,20 +856,40 @@ font-weight: 700;
                </widget>
               </item>
               <item>
-               <widget class="QRadioButton" name="textProcessingTesseractModeManual">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+               <widget class="QPushButton" name="textProcessingOCREngineTesseractSettingsButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>16777215</height>
+                 </size>
                 </property>
                 <property name="text">
-                 <string>Manual</string>
+                 <string notr="true">...</string>
                 </property>
                </widget>
               </item>
               <item>
-               <spacer name="horizontalSpacer_10">
+               <widget class="QRadioButton" name="textProcessingOCREngineOllamaVisionRadio">
+                <property name="text">
+                 <string notr="true">Ollama Vision</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="textProcessingOCREngineOllamaSettingsButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string notr="true">...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_11">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -1022,29 +903,16 @@ font-weight: 700;
               </item>
              </layout>
             </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="textProcessingTesseractStatusLabel">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_14">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="text">
-               <string>&lt;b&gt;Inactive&lt;/b&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_12">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Tesseract status</string>
+               <string>OCR Engine</string>
               </property>
              </widget>
             </item>
@@ -1272,7 +1140,7 @@ font-weight: 700;
              <item>
               <widget class="QLabel" name="label_9">
                <property name="text">
-                <string>Copyright (c) 2025 Daniil Nabiulin
+                <string notr="true">Copyright (c) 2025 Daniil Nabiulin
 </string>
                </property>
               </widget>
@@ -2046,5 +1914,41 @@ Public License instead of this License.  But first, please read
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>textProcessingOCREngineOllamaSettingsButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openOllamaSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>622</x>
+     <y>64</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>539</x>
+     <y>375</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>translatorOfflineOllamaSettingsButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openOllamaSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>357</x>
+     <y>76</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>539</x>
+     <y>375</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>openOllamaSettings()</slot>
+ </slots>
 </ui>

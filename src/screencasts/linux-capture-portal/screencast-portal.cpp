@@ -10,6 +10,8 @@ ScreenCastPortal::ScreenCastPortal(QString setCurrentRestoreToken, QObject *pare
     m_restoreToken = setCurrentRestoreToken;
 }
 
+ScreenCastPortal::~ScreenCastPortal() {}
+
 const QDBusArgument &operator >> (const QDBusArgument &arg, ScreenCastPortal::Stream &stream)
 {
     arg.beginStructure();

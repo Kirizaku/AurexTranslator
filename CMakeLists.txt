@@ -15,11 +15,12 @@ configure_file(
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets LinguistTools Svg)
-find_package(OpenCV REQUIRED COMPONENTS core imgproc)
+find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
 find_package(PkgConfig REQUIRED)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Qt6 COMPONENTS DBus)
+    find_package(Qt6 REQUIRED COMPONENTS Core)
     find_package(X11 REQUIRED)
     pkg_check_modules(LIBPIPIPEWIRE REQUIRED libpipewire-0.3)
 endif()
@@ -32,16 +33,17 @@ set(PROJECT_SOURCES
     src/UI/screencastwindow.h src/UI/screencastwindow.cpp src/UI/forms/screencastwindow.ui
     src/UI/textoutputwindow.h src/UI/textoutputwindow.cpp src/UI/forms/textoutputwindow.ui
     src/UI/overlaywindow.h src/UI/overlaywindow.cpp
+    src/UI/ollamasettingsdialog.h src/UI/ollamasettingsdialog.cpp
+    src/UI/tesseractsettingsdialog.h src/UI/tesseractsettingsdialog.cpp
+    src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
 
     src/utils/opencv.cpp src/utils/opencv.h
     src/utils/tesseractocr.cpp src/utils/tesseractocr.h
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
-    src/translations/ollama.h src/translations/ollama.cpp
-    src/translations/ollamasettingsdialog.h src/translations/ollamasettingsdialog.cpp
-    src/translations/google.h src/translations/google.cpp
-    src/translations/googlesettingsdialog.h src/translations/googlesettingsdialog.cpp
     src/utils/hotkeys.h src/utils/hotkeys.cpp
+    src/utils/ollama.h src/utils/ollama.cpp
+    src/translations/google.h src/translations/google.cpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -69,8 +71,11 @@ qt_add_executable(${PROJECT_NAME}
   WIN32
     ${PROJECT_SOURCES}
     ${RESOURCES}
+
 )
 
+
+target_link_libraries(aurextranslator PRIVATE Qt6::Core)
 qt_add_translations(${CMAKE_PROJECT_NAME}
   TS_FILES
     translations/${PROJECT_NAME}_en_US.ts
@@ -99,8 +104,9 @@ target_link_libraries(${PROJECT_NAME}
         Qt::Widgets
         Qt::Svg
 
-        opencv_imgproc
         opencv_core
+        opencv_imgproc
+        opencv_imgcodecs
         QHotkey
 
         ${TESSERACT_LIBRARIES}

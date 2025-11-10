@@ -38,23 +38,22 @@ public:
     void stop();
     std::vector<std::string> checkAvailableLanguages();
     void setTessdataPath(const QString &value) { m_tessdataPath = value; }
+    void setMode(const int id);
     void setDelay(const double &value) { m_delay = value; m_waitCondition.wakeOne(); }
     void clearCache() { cache_output.clear(); }
 
 public slots:
     void frameMat(const cv::Mat &image);
     void triggerManualOCR();
-    void on_processingModeChanged(const bool &checked);
 
 signals:
-    void currentStatus(const QString &status);
     void currentOutputOCR(const QString &output);
 
 protected:
     void run() override;
 
 private:
-    void activateOCR();
+    void requestOCR();
     bool m_isRunning = false;
     QString m_tessdataPath = "";
     double m_delay = 1;
@@ -70,7 +69,7 @@ private:
     };
 
     Mode m_mode = Mode::Auto;
-    bool m_manualTrigger = false;
+    bool m_requestOCR = false;
 
 };
 

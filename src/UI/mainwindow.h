@@ -30,9 +30,11 @@
 
 #include "src/utils/opencv.h"
 #include "src/utils/tesseractocr.h"
-#include "src/translations/ollama.h"
-#include "src/translations/google.h"
+#include "src/utils/ollama.h"
 #include "src/utils/hotkeys.h"
+#include "src/translations/google.h"
+#include "tesseractsettingsdialog.h"
+#include "ollamasettingsdialog.h"
 #include "textoutputwindow.h"
 #include "screencastwindow.h"
 #include "overlaywindow.h"
@@ -70,9 +72,7 @@ private slots:
     void on_outputGeneralSelect_clicked();
     void on_outputProcessedOtsu_stateChanged(int arg1);
     void on_translatorOnlineGoogleSettingsButton_clicked();
-    void on_translatorOfflineOllamaToggled_stateChanged(int arg1);
-    void on_translatorOfflineOllamaSettingsButton_clicked();
-    void on_textProcessingTesseractDelaySpinBox_valueChanged(double arg1);
+    void on_textProcessingOCREngineTesseractSettingsButton_clicked();
     void on_logsNewLogMessage(const QString& message);
     void on_logsCopyAllButton_clicked();
     void on_logsOpenDirectoryButton_clicked();
@@ -85,18 +85,21 @@ private slots:
     // OpenCV
     void setCurrentOriginalFrame(const QImage &frame);
     void setCurrentProcessedFrame(const QImage &frame);
+    void setCurrentProcessedMat(const cv::Mat &frame);
 
     // OCR
-    void setCurrentStatus(const QString &status);
     void setCurrentOutputOCR(const QString &output);
     void on_outputToggledOriginalScreencast_stateChanged(int arg1);
     void on_outputToggledProcessedScreencast_stateChanged(int arg1);
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
-    void on_textProcessingTesseractUpdateListLangButton_clicked();
-    void on_textProcessingTesseractSystemTessDataToggled_stateChanged(int arg1);
-    void on_textProcessingTesseractTessdataPathButton_clicked();
-    void on_textProcessingTesseractModeManual_toggled(bool checked);
+    void openOllamaSettings();
+    void on_OllamaVisionTimerTimeout();
+    void triggerManualOCR();
+
+    // Output Window
+    void selectNewRegionRequest();
+    void selectNewInnerRegionRequest();
 
 private:
     Ui::MainWindow *ui;
@@ -121,12 +124,6 @@ private:
     void showHistory();
     void showOverlayWindow();
 
-    // OCR
-    TesseractOcr *m_tesseractOcr = nullptr;
-    QString m_tesseractCurrentLang;
-    QString replaceText(QString output);
-    void initTesseractOCR();
-
     // Screen Casting
 #ifdef __linux__
     Pipewire *m_pipewire = nullptr;
@@ -140,15 +137,44 @@ private:
 
     // Translator
     Ollama *m_ollama = nullptr;
+    OllamaSettingsDialog *m_ollamaSettingsDialog = nullptr;
     QString m_ollamaUrl = "http://localhost:11434/";
     QString m_ollamaCurrentModel;
-    QString m_ollamaPrompt = "";
+    QString m_ollamaTranslationPrompt = "";
     QString m_ollamaVisionPrompt = "";
-    QStringList m_ollamaModels;
+    QJsonArray m_ollamaModels;
 
     Google *m_google = nullptr;
     QString m_googleSourceLang;
     QString m_googleTargetLang;
+
+    // OCR Engine
+    TesseractOcr *m_tesseractOcr = nullptr;
+    TesseractSettingsDialog *m_tesseractSettingsDialog = nullptr;
+    QString m_tesseractSelectedLang = "";
+    QString m_tesseractActiveLang = "";
+    QStringList m_tesserractLangList;
+    QString m_tesseractTessdataPath = "./tessdata";
+    bool m_tesseractUseSystemTessdata = true;
+    void initTesseractOCR();
+
+    enum ProcessingMode {
+        Auto,
+        Manual
+    };
+
+    int m_tesseractMode = Auto;
+    int m_tesseractAutoInterval = 1;
+
+    int m_ollamaVisionMode = Manual;
+    int m_ollamaVisionAutoInterval = 10;
+    QTimer *m_ollamaVisionTimer = nullptr;
+    QString m_ollamaVisionCacheOutput = "";
+    bool m_waitForOllamaResponse = true;
+    bool m_ollamaVisionRequestInProgress = false;
+
+    // Replace Text
+    QString replaceText(QString output);
 
     // Config
     QString m_currentRestoreToken;

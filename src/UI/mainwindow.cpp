@@ -20,13 +20,13 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QTimer>
 #include <QJsonArray>
 #include <QProcess>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "src/translations/ollamasettingsdialog.h"
-#include "src/translations/googlesettingsdialog.h"
+#include "googlesettingsdialog.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
 #include "src/data.h"
@@ -40,8 +40,8 @@ MainWindow::MainWindow(QWidget *parent)
     , m_manager(new QNetworkAccessManager(this))
     , m_tesseractOcr(new TesseractOcr(this))
     , m_opencv(new OpenCV(this))
-    , m_ollama(new Ollama(m_manager))
-    , m_google(new Google(m_manager))
+    , m_ollama(new Ollama(m_manager, this))
+    , m_google(new Google(m_manager, this))
 {
     ui->setupUi(this);
     ui->aboutLabel->setText("<span style=\"font-size: 18pt; font-weight: 700;\">" + QString::fromStdString(APP_NAME) + "</span>");
@@ -63,41 +63,30 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::on_thresholdAdaptiveTypeChanged);
     connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, m_opencv, &OpenCV::on_otsuChanged);
     connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, m_opencv, &OpenCV::setCurrentThresh);
-    connect(ui->textProcessingTesseractModeAuto, &QRadioButton::toggled, m_tesseractOcr, &TesseractOcr::on_processingModeChanged);
 
     loadConfig();
 
+    // Overlay Window
     m_overlayWindow->raise();
     connect(m_overlayWindow, &OverlayWindow::hideOverlay, this, [this] {
         m_overlayWindow->hide();
         m_outputWindow->show();
     });
 
+    // Output Window
     m_outputWindow->show();
     connect(this, &MainWindow::on_showHistoryText, m_outputWindow, &TextOutputWindow::showHistory);
+    connect(m_outputWindow, &TextOutputWindow::on_retranslate, this, &MainWindow::triggerManualOCR);
+    connect(m_outputWindow, &TextOutputWindow::on_selectNewRegion, this, &MainWindow::selectNewRegionRequest);
+    connect(m_outputWindow, &TextOutputWindow::on_selectNewInnerRegion, this, &MainWindow::selectNewInnerRegionRequest);
 
-    connect(m_outputWindow, &TextOutputWindow::on_retranslate, this, [this] {
-        m_tesseractOcr->clearCache();
-        m_tesseractOcr->triggerManualOCR();
-    });
-
-    connect(m_outputWindow, &TextOutputWindow::on_selectNewRegion, this, [this] {
-        if (!m_overlayImage.isNull()) {
-            m_overlayWindow->setInnerBrushActive(false);
-            showOverlayWindow();
-        }
-    });
-
-    connect(m_outputWindow, &TextOutputWindow::on_selectNewInnerRegion, this, [this] {
-        if (!m_overlayWindow->getIsRectBrushEmpty()) {
-            m_overlayWindow->setInnerBrushActive(true);
-            showOverlayWindow();
-        }
-    });
+    m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ollama, m_ollamaCurrentModel, m_ollamaModels, this);
 
     initHotKeys();
     initScreenCast();
+    initTesseractOCR();
 
+    // WidgetChanged
     connect(ui->generalBoxLanguage, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, &MainWindow::on_widgetChanged);
@@ -116,12 +105,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTesseractDelaySpinBox, &QDoubleSpinBox::valueChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->textProcessingOCREngineTesseractRadio, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTesseractLanguage, &QComboBox::currentTextChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTesseractSystemTessDataToggled, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTesseractTessdataPathLineEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
-    connect(ui->textProcessingTesseractModeAuto, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyAddressEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyPortEdit, &QLineEdit::textChanged, this, &MainWindow::on_widgetChanged);
@@ -130,9 +115,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->proxyTypeHttp, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->proxyTypeSocks, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
 
+    // TranslatorChanged
     connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, &MainWindow::on_translatorChanged);
     connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, &MainWindow::on_translatorChanged);
 
+    // Logs
     loadLogMessages();
 }
 
@@ -163,15 +150,7 @@ MainWindow::~MainWindow()
 
     if (m_overlayWindow) { delete m_overlayWindow; }
     if (m_screenCastWindow) { delete m_screenCastWindow; }
-    if (m_ollama) { delete m_ollama; }
-    if (m_google) { delete m_google; }
     if (m_outputWindow) { delete m_outputWindow; }
-#ifdef Q_OS_LINUX
-    if (m_portalScreencast) { delete m_portalScreencast; }
-    if (m_portalHotKeys) { delete m_portalHotKeys; }
-#endif
-    if (m_captureRegionHotKey) { delete m_captureRegionHotKey; }
-    if (m_showHistoryTranslationHotKey) { delete m_showHistoryTranslationHotKey; }
 
     Logger::instance()->destroyInstance();
     Config::instance()->destroyInstance();
@@ -207,6 +186,7 @@ void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
 
     if (role == QDialogButtonBox::ApplyRole) {
         saveConfig();
+        loadConfig();
     } else if (role == QDialogButtonBox::RejectRole) {
         loadConfig();
     }
@@ -216,7 +196,7 @@ void MainWindow::on_portalShortcutActivated(const QString &shortcutId)
 {
     if (shortcutId == "CaptureRegion") captureRegion();
     if (shortcutId == "HistoryTranslation") showHistory();
-    if (shortcutId == "ManualTranslate") m_tesseractOcr->triggerManualOCR();
+    if (shortcutId == "ManualTranslate") triggerManualOCR();
 }
 
 void MainWindow::on_portalShortcutDeactivated()
@@ -264,81 +244,57 @@ void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
 
 void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
 {
-    this->setEnabled(false);
-
-    GoogleSettingsDialog *dialog = new GoogleSettingsDialog(m_googleSourceLang, m_googleTargetLang, m_google, this);
+    GoogleSettingsDialog *dialog = new GoogleSettingsDialog(m_googleSourceLang, m_googleTargetLang, this);
     dialog->setWindowModality(Qt::WindowModal);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
 
-    QEventLoop loop;
-    connect(dialog, &QDialog::finished, &loop, &QEventLoop::quit);
     connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
         if (result == QDialog::Accepted) {
             m_googleSourceLang = dialog->getSourceLang();
             m_googleTargetLang = dialog->getTargetLang();
             m_google->setSourceLang(m_googleSourceLang);
             m_google->setTargetLang(m_googleTargetLang);
-            saveConfig();
+
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
         }
-        this->setEnabled(true);
     });
 
     dialog->show();
-    loop.exec();
 }
 
-void MainWindow::on_translatorOfflineOllamaToggled_stateChanged(int arg1)
+void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
 {
-    if (arg1 == Qt::Checked) {
-        m_ollama->checkServerAvailable(m_ollamaUrl, [this](bool isAvailable) {
-            if (!isAvailable) {
-                ui->translatorOfflineOllamaToggled->setChecked(false);
-                Log(Logger::Level::Warning, "[ollama] Server is unavailable");
-                QMessageBox::warning(this, "Ollama", tr("Server is unavailable"));
-            } else {
-                Log(Logger::Level::Info, "[ollama] Server is available");
+    const QString status = QStringLiteral("<b>%1%2</b>").arg(
+        m_tesseractOcr->isRunning() ? tr("Active") : tr("Inactive"),
+        m_tesseractActiveLang.isEmpty() ? QString() : QStringLiteral(" [%1]").arg(m_tesseractActiveLang)
+    );
 
-                m_ollama->checkModelsAvailable([this](QStringList models) {
-                    if (models.isEmpty()) {
-                        Log(Logger::Level::Warning, "[ollama] Failed to load models or list is empty");
-                        return;
-                    }
-                    m_ollamaModels = models;
-                });
-            }
-        });
-    } else {
-        m_ollamaModels.clear();
-    }
-}
+    m_tesseractSettingsDialog = new TesseractSettingsDialog(status,
+                                                            m_tesseractSelectedLang,
+                                                            m_tesserractLangList,
+                                                            m_tesseractTessdataPath,
+                                                            m_tesseractUseSystemTessdata,
+                                                            m_tesseractMode,
+                                                            m_tesseractAutoInterval,
+                                                            m_tesseractOcr,
+                                                            this);
 
-void MainWindow::on_translatorOfflineOllamaSettingsButton_clicked()
-{
-    this->setEnabled(false);
+    m_tesseractSettingsDialog->setWindowModality(Qt::WindowModal);
+    m_tesseractSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
 
-    OllamaSettingsDialog *dialog = new OllamaSettingsDialog(m_ollamaUrl, m_ollamaCurrentModel, m_ollamaModels, m_ollamaPrompt, m_ollama, this);
-    dialog->setWindowModality(Qt::WindowModal);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    QEventLoop loop;
-    connect(dialog, &QDialog::finished, &loop, &QEventLoop::quit);
-    connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
+    connect(m_tesseractSettingsDialog, &QDialog::finished, this, [this](int result) {
         if (result == QDialog::Accepted) {
-            m_ollamaUrl = dialog->getUrl();
-            m_ollamaCurrentModel = dialog->getCurrentModel();
-            m_ollamaPrompt = dialog->getPrompt();
-            saveConfig();
+            m_tesseractSelectedLang = m_tesseractSettingsDialog->getCurrentLanguage();
+            m_tesseractUseSystemTessdata = m_tesseractSettingsDialog->getUseSystemTessdata();
+            m_tesseractTessdataPath = m_tesseractSettingsDialog->getTessdataPath();
+            m_tesseractMode = m_tesseractSettingsDialog->getMode();
+            m_tesseractAutoInterval = m_tesseractSettingsDialog->getAutoInterval();
+
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
         }
-        this->setEnabled(true);
     });
 
-    dialog->show();
-    loop.exec();
-}
-
-void MainWindow::on_textProcessingTesseractDelaySpinBox_valueChanged(double arg1)
-{
-    m_tesseractOcr->setDelay(arg1);
+    m_tesseractSettingsDialog->show();
 }
 
 void MainWindow::on_logsNewLogMessage(const QString& message)
@@ -424,9 +380,15 @@ void MainWindow::setCurrentProcessedFrame(const QImage &frame)
     }
 }
 
-void MainWindow::setCurrentStatus(const QString &status)
+void MainWindow::setCurrentProcessedMat(const cv::Mat &frame)
 {
-    ui->textProcessingTesseractStatusLabel->setText(status);
+    if (frame.empty())
+        return;
+
+    if (ui->textProcessingOCREngineTesseractRadio->isChecked())
+        m_tesseractOcr->frameMat(frame);
+    else
+        m_ollama->frameMat(frame);
 }
 
 void MainWindow::setCurrentOutputOCR(const QString &output)
@@ -444,9 +406,8 @@ void MainWindow::setCurrentOutputOCR(const QString &output)
 
     // Ollama
     if (ui->translatorOfflineOllamaToggled->isChecked()) {
-        QJsonObject translator = Config::getValue("translator_offline").toJsonObject();
-        QJsonObject ollama = translator["ollama"].toObject();
-        m_ollama->generate(ollama["ollama_prompt"].toString() + outputFilt, m_ollamaCurrentModel, [this, outputFilt](QString result){
+        QJsonObject ollama = Config::getValue("ollama").toJsonObject();
+        m_ollama->generate(ollama["translation_prompt"].toString() + outputFilt, m_ollamaCurrentModel, [this, outputFilt](QString result){
             emit currentOverlayText("[Ollama]", outputFilt, result + "\n");
         });
     } else {
@@ -481,67 +442,81 @@ void MainWindow::on_textProcessingRemoveRowButton_clicked()
     }
 }
 
-void MainWindow::on_textProcessingTesseractUpdateListLangButton_clicked()
+void MainWindow::openOllamaSettings()
 {
-    m_tesseractOcr->stop();
-    ui->textProcessingTesseractLanguage->clear();
-    m_tesseractCurrentLang.clear();
-    m_tesseractOcr->setTessdataPath("");
+    m_ollamaSettingsDialog->setCurrentSettings(m_ollamaUrl, m_ollamaCurrentModel, m_ollamaTranslationPrompt, m_ollamaVisionPrompt, m_ollamaVisionMode, m_ollamaVisionAutoInterval, m_waitForOllamaResponse);
+    m_ollamaSettingsDialog->setWindowModality(Qt::WindowModal);
 
-    if (!ui->textProcessingTesseractSystemTessDataToggled->isChecked()) {
-        QString tessdataPath = ui->textProcessingTesseractTessdataPathLineEdit->text();
-        if (!QDir(tessdataPath).exists()) {
-            Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
-            QMessageBox::warning(this, tr("Invalid Tesseract Data Directory"),
-                                 tr("The specified Tesseract data directory does not exist or is invalid.\n"
-                                    "Please provide a valid path or try using the system default directory."));
-            return;
+    connect(m_ollamaSettingsDialog, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted) {
+            m_ollamaUrl = m_ollamaSettingsDialog->getUrl();
+            m_ollamaCurrentModel = m_ollamaSettingsDialog->getCurrentModel();
+            m_ollamaModels = m_ollamaSettingsDialog->getModels();
+            m_ollamaTranslationPrompt = m_ollamaSettingsDialog->getTranslationPrompt();
+            m_ollamaVisionPrompt = m_ollamaSettingsDialog->getVisionPrompt();
+            m_ollamaVisionMode = m_ollamaSettingsDialog->getMode();
+            m_ollamaVisionAutoInterval = m_ollamaSettingsDialog->getAutoInterval();
+            m_waitForOllamaResponse = m_ollamaSettingsDialog->getIsWaitForResponse();
+
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
         }
-        m_tesseractOcr->setTessdataPath(tessdataPath);
-    }
+    });
 
-    std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
+    m_ollamaSettingsDialog->show();
+}
 
-    if (languages.empty()) {
-        Log(Logger::Level::Warning, "[tesseract] Tesseract could not find any language data in system locations");
-        QMessageBox::information(this, tr("No Tesseract available languages found"),
-                                 tr("Tesseract could not find any language data in system locations.\n"
-                                    "Please install Tesseract language packs or specify a custom 'tessdata' directory."));
+void MainWindow::on_OllamaVisionTimerTimeout()
+{
+    if (m_waitForOllamaResponse && m_ollamaVisionRequestInProgress) {
         return;
     }
 
-    for (const auto& language : languages) {
-        ui->textProcessingTesseractLanguage->addItem(QString::fromStdString(language));
+    m_ollamaVisionRequestInProgress = true;
+
+    m_ollama->generateVision(m_ollamaVisionPrompt, m_ollamaCurrentModel, [this](QString result) {
+        m_ollamaVisionRequestInProgress = false;
+
+        if (m_ollamaVisionCacheOutput == result || result.isEmpty()) {
+            return;
+        }
+
+        m_ollamaVisionCacheOutput = result;
+        setCurrentOutputOCR(result);
+    });
+}
+
+void MainWindow::triggerManualOCR()
+{    
+    if (ui->textProcessingOCREngineTesseractRadio->isChecked()) {
+        m_tesseractOcr->clearCache();
+        m_tesseractOcr->triggerManualOCR();
+    }
+    else {
+        m_ollama->generateVision(m_ollamaVisionPrompt, m_ollamaCurrentModel, [this](QString result){
+            setCurrentOutputOCR(result);
+        });
     }
 }
 
-void MainWindow::on_textProcessingTesseractSystemTessDataToggled_stateChanged(int arg1)
+void MainWindow::selectNewRegionRequest()
 {
-    bool enabled = (arg1 == Qt::Unchecked);
-
-    ui->textProcessingTesseractTessdataPathLabel->setEnabled(enabled);
-    ui->textProcessingTesseractTessdataPathLineEdit->setEnabled(enabled);
-    ui->textProcessingTesseractTessdataPathButton->setEnabled(enabled);
-}
-
-void MainWindow::on_textProcessingTesseractTessdataPathButton_clicked()
-{
-    QString folderPath = QFileDialog::getExistingDirectory(nullptr, tr("Select folder"));
-    if (!folderPath.isEmpty()) {
-        ui->textProcessingTesseractTessdataPathLineEdit->setText(folderPath);
+    if (!m_overlayImage.isNull()) {
+        m_overlayWindow->setInnerBrushActive(false);
+        showOverlayWindow();
     }
 }
-
-void MainWindow::on_textProcessingTesseractModeManual_toggled(bool checked)
+void MainWindow::selectNewInnerRegionRequest()
 {
-    ui->textProcessingTesseractAutoOCRIntervalLabel->setEnabled(!checked);
-    ui->textProcessingTesseractDelaySpinBox->setEnabled(!checked);
+    if (!m_overlayWindow->getIsRectBrushEmpty()) {
+        m_overlayWindow->setInnerBrushActive(true);
+        showOverlayWindow();
+    }
 }
 
 void MainWindow::initHotKeys()
 {
     if (ui->generalRadioHotKey->isChecked()) {
-        m_captureRegionHotKey = new HotKeys();
+        m_captureRegionHotKey = new HotKeys(this);
         m_captureRegionHotKey->setShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
         connect(m_captureRegionHotKey, &HotKeys::activated, this, &MainWindow::captureRegion);
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, m_captureRegionHotKey, &HotKeys::setShortcut);
@@ -549,7 +524,7 @@ void MainWindow::initHotKeys()
             ui->generalHotkeySelectNewRegionEdit->clearFocus();
         });
 
-        m_showHistoryTranslationHotKey = new HotKeys();
+        m_showHistoryTranslationHotKey = new HotKeys(this);
         m_showHistoryTranslationHotKey->setShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
         connect(m_showHistoryTranslationHotKey, &HotKeys::activated, this, &MainWindow::showHistory);
         connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, m_showHistoryTranslationHotKey, &HotKeys::setShortcut);
@@ -557,9 +532,9 @@ void MainWindow::initHotKeys()
             ui->generalHotkeyHistoryTranslationEdit->clearFocus();
         });
 
-        m_manualTranslateHotKey = new HotKeys();
+        m_manualTranslateHotKey = new HotKeys(this);
         m_manualTranslateHotKey->setShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
-        connect(m_manualTranslateHotKey, &HotKeys::activated, m_tesseractOcr, &TesseractOcr::triggerManualOCR);
+        connect(m_manualTranslateHotKey, &HotKeys::activated, this, &MainWindow::triggerManualOCR);
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, m_manualTranslateHotKey, &HotKeys::setShortcut);
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this, [this] {
             ui->generalHotkeyManualTranslateEdit->clearFocus();
@@ -567,7 +542,7 @@ void MainWindow::initHotKeys()
     }
 #ifdef Q_OS_LINUX
     else {
-        m_portalHotKeys = new PortalHotkeys();
+        m_portalHotKeys = new PortalHotkeys(this);
         m_portalHotKeys->init();
         connect(m_portalHotKeys, &PortalHotkeys::activated, this, &MainWindow::on_portalShortcutActivated);
         connect(m_portalHotKeys, &PortalHotkeys::deactivated, this, &MainWindow::on_portalShortcutDeactivated);
@@ -584,6 +559,7 @@ void MainWindow::captureRegion()
             QMessageBox::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
             return;
         }
+        m_overlayWindow->setInnerBrushActive(false);
         showOverlayWindow();
     }
 }
@@ -619,16 +595,9 @@ QString MainWindow::replaceText(QString output)
 
 void MainWindow::initTesseractOCR()
 {
-    connect(m_opencv, &OpenCV::currentProcessedMat, m_tesseractOcr, &TesseractOcr::frameMat);
-    connect(m_tesseractOcr, &TesseractOcr::currentStatus, this, &MainWindow::setCurrentStatus);
     connect(m_tesseractOcr, &TesseractOcr::currentOutputOCR, this, &MainWindow::setCurrentOutputOCR);
     connect(this, &MainWindow::currentOverlayText, m_outputWindow, &TextOutputWindow::setCurrentOutputOCR);
     connect(this, &MainWindow::clearOverlayText, m_outputWindow, &TextOutputWindow::clearOverlayText);
-
-    const QString language = ui->textProcessingTesseractLanguage->currentText();
-    if (!language.isEmpty()) {
-        m_tesseractOcr->init(language);
-    }
 }
 
 void MainWindow::initScreenCast()
@@ -642,6 +611,7 @@ void MainWindow::initScreenCast()
 #endif
     connect(m_opencv, &OpenCV::currentOriginalFrame, this, &MainWindow::setCurrentOriginalFrame);
     connect(m_opencv, &OpenCV::currentProcessedFrame, this, &MainWindow::setCurrentProcessedFrame);
+    connect(m_opencv, &OpenCV::currentProcessedMat, this, &MainWindow::setCurrentProcessedMat);
     connect(m_overlayWindow, &OverlayWindow::currentRoi, m_opencv, &OpenCV::setCurrentRoi);
     connect(m_overlayWindow, &OverlayWindow::currentInnerRoi, m_opencv, &OpenCV::setCurrentIgnoreRoi);
 #ifdef Q_OS_LINUX
@@ -699,6 +669,7 @@ void MainWindow::loadLogMessages()
 
 void MainWindow::loadConfig()
 {
+    // General
     QJsonObject general = Config::getValue("general").toJsonObject();
     m_initLanguage = general["language"].toString();
     int index = ui->generalBoxLanguage->findData(m_initLanguage);
@@ -733,6 +704,7 @@ void MainWindow::loadConfig()
     }
 #endif
 
+    // Output
     QJsonObject output = Config::getValue("output").toJsonObject();
     if (!output.empty()) {
         ui->outputToggledOriginalScreencast->setChecked(output["original_screencast_output"].toBool());
@@ -740,16 +712,18 @@ void MainWindow::loadConfig()
         ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt());
     }
 
+    // processing
     QJsonObject processing = output["processing"].toObject();
     if (!processing.empty()) {
         ui->outputProcessedSimpleThresh->setChecked(processing["is_simple_thresholding"].toBool());
         ui->outputProcessedAdaptiveThresh->setChecked(processing["is_adaptive_thresholding"].toBool());
         ui->outputProcessedOtsu->setChecked(processing["is_otsu_binarization"].toBool());
-        ui->outputProcessedSimpleThresholdingType->setCurrentIndex(processing["thresholding_type"].toInt());
+        ui->outputProcessedSimpleThresholdingType->setCurrentIndex(processing["simple_threshold_type"].toInt());
         ui->outputProcessedThreshValue->setValue(processing["threshold_value"].toInt());
         ui->outputProcessedAdaptiveThresholdingType->setCurrentIndex(processing["adaptive_method"].toInt());
     }
 
+    // Screencast
     QJsonObject screencast = Config::getValue("screencast").toJsonObject();
     if (!screencast.empty()) {
         m_isCaptureDesktop = screencast["is_capture_desktop"].toBool();
@@ -776,6 +750,7 @@ void MainWindow::loadConfig()
 #endif
     }
 
+    // Translator Online
     QJsonObject translator_online = Config::getValue("translator_online").toJsonObject();
     if (!translator_online.isEmpty()) {
         QJsonObject google = translator_online["google"].toObject();
@@ -786,33 +761,34 @@ void MainWindow::loadConfig()
         m_google->setTargetLang(m_googleTargetLang);
     }
 
+    // Translator Offline
     QJsonObject translator_offline = Config::getValue("translator_offline").toJsonObject();
     if (!translator_offline.isEmpty()) {
-        QJsonObject ollama = translator_offline["ollama"].toObject();
-        ui->translatorOfflineOllamaToggled->setChecked(ollama["is_ollama"].toBool());
-        QString ollamaUrl = ollama["ollama_url"].toString();
-        if (ollamaUrl != "") {m_ollamaUrl = ollamaUrl; }
-        m_ollamaCurrentModel = ollama["ollama_model"].toString();
-        m_ollamaPrompt = ollama["ollama_prompt"].toString();
+        ui->translatorOfflineOllamaToggled->setChecked(translator_offline["is_ollama_translator"].toBool());
     }
 
+    // Text Processing (Ollama Vision && Tesseract)
     QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
     if (!textProcessing.isEmpty()) {
-        ui->textProcessingTesseractSystemTessDataToggled->setChecked(textProcessing["is_systemdata"].toBool());
-        ui->textProcessingTesseractTessdataPathLineEdit->setText(textProcessing["path_tessdata"].toString());
-        ui->textProcessingTesseractDelaySpinBox->setValue(textProcessing["delay"].toDouble());
-        ui->textProcessingTesseractModeAuto->setChecked(textProcessing["is_tesseract_mode_auto"].toBool());
-        ui->textProcessingTesseractModeManual->setChecked(textProcessing["is_tesseract_mode_manual"].toBool());
+        QJsonObject tesseract = textProcessing["tesseract"].toObject();
+        ui->textProcessingOCREngineTesseractRadio->setChecked(tesseract["is_tesseract"].toBool());
+        m_tesseractActiveLang = tesseract.value("lang").toString();
+        m_tesseractUseSystemTessdata = tesseract["is_systemdata"].toBool();
+        m_tesseractTessdataPath = tesseract["path_tessdata"].toString();
+        m_tesseractMode = tesseract["mode"].toInt();
+        m_tesseractAutoInterval = tesseract["delay"].toDouble();
+        m_tesseractSelectedLang = m_tesseractActiveLang;
 
-        m_tesseractCurrentLang = textProcessing.value("tesseract_lang").toString();
+        m_tesseractOcr->setMode(m_tesseractMode);
+        m_tesseractOcr->setDelay(m_tesseractAutoInterval);
 
-        if (!m_tesseractOcr->isRunning() && !m_tesseractCurrentLang.isEmpty()) {
+        if (!m_tesseractOcr->isRunning() && !m_tesseractActiveLang.isEmpty()) {
             bool tessdataPathValid = true;
-            if (ui->textProcessingTesseractSystemTessDataToggled->isChecked()) {
+            if (m_tesseractUseSystemTessdata) {
                 m_tesseractOcr->setTessdataPath(QString());
                 QString tessdataPath = QString();
             } else {
-                QString tessdataPath = ui->textProcessingTesseractTessdataPathLineEdit->text();
+                QString tessdataPath = m_tesseractTessdataPath;
                 QDir dir(tessdataPath);
                 if (!dir.exists()) {
                     tessdataPathValid = false;
@@ -823,16 +799,45 @@ void MainWindow::loadConfig()
 
             if (tessdataPathValid) {
                 std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
-                ui->textProcessingTesseractLanguage->clear();
+                m_tesserractLangList.clear();
                 for (const auto& language : languages) {
-                    ui->textProcessingTesseractLanguage->addItem(QString::fromStdString(language));
+                    m_tesserractLangList << QString::fromStdString(language);
                 }
             }
         }
 
-        int index = ui->textProcessingTesseractLanguage->findText(textProcessing.value("tesseract_lang").toString());
-        if (index != -1) {
-            ui->textProcessingTesseractLanguage->setCurrentIndex(index);
+        if (!m_tesseractOcr->isRunning() && ui->textProcessingOCREngineTesseractRadio->isChecked()) {
+            const QString language = m_tesseractActiveLang;
+            if (!language.isEmpty()) {
+                m_tesseractOcr->init(language);
+            }
+        }
+
+        // Ollama Vision
+        QJsonObject ollama_vision = textProcessing["ollama_vision"].toObject();
+        ui->textProcessingOCREngineOllamaVisionRadio->setChecked(ollama_vision["is_vision"].toBool());
+        m_ollamaVisionPrompt = ollama_vision["prompt"].toString();
+        m_ollamaVisionMode = ollama_vision["mode"].toInt(Manual);
+        m_ollamaVisionAutoInterval = ollama_vision["delay"].toInt(10);
+
+        if (ui->textProcessingOCREngineOllamaVisionRadio->isChecked() && m_tesseractOcr->isRunning())
+        {
+            m_tesseractOcr->stop();
+        }
+
+        if (ui->textProcessingOCREngineOllamaVisionRadio->isChecked() && m_ollamaVisionMode == Auto) {
+            if (!m_ollamaVisionTimer) {
+                m_ollamaVisionTimer = new QTimer(this);
+                connect(m_ollamaVisionTimer, &QTimer::timeout, this, &MainWindow::on_OllamaVisionTimerTimeout);
+            }
+            m_ollamaVisionTimer->setInterval(m_ollamaVisionAutoInterval * 1000);
+            m_ollamaVisionTimer->start();
+        } else {
+            if (m_ollamaVisionTimer) {
+                m_ollamaVisionTimer->stop();
+                delete m_ollamaVisionTimer;
+                m_ollamaVisionTimer = nullptr;
+            }
         }
 
         QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
@@ -847,8 +852,18 @@ void MainWindow::loadConfig()
         }
     }
 
-    if (!m_tesseractOcr->isRunning()) initTesseractOCR();
+    // Ollama
+    QJsonObject ollama = Config::getValue("ollama").toJsonObject();
+    if (!ollama.isEmpty()) {
+        QString ollamaUrl = ollama["url"].toString();
+        if (ollamaUrl != "") {m_ollamaUrl = ollamaUrl; m_ollama->setUrl(m_ollamaUrl); }
+        m_ollamaCurrentModel = ollama["current_model"].toString();
+        m_ollamaModels = ollama["models"].toArray();
+        m_ollamaTranslationPrompt = ollama["translation_prompt"].toString();
+        m_waitForOllamaResponse = ollama["wait_for_responce"].toBool();
+    }
 
+    // Proxy
     QJsonObject proxy = Config::getValue("proxy").toJsonObject();
     if (!proxy.isEmpty()) {
         ui->proxyEnabledCheckBox->setChecked(proxy["is_proxy"].toBool());
@@ -868,6 +883,7 @@ void MainWindow::loadConfig()
 
 void MainWindow::saveConfig()
 {
+    // General
     QJsonObject general;
     general["language"] = ui->generalBoxLanguage->currentData().toString();
     general["settings_startup"] = ui->generalToggledStartup->isChecked();
@@ -885,11 +901,13 @@ void MainWindow::saveConfig()
     general["hotkey_manual_translate"] = ui->generalHotkeyManualTranslateEdit->keySequence().toString();
     Config::setValue("general", general);
 
+    // Output
     QJsonObject output;
     output["original_screencast_output"] = ui->outputToggledOriginalScreencast->isChecked();
     output["processed_screencast_output"] = ui->outputToggledProcessedScreencast->isChecked();
     output["framerate_index"] = ui->outputGeneralBoxFramerate->currentIndex();
 
+    // Processing
     QJsonObject processing;
     processing["is_simple_thresholding"] = ui->outputProcessedSimpleThresh->isChecked();
     processing["is_adaptive_thresholding"] = ui->outputProcessedAdaptiveThresh->isChecked();
@@ -901,6 +919,7 @@ void MainWindow::saveConfig()
     output["processing"] = processing;
     Config::setValue("output", output);
 
+    // Translator Online
     QJsonObject translator_online, google;
     google["is_google"] = ui->translatorOnlineGoogleToggled->isChecked();
     google["google_source_lang"] = m_googleSourceLang;
@@ -908,21 +927,27 @@ void MainWindow::saveConfig()
     translator_online.insert("google", google);
     Config::setValue("translator_online", translator_online);
 
-    QJsonObject translator_offline, ollama;
-    ollama["is_ollama"] = ui->translatorOfflineOllamaToggled->isChecked();
-    ollama["ollama_url"] = m_ollamaUrl;
-    ollama["ollama_model"] = m_ollamaCurrentModel;
-    ollama["ollama_prompt"] = m_ollamaPrompt;
-    translator_offline.insert("ollama", ollama);
+    // Translator Offline
+    QJsonObject translator_offline;
+    translator_offline["is_ollama_translator"] = ui->translatorOfflineOllamaToggled->isChecked();
     Config::setValue("translator_offline", translator_offline);
 
-    QJsonObject textProcessing;
-    textProcessing["delay"] = ui->textProcessingTesseractDelaySpinBox->value();
-    textProcessing["tesseract_lang"] = ui->textProcessingTesseractLanguage->currentText();
-    textProcessing["is_systemdata"] = ui->textProcessingTesseractSystemTessDataToggled->isChecked();
-    textProcessing["path_tessdata"] = ui->textProcessingTesseractTessdataPathLineEdit->text();
-    textProcessing["is_tesseract_mode_auto"] = ui->textProcessingTesseractModeAuto->isChecked();
-    textProcessing["is_tesseract_mode_manual"] = ui->textProcessingTesseractModeManual->isChecked();
+    // Text Processing (Tesseract & Ollama Vision)
+    QJsonObject textProcessing, tesseract, ollama_vision;
+    tesseract["is_tesseract"] = ui->textProcessingOCREngineTesseractRadio->isChecked();
+    tesseract["lang"] = m_tesseractSelectedLang;
+    tesseract["is_systemdata"] = m_tesseractUseSystemTessdata;
+    tesseract["path_tessdata"] = m_tesseractTessdataPath;
+    tesseract["mode"] = m_tesseractMode;
+    tesseract["delay"] = m_tesseractAutoInterval;
+
+    ollama_vision["is_vision"] = ui->textProcessingOCREngineOllamaVisionRadio->isChecked();
+    ollama_vision["prompt"] = m_ollamaVisionPrompt;
+    ollama_vision["mode"] = m_ollamaVisionMode;
+    ollama_vision["delay"] = m_ollamaVisionAutoInterval;
+
+    textProcessing.insert("tesseract", tesseract);
+    textProcessing.insert("ollama_vision", ollama_vision);
 
     QJsonArray jsonArray;
     for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); i++) {
@@ -938,6 +963,16 @@ void MainWindow::saveConfig()
     textProcessing["text_replacement_table"] = jsonArray;
     Config::setValue("text_processing", textProcessing);
 
+    // Ollama
+    QJsonObject ollama;
+    ollama["url"] = m_ollamaUrl;
+    ollama["current_model"] = m_ollamaCurrentModel;
+    ollama["models"] = m_ollamaModels;
+    ollama["translation_prompt"] = m_ollamaTranslationPrompt;
+    ollama["wait_for_responce"] = m_waitForOllamaResponse;
+    Config::setValue("ollama", ollama);
+
+    // Proxy
     QJsonObject proxy;
     proxy["is_proxy"] = ui->proxyEnabledCheckBox->isChecked();
     proxy["ip"] = ui->proxyAddressEdit->text();
@@ -957,8 +992,10 @@ void MainWindow::saveConfig()
 
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
 
+    // Save Config
     Config::saveConfig("settings.json");
 
+    // Proxy
     if (ui->proxyEnabledCheckBox->isChecked())
     {
         QString ip = ui->proxyAddressEdit->text();
@@ -981,13 +1018,6 @@ void MainWindow::saveConfig()
         QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
     }
 
-    if (ui->textProcessingTesseractLanguage->currentText() != m_tesseractCurrentLang)
-    {
-        m_tesseractCurrentLang = ui->textProcessingTesseractLanguage->currentText();
-        m_tesseractOcr->stop();
-        m_tesseractOcr->init(ui->textProcessingTesseractLanguage->currentText());
-    }
-
 #ifdef Q_OS_LINUX
     if (m_initHotKeyMode != general["hotkeys_type"].toString() || m_initLanguage != general["language"].toString()) {
 #elif defined(Q_OS_WIN)
@@ -1003,7 +1033,7 @@ void MainWindow::saveConfig()
         int ret = msgBox.exec();
         switch (ret) {
         case QMessageBox::Yes:
-            qApp->quit();
+            QApplication::quit();
             QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
             break;
         case QMessageBox::No:

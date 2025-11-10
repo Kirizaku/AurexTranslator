@@ -19,6 +19,7 @@ public:
     using Streams = QList<Stream>;
 
     explicit ScreenCastPortal(QString setCurrentRestoreToken, QObject *parent = nullptr);
+    ~ScreenCastPortal();
     void init();
     void reload();
 
