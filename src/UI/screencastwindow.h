@@ -54,8 +54,8 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 signals:
-    void on_screencastWindowShown();
-    void on_screencastWindowHidden();
+    void screencastWindowShown();
+    void screencastWindowHidden();
 
 private:
     Ui::ScreenCastWindow *ui;

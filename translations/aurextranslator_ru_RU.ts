@@ -300,42 +300,42 @@
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="268"/>
+        <location filename="../src/UI/mainwindow.cpp" line="269"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="268"/>
+        <location filename="../src/UI/mainwindow.cpp" line="269"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="559"/>
+        <location filename="../src/UI/mainwindow.cpp" line="560"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="559"/>
+        <location filename="../src/UI/mainwindow.cpp" line="560"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1027"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1028"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1028"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1029"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1030"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1031"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1031"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1032"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -483,12 +483,12 @@
         <translation>Обновить список</translation>
     </message>
     <message>
-        <location filename="../src/UI/screencastwindow.cpp" line="108"/>
+        <location filename="../src/UI/screencastwindow.cpp" line="103"/>
         <source>Settings changed</source>
         <translation>Настройки изменены</translation>
     </message>
     <message>
-        <location filename="../src/UI/screencastwindow.cpp" line="109"/>
+        <location filename="../src/UI/screencastwindow.cpp" line="104"/>
         <source>There are unsaved changes. Do you want to save them?</source>
         <translation>Есть несохраненные изменения. Хотите ли вы их сохранить?</translation>
     </message>

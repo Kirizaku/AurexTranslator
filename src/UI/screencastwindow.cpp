@@ -55,9 +55,6 @@ void ScreenCastWindow::on_desktopRadio_toggled(bool checked)
 
 void ScreenCastWindow::on_listComboBox_currentIndexChanged(int index)
 {
-    m_screenCapture->setIsProcessed(true);
-    m_screenCapture->wakeWaitCondition();
-
     if (m_screenCapture->isCaptureDesktop()) {
         m_screenCapture->setCurrentDisplayIndex(index);
     } else {
@@ -79,6 +76,8 @@ void ScreenCastWindow::on_buttonBox_clicked(QAbstractButton *button)
     if (role == QDialogButtonBox::ApplyRole) {
         saveConfig();
         setCurrentApplyButtonState(false);
+    } else {
+        loadConfig();
     }
 
     hide();
@@ -86,19 +85,15 @@ void ScreenCastWindow::on_buttonBox_clicked(QAbstractButton *button)
 
 void ScreenCastWindow::showEvent(QShowEvent *event)
 {
-    if (!m_screenCapture->isCaptureDesktop()) {
-        ui->windowRadio->setChecked(true);
-    }
-
     updateList();
     loadConfig();
 
-    emit on_screencastWindowShown();
+    emit screencastWindowShown();
 }
 
 void ScreenCastWindow::hideEvent(QHideEvent *event)
 {
-    emit on_screencastWindowHidden();
+    emit screencastWindowHidden();
 }
 
 void ScreenCastWindow::closeEvent(QCloseEvent *event)
@@ -118,6 +113,7 @@ void ScreenCastWindow::closeEvent(QCloseEvent *event)
             break;
         case QMessageBox::No:
             event->accept();
+            loadConfig();
             setCurrentApplyButtonState(false);
             break;
         case QMessageBox::Cancel:
@@ -176,9 +172,14 @@ void ScreenCastWindow::loadConfig()
 {
     QJsonObject screencast = Config::getValue("screencast").toJsonObject();
 
-    if (screencast.isEmpty()) return;
+    if (screencast.isEmpty()) {
+        saveConfig();
+        setCurrentApplyButtonState(false);
+        return;
+    }
 
-    if (m_screenCapture->isCaptureDesktop()) {
+    if (screencast["is_capture_desktop"].toBool()) {
+        ui->desktopRadio->setChecked(true);
         int currentIndex = (screencast["display_index"].toInt());
         if (currentIndex != -1 && currentIndex <= m_currentDisplaysList.size() - 1)
         {
@@ -186,6 +187,7 @@ void ScreenCastWindow::loadConfig()
             setCurrentApplyButtonState(false);
         }
     } else {
+        ui->windowRadio->setChecked(true);
 #ifdef Q_OS_LINUX
         unsigned long currentWindow = (screencast["window_id"].toInt());
 #elif defined(Q_OS_WIN)

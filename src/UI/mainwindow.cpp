@@ -25,6 +25,7 @@
 #include <QProcess>
 
 #include "mainwindow.h"
+#include "src/UI/forms/ui_mainwindow.h"
 #include "ui_mainwindow.h"
 #include "googlesettingsdialog.h"
 #include "src/utils/logger.h"
@@ -186,10 +187,9 @@ void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
 
     if (role == QDialogButtonBox::ApplyRole) {
         saveConfig();
-        loadConfig();
-    } else if (role == QDialogButtonBox::RejectRole) {
-        loadConfig();
     }
+
+    loadConfig();
 }
 
 void MainWindow::on_portalShortcutActivated(const QString &shortcutId)
@@ -219,22 +219,23 @@ void MainWindow::on_outputGeneralSelect_clicked()
     if (m_portalScreencast) {
         if (m_opencv) {
             m_opencv->setIsStopped(true);
+            ui->outputOriginalScreencast->clear();
+            ui->outputProcessedScreencast->clear();
+            m_overlayWindow->clearFrame();
+            m_overlayImage = QImage();
         }
 
         if (m_pipewire) {
             m_pipewire->stop();
         }
+
         m_portalScreencast->reload();
     } else {
-#endif        
+#endif
         m_screenCastWindow->show();
 #ifdef Q_OS_LINUX
     }
 #endif
-    ui->outputOriginalScreencast->clear();
-    ui->outputProcessedScreencast->clear();
-    m_overlayWindow->clearFrame();
-    m_overlayImage = QImage();
 }
 
 void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
@@ -631,10 +632,10 @@ void MainWindow::initScreenCast()
 
         connect(m_screenCapture, &ScreenCast::currentFrameBuffer, m_opencv, &OpenCV::setCurrentFrameBuffer);
         connect(ui->outputGeneralBoxFramerate, &QComboBox::currentTextChanged, m_screenCapture, &ScreenCast::setCurrentFramerate);
-        connect(m_screenCastWindow, &ScreenCastWindow::on_screencastWindowShown, this, [this] {
+        connect(m_screenCastWindow, &ScreenCastWindow::screencastWindowShown, this, [this] {
             connect(m_opencv, &OpenCV::currentOriginalFrame, m_screenCastWindow, &ScreenCastWindow::setCurrentOriginalFrame);
         });
-        connect(m_screenCastWindow, &ScreenCastWindow::on_screencastWindowHidden, this, [this] {
+        connect(m_screenCastWindow, &ScreenCastWindow::screencastWindowHidden, this, [this] {
             disconnect(m_opencv, &OpenCV::currentOriginalFrame, m_screenCastWindow, &ScreenCastWindow::setCurrentOriginalFrame);
         });
 
