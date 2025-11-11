@@ -783,31 +783,31 @@ void MainWindow::loadConfig()
         m_tesseractOcr->setMode(m_tesseractMode);
         m_tesseractOcr->setDelay(m_tesseractAutoInterval);
 
-        if (!m_tesseractOcr->isRunning() && !m_tesseractActiveLang.isEmpty()) {
-            bool tessdataPathValid = true;
+        if (ui->textProcessingOCREngineTesseractRadio->isChecked()) {
+            if (m_tesseractOcr->isRunning()) {
+                m_tesseractOcr->stop();
+            }
+
             if (m_tesseractUseSystemTessdata) {
                 m_tesseractOcr->setTessdataPath(QString());
                 QString tessdataPath = QString();
             } else {
                 QString tessdataPath = m_tesseractTessdataPath;
                 QDir dir(tessdataPath);
-                if (!dir.exists()) {
-                    tessdataPathValid = false;
-                } else {
+                if (dir.exists()) {
                     m_tesseractOcr->setTessdataPath(tessdataPath);
+                } else {
+                    m_tesseractUseSystemTessdata = true;
+                    Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
                 }
             }
 
-            if (tessdataPathValid) {
-                std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
-                m_tesserractLangList.clear();
-                for (const auto& language : languages) {
-                    m_tesserractLangList << QString::fromStdString(language);
-                }
+            std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
+            m_tesserractLangList.clear();
+            for (const auto& language : languages) {
+                m_tesserractLangList << QString::fromStdString(language);
             }
-        }
 
-        if (!m_tesseractOcr->isRunning() && ui->textProcessingOCREngineTesseractRadio->isChecked()) {
             const QString language = m_tesseractActiveLang;
             if (!language.isEmpty()) {
                 m_tesseractOcr->init(language);

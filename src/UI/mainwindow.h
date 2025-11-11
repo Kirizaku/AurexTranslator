@@ -155,7 +155,7 @@ private:
     QString m_tesseractActiveLang = "";
     QStringList m_tesserractLangList;
     QString m_tesseractTessdataPath = "./tessdata";
-    bool m_tesseractUseSystemTessdata = true;
+    bool m_tesseractUseSystemTessdata = false;
     void initTesseractOCR();
 
     enum ProcessingMode {
