@@ -466,7 +466,7 @@ void MainWindow::openOllamaSettings()
     m_ollamaSettingsDialog->show();
 }
 
-void MainWindow::on_OllamaVisionTimerTimeout()
+void MainWindow::ollamaVisionTimerTimeout()
 {
     if (m_waitForOllamaResponse && m_ollamaVisionRequestInProgress) {
         return;
@@ -829,7 +829,7 @@ void MainWindow::loadConfig()
         if (ui->textProcessingOCREngineOllamaVisionRadio->isChecked() && m_ollamaVisionMode == Auto) {
             if (!m_ollamaVisionTimer) {
                 m_ollamaVisionTimer = new QTimer(this);
-                connect(m_ollamaVisionTimer, &QTimer::timeout, this, &MainWindow::on_OllamaVisionTimerTimeout);
+                connect(m_ollamaVisionTimer, &QTimer::timeout, this, &MainWindow::ollamaVisionTimerTimeout);
             }
             m_ollamaVisionTimer->setInterval(m_ollamaVisionAutoInterval * 1000);
             m_ollamaVisionTimer->start();

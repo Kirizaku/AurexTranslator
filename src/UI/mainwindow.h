@@ -94,7 +94,7 @@ private slots:
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
     void openOllamaSettings();
-    void on_OllamaVisionTimerTimeout();
+    void ollamaVisionTimerTimeout();
     void triggerManualOCR();
 
     // Output Window
