@@ -185,7 +185,7 @@ private:
 #else
     HWND m_currentWindow;
 #endif
-    QString m_initLanguage;
+    QString m_initLanguage = "en_US";
 #ifdef __linux__
     QString m_initHotKeyMode = "x11";
 #endif
