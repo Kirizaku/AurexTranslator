@@ -38,6 +38,8 @@ public:
     void stop();
     std::vector<std::string> checkAvailableLanguages();
     void setTessdataPath(const QString &value) { m_tessdataPath = value; }
+    QString getTessdataPath() { return m_tessdataPath; }
+    QString getLanguage() { return m_currentLang; }
     void setMode(const int id);
     void setDelay(const double &value) { m_delay = value; m_waitCondition.wakeOne(); }
     void clearCache() { cache_output.clear(); }
@@ -56,6 +58,7 @@ private:
     void requestOCR();
     bool m_isRunning = false;
     QString m_tessdataPath = "";
+    QString m_currentLang = "";
     double m_delay = 1;
     QMutex m_mutex;
     QWaitCondition m_waitCondition;

@@ -47,7 +47,8 @@ public:
                                     QWidget *parent = nullptr);
     ~TesseractSettingsDialog();
 
-    QString getCurrentLanguage();
+    QString getCurrentLanguage() const;
+    QStringList getLanguageList() const;
     QString getTessdataPath() const;
     bool getUseSystemTessdata() const;
     int getMode() const;
@@ -66,8 +67,6 @@ private:
     QRadioButton *m_manualRadio;
     QSpinBox *m_intervalSpinBox;
     QButtonGroup *m_modeGroup;
-
-    QString m_tesseractcCurrentLang = "";
 
     enum Mode {
         Auto,

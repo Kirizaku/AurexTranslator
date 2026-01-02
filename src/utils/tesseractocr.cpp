@@ -52,6 +52,7 @@ void TesseractOcr::init(const QString &lang)
     if (lang.isEmpty()) {
         m_tessApi->End();
     } else {
+        m_currentLang = lang;
         m_isRunning = true;
         start();
     }
@@ -152,6 +153,7 @@ std::vector<std::string> TesseractOcr::checkAvailableLanguages()
         std::vector<std::string> availableLanguages;
         m_tessApi->GetAvailableLanguagesAsVector(&availableLanguages);
 #endif
+        m_tessApi->End();
 
     if (availableLanguages.empty()) {
         Log(Logger::Level::Warning, "[tesseract] Failed to load language data or list is empty");

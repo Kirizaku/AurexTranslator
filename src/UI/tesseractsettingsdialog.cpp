@@ -50,14 +50,13 @@ TesseractSettingsDialog::TesseractSettingsDialog(const QString &status,
     // Status
     QLabel *statusTitleLabel = new QLabel(tr("Status"));
     m_statusLabel = new QLabel(status);
-    m_tesseractcCurrentLang = currentLanguage;
     
     // Language
     QLabel *comboBoxLabel = new QLabel(tr("Language"));
     m_comboBox = new QComboBox;
     m_comboBox->addItems(LanguageList);
 
-    int index = LanguageList.indexOf(m_tesseractcCurrentLang);
+    int index = LanguageList.indexOf(currentLanguage);
     if (index != -1) {
         m_comboBox->setCurrentIndex(index);
     }
@@ -156,9 +155,18 @@ TesseractSettingsDialog::TesseractSettingsDialog(const QString &status,
 
 TesseractSettingsDialog::~TesseractSettingsDialog() {}
 
-QString TesseractSettingsDialog::getCurrentLanguage()
+QString TesseractSettingsDialog::getCurrentLanguage() const
 {
     return m_comboBox->currentText();
+}
+
+QStringList TesseractSettingsDialog::getLanguageList() const
+{
+    QStringList items;
+    for (int i = 0; i < m_comboBox->count(); ++i) {
+        items << m_comboBox->itemText(i);
+    }
+    return items;
 }
 
 QString TesseractSettingsDialog::getTessdataPath() const
@@ -183,9 +191,23 @@ int TesseractSettingsDialog::getAutoInterval() const
 
 void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
 {
-    m_tesseractOcr->stop();
-    m_tesseractOcr->setTessdataPath("");
+    const bool wasRunning = m_tesseractOcr->isRunning();
+    const QString originalPath = m_tesseractOcr->getTessdataPath();
+    const QString originalLang = m_tesseractOcr->getLanguage();
+
+    auto restoreState = [this, wasRunning, originalPath, originalLang]() {
+        if (wasRunning) {
+            m_tesseractOcr->setTessdataPath(originalPath);
+            m_tesseractOcr->init(originalLang);
+        }
+    };
+
+    if (wasRunning) {  
+        m_tesseractOcr->stop();
+    }
+
     m_comboBox->clear();
+    m_tesseractOcr->setTessdataPath("");
 
     if (!m_systemTessdataCheckBox->isChecked()) {
         QString tessdataPath = m_pathLineEdit->text();
@@ -194,6 +216,7 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
             QMessageBox::warning(nullptr, tr("Invalid Tesseract Data Directory"),
                                  tr("The specified Tesseract data directory does not exist or is invalid.\n"
                                     "Please provide a valid path or try using the system default directory."));
+            restoreState();
             return;
         }
         m_tesseractOcr->setTessdataPath(tessdataPath);
@@ -206,6 +229,7 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
         QMessageBox::information(nullptr, tr("No Tesseract available languages found"),
                                  tr("Tesseract could not find any language data in system locations.\n"
                                     "Please install Tesseract language packs or specify a custom 'tessdata' directory."));
+        restoreState();
         return;
     }
 
@@ -213,5 +237,5 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
         m_comboBox->addItem(QString::fromStdString(language));
     }
 
-    m_tesseractOcr->init(m_tesseractcCurrentLang);
+    restoreState();
 }
