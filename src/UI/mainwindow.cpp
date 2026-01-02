@@ -286,6 +286,7 @@ void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
     connect(m_tesseractSettingsDialog, &QDialog::finished, this, [this](int result) {
         if (result == QDialog::Accepted) {
             m_tesseractSelectedLang = m_tesseractSettingsDialog->getCurrentLanguage();
+            m_tesserractLangList = m_tesseractSettingsDialog->getLanguageList();
             m_tesseractUseSystemTessdata = m_tesseractSettingsDialog->getUseSystemTessdata();
             m_tesseractTessdataPath = m_tesseractSettingsDialog->getTessdataPath();
             m_tesseractMode = m_tesseractSettingsDialog->getMode();
@@ -357,9 +358,10 @@ void MainWindow::setCurrentNodeId(const uint &nodeId)
 void MainWindow::setCurrentOriginalFrame(const QImage &frame)
 {
     m_overlayImage = frame.copy();
+    m_overlayImage.setDevicePixelRatio(this->devicePixelRatio());
 
     if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
-        ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(frame).scaled(ui->outputOriginalScreencast->size(), Qt::KeepAspectRatio));
+        ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_overlayImage).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
     }
 #ifdef Q_OS_LINUX
     if (m_pipewire) {
@@ -577,7 +579,7 @@ void MainWindow::showHistory()
 void MainWindow::showOverlayWindow()
 {
     QRect primaryScreenGeometry = QApplication::primaryScreen()->geometry();
-    m_overlayWindow->setPixmap(QPixmap::fromImage(m_overlayImage.copy().scaled(primaryScreenGeometry.width(), primaryScreenGeometry.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    m_overlayWindow->setPixmap(QPixmap::fromImage(m_overlayImage.copy().scaled(primaryScreenGeometry.width() * this->devicePixelRatio(), primaryScreenGeometry.height() * this->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
     m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
     m_outputWindow->hide();
     m_overlayWindow->showFullScreen();
@@ -801,7 +803,6 @@ void MainWindow::loadConfig()
                     Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
                 }
             }
-
             std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
             m_tesserractLangList.clear();
             for (const auto& language : languages) {
