@@ -114,7 +114,7 @@ namespace
             const QStringList uiLanguages = QLocale::system().uiLanguages();
             for (const QString &locale : uiLanguages) {
                 const QString baseName = QString::fromStdString(PROJECT_NAME) + "_" + QLocale(locale).name();
-                if (translator.load(baseName)) {
+                if (translator.load(":/i18n/" + baseName)) {
                     app.installTranslator(&translator);
                     general["language"] = QLocale(locale).name();
                     Config::setValue("general", general);
