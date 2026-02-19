@@ -90,7 +90,7 @@ namespace
             qputenv("QT_QPA_PLATFORM", "xcb");
             Log(Logger::Level::Info, "Session Type: Wayland");
         } else if (sessionType == "x11") {
-            Log(Logger::Level::Info, "Session Type: Wayland");
+            Log(Logger::Level::Info, "Session Type: X11");
         }
 
         Log(Logger::Level::Info, QString("Distribution: %1").arg(getDistroName()));
