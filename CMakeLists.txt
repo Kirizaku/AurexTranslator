@@ -9,6 +9,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+string(TIMESTAMP CURRENT_YEAR "%Y")
+
 configure_file(
     src/data.h.in
     src/data.h
@@ -71,9 +73,7 @@ qt_add_executable(${PROJECT_NAME}
   WIN32
     ${PROJECT_SOURCES}
     ${RESOURCES}
-
 )
-
 
 target_link_libraries(aurextranslator PRIVATE Qt6::Core)
 qt_add_translations(${CMAKE_PROJECT_NAME}

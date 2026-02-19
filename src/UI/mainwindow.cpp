@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->aboutLabel->setText("<span style=\"font-size: 18pt; font-weight: 700;\">" + QString::fromStdString(APP_NAME) + "</span>");
     ui->aboutVersion->setText(QString("v%1").arg(APP_VERSION));
+    ui->aboutCopyrightLabel->setText(QString::fromStdString("Copyright (c) ") + QString::fromStdString(COPYRIGHT_YEARS) + QString::fromStdString(" Daniil Nabiulin"));
     ui->generalBoxLanguage->addItem("English", "en_US");
     ui->generalBoxLanguage->addItem("Русский", "ru_RU");
 
