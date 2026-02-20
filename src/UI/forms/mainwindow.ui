@@ -338,10 +338,9 @@ font-weight: 700;
                  </widget>
                 </item>
                 <item row="0" column="1">
-                 <widget class="QLabel" name="outputProcessedScreencast">
+                 <widget class="HoverLabel" name="outputProcessedScreencast">
                   <property name="styleSheet">
                    <string notr="true">QLabel {
-   border: 2px red;
    background: black;
 }</string>
                   </property>
@@ -370,10 +369,12 @@ font-weight: 700;
                  </widget>
                 </item>
                 <item row="0" column="0">
-                 <widget class="QLabel" name="outputOriginalScreencast">
+                 <widget class="HoverLabel" name="outputOriginalScreencast">
+                  <property name="contextMenuPolicy">
+                   <enum>Qt::CustomContextMenu</enum>
+                  </property>
                   <property name="styleSheet">
                    <string notr="true">QLabel {
-   border: 2px red;
    background: black;
 }</string>
                   </property>
@@ -1912,6 +1913,13 @@ Public License instead of this License.  But first, please read
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HoverLabel</class>
+   <extends>QLabel</extends>
+   <header>hoverlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

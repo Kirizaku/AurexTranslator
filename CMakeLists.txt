@@ -35,6 +35,8 @@ set(PROJECT_SOURCES
     src/UI/screencastwindow.h src/UI/screencastwindow.cpp src/UI/forms/screencastwindow.ui
     src/UI/textoutputwindow.h src/UI/textoutputwindow.cpp src/UI/forms/textoutputwindow.ui
     src/UI/overlaywindow.h src/UI/overlaywindow.cpp
+    src/UI/previewwindow.h src/UI/previewwindow.cpp
+    src/UI/hoverlabel.h src/UI/hoverlabel.cpp
     src/UI/ollamasettingsdialog.h src/UI/ollamasettingsdialog.cpp
     src/UI/tesseractsettingsdialog.h src/UI/tesseractsettingsdialog.cpp
     src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp

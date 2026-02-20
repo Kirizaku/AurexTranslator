@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include "textoutputwindow.h"
 #include "screencastwindow.h"
 #include "overlaywindow.h"
+#include "previewwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -57,6 +58,7 @@ signals:
     void currentOverlayText(const QString &translatorName, const QString &original, const QString &result);
     void clearOverlayText(const QString &translatorName);
     void on_showHistoryText();
+    void screenCastFinished();
 
 private slots:
     void on_availableGeometryChanged();
@@ -106,6 +108,13 @@ private:
     QNetworkAccessManager *m_manager;
     QScreen *m_screen;
     TextOutputWindow *m_outputWindow = nullptr;
+
+    QMenu* createMenu(const QString &title, void (MainWindow::*slot)());
+    QMap<QLabel*, QMenu*> contextMenus;
+    void showContextMenu(const QPoint &pos);
+    PreviewWindow* createPreviewWindow(const QString &title, void (OpenCV::*frameSignal)(const QImage&));
+    void openOriginalPreview();
+    void openProcessedPreview();
 
     // Global Shortcuts
     HotKeys *m_captureRegionHotKey = nullptr;

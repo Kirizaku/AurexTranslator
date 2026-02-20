@@ -23,6 +23,7 @@
 #include <QTimer>
 #include <QJsonArray>
 #include <QProcess>
+#include <QMenu>
 
 #include "mainwindow.h"
 #include "src/UI/forms/ui_mainwindow.h"
@@ -123,6 +124,19 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Logs
     loadLogMessages();
+
+    // Context Menus
+    contextMenus[ui->outputOriginalScreencast] =
+        createMenu(tr("Open Original Screencast in New Window"), &MainWindow::openOriginalPreview);
+
+    contextMenus[ui->outputProcessedScreencast] =
+        createMenu(tr("Open Processed Screencast in New Window"), &MainWindow::openProcessedPreview);
+
+    for (QLabel *label : contextMenus.keys()) {
+        label->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(label, &QLabel::customContextMenuRequested,
+                this, &MainWindow::showContextMenu);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -159,6 +173,47 @@ MainWindow::~MainWindow()
 
     delete m_manager;
     delete ui;
+}
+
+QMenu* MainWindow::createMenu(const QString &title, void (MainWindow::*slot)()) {
+    QMenu *menu = new QMenu(this);
+    menu->addAction(title, this, slot);
+    return menu;
+}
+
+void MainWindow::showContextMenu(const QPoint &pos)
+{
+    if (HoverLabel *label = qobject_cast<HoverLabel*>(sender())) {
+        if (QMenu *menu = contextMenus.value(label)) {
+            label->setHoverState(false);
+            menu->exec(label->mapToGlobal(pos));
+        }
+    }
+}
+
+PreviewWindow* MainWindow::createPreviewWindow(const QString &title, void (OpenCV::*frameSignal)(const QImage&))
+{
+    auto *preview = new PreviewWindow();
+    preview->setWindowTitle(title);
+    preview->resize(640, 480);
+    preview->setMinimumSize(320, 240);
+    preview->setAttribute(Qt::WA_DeleteOnClose);
+    preview->show();
+
+    connect(m_opencv, frameSignal, preview, &PreviewWindow::setCurrentFrame);
+    connect(this, &MainWindow::screenCastFinished, preview, &PreviewWindow::clearFrame);
+
+    return preview;
+}
+
+void MainWindow::openOriginalPreview()
+{
+    createPreviewWindow(tr("Original Screencast Preview"), &OpenCV::currentOriginalFrame);
+}
+
+void MainWindow::openProcessedPreview()
+{
+    createPreviewWindow(tr("Processed Screencast Preview"), &OpenCV::currentProcessedFrame);
 }
 
 void MainWindow::on_availableGeometryChanged()
@@ -224,6 +279,7 @@ void MainWindow::on_outputGeneralSelect_clicked()
             ui->outputProcessedScreencast->clear();
             m_overlayWindow->clearFrame();
             m_overlayImage = QImage();
+            emit screenCastFinished();
         }
 
         if (m_pipewire) {
