@@ -379,8 +379,11 @@ void MainWindow::setCurrentOriginalFrame(const QImage &frame)
 
 void MainWindow::setCurrentProcessedFrame(const QImage &frame)
 {
+    QImage image = frame;
+    image.setDevicePixelRatio(this->devicePixelRatio());
+
     if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
-        ui->outputProcessedScreencast->setPixmap(QPixmap::fromImage(frame).scaled(ui->outputProcessedScreencast->size(), Qt::KeepAspectRatio));
+        ui->outputProcessedScreencast->setPixmap(QPixmap::fromImage(image).scaled(ui->outputProcessedScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
     }
 }
 
