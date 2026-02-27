@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,11 +38,20 @@ public slots:
     void setCurrentRoi(QRect currentRect);
     void setCurrentIgnoreRoi(QRect currentRect);
     void setCurrentFrameBuffer(uint32_t height, uint32_t width, void* data);
-    void on_thresholdMethodChanged(const bool &checked);
-    void setCurrentThresh(const double &thresh);
-    void on_thresholdSimpleTypeChanged(const int &type);
-    void on_thresholdAdaptiveTypeChanged(const int &type);
-    void on_otsuChanged(const int &state);
+
+    // Blur
+    void on_blurStateChanged(int state);
+    void on_blurTypeChanged(int type);
+    void setCurrentBlurSize(int ksize);
+    void setSubtractBlurChanged(int state);
+    void setNormalizeChanged(int state);
+
+    // Threshold
+    void on_thresholdMethodChanged(bool checked);
+    void setCurrentThresh(double thresh);
+    void on_thresholdSimpleTypeChanged(int type);
+    void on_thresholdAdaptiveTypeChanged(int type);
+    void on_otsuChanged(int state);
 
 private:
     bool m_stopped = false;
@@ -50,18 +59,31 @@ private:
     cv::Rect m_roi;
     cv::Rect m_ignoreRoi;
 
+    enum class BlurType {
+        BOX_BLUR,
+        GAUSSIAN_BLUR,
+        MEDIAN_BLUR
+    };
+
     enum ThresholdMethod {
         SIMPLE_THRESHOLD,
         ADAPTIVE_THRESHOLD
     };
 
-    ThresholdMethod m_thresholdMethod = SIMPLE_THRESHOLD;
+    BlurType m_blurType = BlurType::BOX_BLUR;
+    bool m_isBlur = false;
+    int m_blurSize = 21;
+    bool m_isBlurSubtract = true;
+    bool m_isBlurNormalize = true;
 
+    ThresholdMethod m_thresholdMethod = SIMPLE_THRESHOLD;
     int m_thresholdSimpleType = 0;
     int m_thresholdAdaptiveType = 0;
     bool m_isOtsu = false;
     double m_thresholdValue = 185;
 
+    void applyBlur(cv::Mat &image);
+    void applyThreshold(cv::Mat &image);
     bool isROIValid(const cv::Rect& roi, const cv::Mat& image);
 };
 #endif // OPENCV_H

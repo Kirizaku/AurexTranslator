@@ -58,9 +58,18 @@ MainWindow::MainWindow(QWidget *parent)
     ui->generalRadioHotKeyPortal->hide();
     ui->generalBindShortcut->hide();
 #endif
+    // UI base
     connect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::on_availableGeometryChanged);
-
     connect(ui->listSettingsWidget, &QListWidget::currentRowChanged, ui->settingsPages, &QStackedWidget::setCurrentIndex);
+
+    // Blur
+    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, m_opencv, &OpenCV::on_blurStateChanged);
+    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::on_blurTypeChanged);
+    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, m_opencv, &OpenCV::setCurrentBlurSize);
+    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, m_opencv, &OpenCV::setSubtractBlurChanged);
+    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, m_opencv, &OpenCV::setNormalizeChanged);
+
+    // Threshold
     connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, m_opencv, &OpenCV::on_thresholdMethodChanged);
     connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::on_thresholdSimpleTypeChanged);
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::on_thresholdAdaptiveTypeChanged);
@@ -105,6 +114,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputToggledProcessedScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputGeneralBoxFramerate, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->outputProcessedAdaptiveThresh, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
@@ -744,6 +758,7 @@ void MainWindow::loadConfig()
     if (index != -1) {
         ui->generalBoxLanguage->setCurrentIndex(index);
     }
+
     if (!general["settings_startup"].isNull()) {
         bool hideStartup = general["settings_startup"].toBool();
         ui->generalToggledStartup->setChecked(hideStartup);
@@ -778,9 +793,15 @@ void MainWindow::loadConfig()
         ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt());
     }
 
-    // processing
+    // Processing
     QJsonObject processing = output["processing"].toObject();
     if (!processing.empty()) {
+        ui->outputProcessedToggledBlur->setChecked(processing["is_blur"].toBool());
+        ui->outputProcessedBlurType->setCurrentIndex(processing["blur_type"].toInt());
+        ui->outputProcessedBlurValue->setValue(processing["blur_value"].toInt());
+        ui->outputProcessedBlurSubtract->setChecked(processing["is_blurSubtract"].toBool());
+        ui->outputProcessedBlurNormalize->setChecked(processing["is_blurNormalize"].toBool());
+
         ui->outputProcessedSimpleThresh->setChecked(processing["is_simple_thresholding"].toBool());
         ui->outputProcessedAdaptiveThresh->setChecked(processing["is_adaptive_thresholding"].toBool());
         ui->outputProcessedOtsu->setChecked(processing["is_otsu_binarization"].toBool());
@@ -974,6 +995,13 @@ void MainWindow::saveConfig()
 
     // Processing
     QJsonObject processing;
+
+    processing["is_blur"] = ui->outputProcessedToggledBlur->isChecked();
+    processing["blur_type"] = ui->outputProcessedBlurType->currentIndex();
+    processing["blur_value"] = ui->outputProcessedBlurValue->value();
+    processing["is_blurSubtract"] = ui->outputProcessedBlurSubtract->isChecked();
+    processing["is_blurNormalize"] = ui->outputProcessedBlurNormalize->isChecked();
+
     processing["is_simple_thresholding"] = ui->outputProcessedSimpleThresh->isChecked();
     processing["is_adaptive_thresholding"] = ui->outputProcessedAdaptiveThresh->isChecked();
     processing["is_otsu_binarization"] = ui->outputProcessedOtsu->isChecked();
