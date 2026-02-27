@@ -70,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (Config::isLoaded()) {
         loadConfig();
     } else {
+        show();
         saveConfig();
     }
 
@@ -746,11 +747,9 @@ void MainWindow::loadConfig()
     if (!general["settings_startup"].isNull()) {
         bool hideStartup = general["settings_startup"].toBool();
         ui->generalToggledStartup->setChecked(hideStartup);
-        if (!hideStartup) {
+        if (!hideStartup && !isVisible() && !isMinimized()) {
             show();
         }
-    } else {
-        show();
     }
 
     ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
