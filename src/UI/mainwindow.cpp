@@ -67,7 +67,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, m_opencv, &OpenCV::on_otsuChanged);
     connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, m_opencv, &OpenCV::setCurrentThresh);
 
-    loadConfig();
+    if (Config::isLoaded()) {
+        loadConfig();
+    } else {
+        saveConfig();
+    }
 
     // Overlay Window
     m_overlayWindow->raise();

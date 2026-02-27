@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ public:
 
     static void setValue(const QString& key, const QVariant& value);
     static QVariant getValue(const QString& key, const QVariant& defaultValue = QVariant());
+    static bool isLoaded() { return m_instance->m_isLoaded; }
 
     static void loadConfig(const QString& filename);
     static void saveConfig(const QString& filename);
@@ -41,6 +42,7 @@ private:
 
     QString m_logFilePath;
     QJsonObject m_settings;
+    bool m_isLoaded = false;
 };
 
 #endif // CONFIG_H

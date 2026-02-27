@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -68,6 +68,8 @@ void Config::loadConfig(const QString& filename)
         Log(Logger::Level::Warning, "[config] Failed to open file settings.json");
         return;
     }
+
+    m_instance->m_isLoaded = true;
 
     QByteArray data = file.readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
