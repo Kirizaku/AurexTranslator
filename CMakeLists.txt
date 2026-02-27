@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(aurextranslator VERSION 0.0.3 LANGUAGES CXX)
+project(aurextranslator VERSION 0.0.4 LANGUAGES CXX)
 
 set(APP_NAME "AurexTranslator")
 set(APP_VERSION "${PROJECT_VERSION} (alpha)")
