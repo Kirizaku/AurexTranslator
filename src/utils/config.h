@@ -31,6 +31,8 @@ public:
     static QVariant getValue(const QString& key, const QVariant& defaultValue = QVariant());
     static bool isLoaded() { return m_instance->m_isLoaded; }
 
+    static QString getConfigDirPath() { return instance()->m_configFilePath; }
+
     static void loadConfig(const QString& filename);
     static void saveConfig(const QString& filename);
 
@@ -40,7 +42,7 @@ private:
 
     static Config *m_instance;
 
-    QString m_logFilePath;
+    QString m_configFilePath;
     QJsonObject m_settings;
     bool m_isLoaded = false;
 };

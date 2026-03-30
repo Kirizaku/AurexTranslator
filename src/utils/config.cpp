@@ -35,7 +35,7 @@ void Config::initInstance(const QString& configPath)
         m_instance = new Config();
     }
 
-    m_instance->m_logFilePath = configPath;
+    m_instance->m_configFilePath = configPath;
 }
 
 void Config::destroyInstance()
@@ -61,7 +61,7 @@ QVariant Config::getValue(const QString& key, const QVariant& defaultValue)
 
 void Config::loadConfig(const QString& filename)
 {
-    QString dirPath = m_instance->m_logFilePath + filename;
+    QString dirPath = m_instance->m_configFilePath + filename;
 
     QFile file(dirPath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -78,7 +78,7 @@ void Config::loadConfig(const QString& filename)
 
 void Config::saveConfig(const QString& filename)
 {
-    QString dirPath = m_instance->m_logFilePath + filename;
+    QString dirPath = m_instance->m_configFilePath + filename;
 
     QFile file(dirPath);
     if (!file.open(QIODevice::WriteOnly)) {
