@@ -348,16 +348,14 @@ void TextOutputWindow::createMenus()
     formLayout->addRow(m_showOriginalText);
     formLayout->addRow(m_showTranslatorName);
 
-    connect(m_fontComboBox, &QFontComboBox::currentFontChanged, [this](const QFont &font) {
-        m_fontSizeSpinBox->setValue(font.pointSize());
-        ui->label->setFont(font);
-    });
-
-    connect(m_fontSizeSpinBox, &QSpinBox::valueChanged, [this](int value) {
+    auto updateLabelFont = [this]() {
         QFont font = m_fontComboBox->currentFont();
-        font.setPointSize(value);
+        font.setPointSize(m_fontSizeSpinBox->value());
         ui->label->setFont(font);
-    });
+    };
+
+    connect(m_fontComboBox, &QFontComboBox::currentFontChanged, updateLabelFont);
+    connect(m_fontSizeSpinBox, &QSpinBox::valueChanged, updateLabelFont);
 
     m_fontSizeSpinBox->setValue(12);
 
