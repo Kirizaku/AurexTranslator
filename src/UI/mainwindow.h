@@ -72,9 +72,14 @@ private slots:
     void on_generalBindShortcut_clicked();
 #endif
     void on_outputGeneralSelect_clicked();
+    void on_outputToggledOriginalScreencast_stateChanged(int arg1);
+    void on_outputToggledProcessedScreencast_stateChanged(int arg1);
+    void on_outputToggledScreencast_stateChanged(int arg1);
     void on_outputProcessedOtsu_stateChanged(int arg1);
     void on_translatorOnlineGoogleSettingsButton_clicked();
     void on_textProcessingOCREngineTesseractSettingsButton_clicked();
+    void on_textProcessingAddRowButton_clicked();
+    void on_textProcessingRemoveRowButton_clicked();
     void on_logsNewLogMessage(const QString& message);
     void on_logsCopyAllButton_clicked();
     void on_logsOpenDirectoryButton_clicked();
@@ -89,12 +94,12 @@ private slots:
     void setCurrentProcessedFrame(const QImage &frame);
     void setCurrentProcessedMat(const cv::Mat &frame);
 
-    // OCR
+    // ScreenCast
+    void startScreenCapture();
+    void stopScreenCapture();
+
+    // Utility Actions
     void setCurrentOutputOCR(const QString &output);
-    void on_outputToggledOriginalScreencast_stateChanged(int arg1);
-    void on_outputToggledProcessedScreencast_stateChanged(int arg1);
-    void on_textProcessingAddRowButton_clicked();
-    void on_textProcessingRemoveRowButton_clicked();
     void openOllamaSettings();
     void ollamaVisionTimerTimeout();
     void triggerManualOCR();

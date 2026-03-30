@@ -18,9 +18,10 @@ public:
     };
     using Streams = QList<Stream>;
 
-    explicit ScreenCastPortal(QString setCurrentRestoreToken, QObject *parent = nullptr);
+    explicit ScreenCastPortal(QObject *parent = nullptr);
     ~ScreenCastPortal();
-    void init();
+    void init(QString setCurrentRestoreToken);
+    void stop();
     void reload();
 
 public Q_SLOTS:

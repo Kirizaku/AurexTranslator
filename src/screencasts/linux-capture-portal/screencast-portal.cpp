@@ -4,11 +4,9 @@
 Q_DECLARE_METATYPE(ScreenCastPortal::Stream);
 Q_DECLARE_METATYPE(ScreenCastPortal::Streams);
 
-ScreenCastPortal::ScreenCastPortal(QString setCurrentRestoreToken, QObject *parent)
+ScreenCastPortal::ScreenCastPortal(QObject *parent)
     : QObject{parent}
-{
-    m_restoreToken = setCurrentRestoreToken;
-}
+{ }
 
 ScreenCastPortal::~ScreenCastPortal() {}
 
@@ -44,20 +42,9 @@ QString ScreenCastPortal::getRequestToken()
     return QString("u%1").arg(m_requestTokenCounter);
 }
 
-void ScreenCastPortal::reload()
+void ScreenCastPortal::init(QString setCurrentRestoreToken)
 {
-    QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop",
-                                                          m_screenCastSession.path(),
-                                                          QLatin1String("org.freedesktop.portal.Session"),
-                                                          QLatin1String("Close"));
-    QDBusPendingCall reply = QDBusConnection::sessionBus().asyncCall(message);
-
-    m_restoreToken = "";
-    init();
-}
-
-void ScreenCastPortal::init()
-{
+    m_restoreToken = setCurrentRestoreToken;
     m_screencast = new OrgFreedesktopPortalScreenCastInterface(QLatin1String("org.freedesktop.portal.Desktop"),
                                                                QLatin1String("/org/freedesktop/portal/desktop"),
                                                                QDBusConnection::sessionBus(), this);
@@ -76,6 +63,20 @@ void ScreenCastPortal::init()
                                             this,
                                             SLOT(gotCreateSessionResponse(uint,QVariantMap)));
     }
+}
+
+void ScreenCastPortal::stop()
+{
+    QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop",
+                                                          m_screenCastSession.path(),
+                                                          QLatin1String("org.freedesktop.portal.Session"),
+                                                          QLatin1String("Close"));
+    QDBusPendingCall reply = QDBusConnection::sessionBus().asyncCall(message);
+}
+
+void ScreenCastPortal::reload()
+{
+    init("");
 }
 
 void ScreenCastPortal::gotCreateSessionResponse(uint response, const QVariantMap &results)

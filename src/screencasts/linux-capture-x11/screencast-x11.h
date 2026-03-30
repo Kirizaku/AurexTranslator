@@ -39,6 +39,7 @@ class ScreenCast : public QThread
 
 public:
     explicit ScreenCast(QObject *parent = nullptr);
+    void init();
     void stop();
 
     QVector<DisplayInfo> getDisplays();

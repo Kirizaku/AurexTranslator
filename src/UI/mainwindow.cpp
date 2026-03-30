@@ -113,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, &MainWindow::on_widgetChanged);
     connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputToggledProcessedScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
+    connect(ui->outputToggledScreencast, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputGeneralBoxFramerate, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, this, &MainWindow::on_widgetChanged);
     connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, this, &MainWindow::on_widgetChanged);
@@ -292,26 +293,36 @@ void MainWindow::on_outputGeneralSelect_clicked()
 {
 #ifdef Q_OS_LINUX
     if (m_portalScreencast) {
-        if (m_opencv) {
-            m_opencv->setIsStopped(true);
-            ui->outputOriginalScreencast->clear();
-            ui->outputProcessedScreencast->clear();
-            m_overlayWindow->clearFrame();
-            m_overlayImage = QImage();
-            emit screenCastFinished();
-        }
-
-        if (m_pipewire) {
-            m_pipewire->stop();
-        }
-
+        stopScreenCapture();
         m_portalScreencast->reload();
-    } else {
-#endif
-        m_screenCastWindow->show();
-#ifdef Q_OS_LINUX
+        return;
     }
 #endif
+    m_screenCastWindow->show();
+}
+
+void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
+{
+    ui->outputOriginalScreencast->setVisible(arg1 == Qt::Checked);
+    ui->outputOriginalScreencastLabel->setVisible(arg1 == Qt::Checked);
+}
+
+void MainWindow::on_outputToggledProcessedScreencast_stateChanged(int arg1)
+{
+    ui->outputProcessedScreencast->setVisible(arg1 == Qt::Checked);
+    ui->outputProcessedScreencastLabel->setVisible(arg1 == Qt::Checked);
+}
+
+void MainWindow::on_outputToggledScreencast_stateChanged(int arg1)
+{
+    bool enabled = (arg1 == Qt::Checked);
+    ui->outputGeneralSelect->setEnabled(!enabled);
+
+    if (enabled) {
+        stopScreenCapture();
+    } else {
+        startScreenCapture();
+    }
 }
 
 void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
@@ -375,6 +386,21 @@ void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
     m_tesseractSettingsDialog->show();
 }
 
+void MainWindow::on_textProcessingAddRowButton_clicked()
+{
+    int row = ui->textProcessingTableWidget->rowCount();
+    ui->textProcessingTableWidget->insertRow(row);
+}
+
+void MainWindow::on_textProcessingRemoveRowButton_clicked()
+{
+    int row = ui->textProcessingTableWidget->currentRow();
+
+    if (row >= 0) {
+        ui->textProcessingTableWidget->removeRow(row);
+    }
+}
+
 void MainWindow::on_logsNewLogMessage(const QString& message)
 {
     ui->logsPlainText->appendPlainText(message);
@@ -427,7 +453,6 @@ void MainWindow::setCurrentNodeId(const uint &nodeId)
     m_pipewire->init(nodeId);
     m_pipewire->start();
     m_pipewire->setIsStopped(false);
-    m_opencv->setIsStopped(false);
 #endif
 }
 
@@ -473,6 +498,54 @@ void MainWindow::setCurrentProcessedMat(const cv::Mat &frame)
         m_ollama->frameMat(frame);
 }
 
+void MainWindow::startScreenCapture()
+{
+    if (m_opencv) {
+        m_opencv->setIsStopped(false);
+    }
+#ifdef Q_OS_LINUX
+    if (m_portalScreencast) {
+        m_portalScreencast->init(m_currentRestoreToken);
+    } else {
+#endif
+        m_screenCapture->init();
+        m_opencv->setIsStopped(false);
+        m_screenCapture->start();
+#ifdef Q_OS_LINUX
+    }
+#endif
+}
+
+void MainWindow::stopScreenCapture()
+{
+    if (m_opencv) {
+        m_opencv->setIsStopped(true);
+        ui->outputOriginalScreencast->clear();
+        ui->outputProcessedScreencast->clear();
+        m_overlayWindow->clearFrame();
+        m_overlayImage = QImage();
+        emit screenCastFinished();
+    }
+
+#ifdef Q_OS_LINUX
+    if (m_pipewire) {
+        m_pipewire->stop();
+    }
+
+    if (m_portalScreencast) {
+        m_portalScreencast->stop();
+    }
+#endif
+
+    if (m_screenCastWindow) {
+        m_screenCastWindow->hide();
+    }
+
+    if (m_screenCapture) {
+        m_screenCapture->stop();
+    }
+}
+
 void MainWindow::setCurrentOutputOCR(const QString &output)
 {
     QString outputFilt = replaceText(output);
@@ -494,33 +567,6 @@ void MainWindow::setCurrentOutputOCR(const QString &output)
         });
     } else {
         emit clearOverlayText("[Ollama]");
-    }
-}
-
-void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
-{
-    ui->outputOriginalScreencast->setVisible(arg1 == Qt::Checked);
-    ui->outputOriginalScreencastLabel->setVisible(arg1 == Qt::Checked);
-}
-
-void MainWindow::on_outputToggledProcessedScreencast_stateChanged(int arg1)
-{
-    ui->outputProcessedScreencast->setVisible(arg1 == Qt::Checked);
-    ui->outputProcessedScreencastLabel->setVisible(arg1 == Qt::Checked);
-}
-
-void MainWindow::on_textProcessingAddRowButton_clicked()
-{
-    int row = ui->textProcessingTableWidget->rowCount();
-    ui->textProcessingTableWidget->insertRow(row);
-}
-
-void MainWindow::on_textProcessingRemoveRowButton_clicked()
-{
-    int row = ui->textProcessingTableWidget->currentRow();
-
-    if (row >= 0) {
-        ui->textProcessingTableWidget->removeRow(row);
     }
 }
 
@@ -589,7 +635,7 @@ void MainWindow::selectNewRegionRequest()
 }
 void MainWindow::selectNewInnerRegionRequest()
 {
-    if (!m_overlayWindow->getIsRectBrushEmpty()) {
+    if (!m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
         m_overlayWindow->setInnerBrushActive(true);
         showOverlayWindow();
     }
@@ -697,7 +743,7 @@ void MainWindow::initScreenCast()
     connect(m_overlayWindow, &OverlayWindow::currentRoi, m_opencv, &OpenCV::setCurrentRoi);
     connect(m_overlayWindow, &OverlayWindow::currentInnerRoi, m_opencv, &OpenCV::setCurrentIgnoreRoi);
 #ifdef Q_OS_LINUX
-    m_portalScreencast = new ScreenCastPortal(m_currentRestoreToken);
+    m_portalScreencast = new ScreenCastPortal();
     connect(m_portalScreencast, &ScreenCastPortal::currentRestoreToken, this, &MainWindow::setCurrentRestoreToken);
     connect(m_portalScreencast, &ScreenCastPortal::currentNodeId, this, &MainWindow::setCurrentNodeId);
 
@@ -707,6 +753,7 @@ void MainWindow::initScreenCast()
         delete m_pipewire; m_pipewire = nullptr;
 #endif
         m_screenCapture = new ScreenCast();
+        m_screenCapture->init();
         m_screenCapture->setIsCaptureDesktop(m_isCaptureDesktop);
 
         m_screenCastWindow = new ScreenCastWindow(m_screenCapture);
@@ -726,11 +773,11 @@ void MainWindow::initScreenCast()
             m_screenCapture->setCurrentWindow(m_currentWindow);
         }
 
-        m_screenCapture->start();
+        if (!ui->outputToggledScreencast->isChecked()) m_screenCapture->start();
 #ifdef Q_OS_LINUX
     });
 
-    m_portalScreencast->init();
+    if (!ui->outputToggledScreencast->isChecked()) m_portalScreencast->init(m_currentRestoreToken);
 #endif
 }
 
@@ -793,6 +840,7 @@ void MainWindow::loadConfig()
     if (!output.empty()) {
         ui->outputToggledOriginalScreencast->setChecked(output["original_screencast_output"].toBool());
         ui->outputToggledProcessedScreencast->setChecked(output["processed_screencast_output"].toBool());
+        ui->outputToggledScreencast->setChecked(output["disable_screencast"].toBool());
         ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt());
     }
 
@@ -994,6 +1042,7 @@ void MainWindow::saveConfig()
     QJsonObject output;
     output["original_screencast_output"] = ui->outputToggledOriginalScreencast->isChecked();
     output["processed_screencast_output"] = ui->outputToggledProcessedScreencast->isChecked();
+    output["disable_screencast"] = ui->outputToggledScreencast->isChecked();
     output["framerate_index"] = ui->outputGeneralBoxFramerate->currentIndex();
 
     // Processing

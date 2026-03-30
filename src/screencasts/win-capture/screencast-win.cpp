@@ -12,6 +12,14 @@ void ScreenCast::cleanup()
     }
 }
 
+void ScreenCast::init()
+{
+    m_loop = true;
+    m_stopped = false;
+
+    m_isProcessed = false;
+}
+
 void ScreenCast::stop()
 {
     m_loop = false;

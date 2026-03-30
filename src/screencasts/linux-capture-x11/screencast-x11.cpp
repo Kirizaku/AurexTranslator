@@ -6,6 +6,9 @@
 
 ScreenCast::ScreenCast(QObject *parent)
     : QThread{parent}
+{}
+
+void ScreenCast::init()
 {
     // X11 Initialization
     m_x11Display = XOpenDisplay(nullptr);
@@ -27,6 +30,9 @@ ScreenCast::ScreenCast(QObject *parent)
     }
 
     Log(Logger::Level::Info, QString("[X11] Screencast initialized"));
+
+    m_loop = true;
+    m_stopped = false;
 }
 
 void ScreenCast::stop()
@@ -40,7 +46,10 @@ void ScreenCast::stop()
     wait();
     cleanup();
 
-    if (m_x11Display) XCloseDisplay(m_x11Display);
+    if (m_x11Display) {
+        XCloseDisplay(m_x11Display);
+        m_x11Display = nullptr;
+    }
 }
 
 void ScreenCast::cleanup()
