@@ -46,12 +46,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     m_historyTextEdit->resize(640, 360);
 
     setAttribute(Qt::WA_TranslucentBackground, true);
-    setWindowFlags(Qt::WindowStaysOnTopHint |
-                   Qt::FramelessWindowHint
-#ifdef Q_OS_LINUX
-                   | Qt::X11BypassWindowManagerHint
-#endif
-                   );
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
 
     createMenus();
     loadConfig();
