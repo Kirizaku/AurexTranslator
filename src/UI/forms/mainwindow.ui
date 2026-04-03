@@ -1182,7 +1182,7 @@ font-weight: 700;
             <item row="5" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QRadioButton" name="proxyTypeSocks">
+               <widget class="QRadioButton" name="proxyTypeHttp">
                 <property name="text">
                  <string notr="true">HTTP</string>
                 </property>
@@ -1192,7 +1192,7 @@ font-weight: 700;
                </widget>
               </item>
               <item>
-               <widget class="QRadioButton" name="proxyTypeHttp">
+               <widget class="QRadioButton" name="proxyTypeSocks">
                 <property name="text">
                  <string notr="true">SOCKS</string>
                 </property>
