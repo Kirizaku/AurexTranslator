@@ -40,18 +40,18 @@ public slots:
     void setCurrentFrameBuffer(uint32_t height, uint32_t width, void* data);
 
     // Blur
-    void on_blurStateChanged(int state);
-    void on_blurTypeChanged(int type);
-    void setCurrentBlurSize(int ksize);
-    void setSubtractBlurChanged(int state);
-    void setNormalizeChanged(int state);
+    void setBlurEnabled(int state);
+    void setBlurType(int type);
+    void setBlurSize(int ksize);
+    void setSubtractBlur(int state);
+    void setNormalizeBlur(int state);
 
     // Threshold
-    void on_thresholdMethodChanged(bool checked);
-    void setCurrentThresh(double thresh);
-    void on_thresholdSimpleTypeChanged(int type);
-    void on_thresholdAdaptiveTypeChanged(int type);
-    void on_otsuChanged(int state);
+    void setThresholdMethod(bool checked);
+    void setSimpleThresholdType(int type);
+    void setThresholdValue(double thresh);
+    void setOtsuEnabled(int state);
+    void setAdaptiveThresholdType(int type);
 
 private:
     bool m_stopped = false;

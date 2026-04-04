@@ -116,12 +116,12 @@ void OpenCV::setCurrentFrameBuffer(uint32_t height, uint32_t width, void* frame)
     }
 }
 
-void OpenCV::on_blurStateChanged(int state)
+void OpenCV::setBlurEnabled(int state)
 {
     m_isBlur = (state == Qt::Checked);
 }
 
-void OpenCV::on_blurTypeChanged(int type)
+void OpenCV::setBlurType(int type)
 {
     switch (type) {
     case 0: m_blurType = BlurType::GAUSSIAN_BLUR; break;
@@ -131,32 +131,27 @@ void OpenCV::on_blurTypeChanged(int type)
     }
 }
 
-void OpenCV::setCurrentBlurSize(int kSize)
+void OpenCV::setBlurSize(int kSize)
 {
     m_blurSize = (kSize % 2 == 0) ? kSize + 1 : kSize;
 }
 
-void OpenCV::setSubtractBlurChanged(int state)
+void OpenCV::setSubtractBlur(int state)
 {
     m_isBlurSubtract = (state == Qt::Checked);
 }
 
-void OpenCV::setNormalizeChanged(int state)
+void OpenCV::setNormalizeBlur(int state)
 {
     m_isBlurNormalize = (state == Qt::Checked);
 }
 
-void OpenCV::on_thresholdMethodChanged(bool checked)
+void OpenCV::setThresholdMethod(bool checked)
 {
     m_thresholdMethod = checked ? SIMPLE_THRESHOLD : ADAPTIVE_THRESHOLD;
 }
 
-void OpenCV::setCurrentThresh(double thresh)
-{
-    m_thresholdValue = thresh;
-}
-
-void OpenCV::on_thresholdSimpleTypeChanged(int type)
+void OpenCV::setSimpleThresholdType(int type)
 {
     switch (type) {
     case 0: m_thresholdSimpleType = cv::THRESH_BINARY;      break;
@@ -168,18 +163,23 @@ void OpenCV::on_thresholdSimpleTypeChanged(int type)
     }
 }
 
-void OpenCV::on_thresholdAdaptiveTypeChanged(int type)
+void OpenCV::setThresholdValue(double thresh)
+{
+    m_thresholdValue = thresh;
+}
+
+void OpenCV::setOtsuEnabled(int state)
+{
+    m_isOtsu = (state == Qt::Checked);
+}
+
+void OpenCV::setAdaptiveThresholdType(int type)
 {
     switch (type) {
     case 0: m_thresholdAdaptiveType = cv::ADAPTIVE_THRESH_MEAN_C; break;
     case 1: m_thresholdAdaptiveType = cv::ADAPTIVE_THRESH_GAUSSIAN_C; break;
     default: break;
     }
-}
-
-void OpenCV::on_otsuChanged(int state)
-{
-    m_isOtsu = (state == Qt::Checked);
 }
 
 void OpenCV::applyBlur(cv::Mat &image)
