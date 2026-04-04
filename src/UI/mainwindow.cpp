@@ -450,6 +450,7 @@ void MainWindow::setCurrentNodeId(const uint &nodeId)
 {
 #ifdef Q_OS_LINUX
     Log(Logger::Level::Info, "[pipewire] Source selected");
+    m_opencv->setIsStopped(false);
     m_pipewire->init(nodeId);
     m_pipewire->start();
     m_pipewire->setIsStopped(false);
