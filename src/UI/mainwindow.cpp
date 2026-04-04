@@ -714,9 +714,14 @@ void MainWindow::showOverlayWindow()
 QString MainWindow::replaceText(QString output)
 {
     for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); ++i) {
-        QString from = ui->textProcessingTableWidget->item(i, 0)->text();
-        QString to = ui->textProcessingTableWidget->item(i, 1)->text();
-        output.replace(from, to);
+        QTableWidgetItem* fromItem = ui->textProcessingTableWidget->item(i, 0);
+        QTableWidgetItem* toItem = ui->textProcessingTableWidget->item(i, 1);
+
+        if (fromItem && toItem) {
+            QString from = fromItem->text();
+            QString to = toItem->text();
+            output.replace(from, to);
+        }
     }
 
     return output;
