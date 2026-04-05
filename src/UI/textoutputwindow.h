@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,14 +38,16 @@ public:
     explicit TextOutputWindow(QWidget *parent = nullptr);
     ~TextOutputWindow();
 
+    void setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
+    void clearResultsBySource(const QString &source);
+    void clearResultsByTranslator(const QString &translatorName);
+
 signals:
-    void on_retranslate();
-    void on_selectNewRegion();
-    void on_selectNewInnerRegion();
+    void selectNewRegionRequested();
+    void selectNewInnerRegionRequested();
+    void retranslateRequested();
 
 public slots:
-    void setCurrentOutputOCR(const QString &translatorName, const QString &original, const QString &result);
-    void clearOverlayText(const QString &translatorName);
     void showHistory();
 
 protected:
@@ -82,6 +84,7 @@ private:
     QSpinBox *m_marginBottom;
     QSpinBox *m_marginLeft;
     QSpinBox *m_marginRight;
+    QCheckBox* m_showSource;
     QCheckBox *m_showOriginalText;
     QCheckBox* m_showTranslatorName;
     QPlainTextEdit *m_historyTextEdit;
@@ -102,8 +105,18 @@ private:
     void saveConfig();
 
     QList<QString> m_translationHistory;
-    QMap<QString, QString> m_translatorsResults;
-    QMap<QString, QString> m_originalTexts;
+
+    struct TranslationEntry {
+        QString source;
+        QString translatorName;
+        QString original;
+        QString result;
+    };
+
+    QList<TranslationEntry> m_translationEntries;
+
+    bool m_hasInfoMessage = false;
+    QString m_currentInfoMessage;
 };
 
 #endif // TEXTOUTPUTWINDOW_H

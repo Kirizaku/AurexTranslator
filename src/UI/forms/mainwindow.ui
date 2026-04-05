@@ -979,36 +979,37 @@ font-weight: 700;
 }</string>
            </property>
            <property name="title">
-            <string>General</string>
+            <string>OCR Engine</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="1">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="textProcessingOCREngineToggled">
+              <property name="styleSheet">
+               <string notr="true">QCheckBox {
+font-weight: 700;
+}</string>
+              </property>
+              <property name="text">
+               <string>Enable OCR</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
              <layout class="QHBoxLayout" name="horizontalLayout_6">
               <item>
-               <widget class="QRadioButton" name="textProcessingOCREngineTesseractRadio">
-                <property name="text">
-                 <string notr="true">Tesseract</string>
-                </property>
-                <property name="checked">
+               <widget class="QRadioButton" name="textProcessingOCREngineOllamaVisionRadio">
+                <property name="enabled">
                  <bool>true</bool>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="textProcessingOCREngineTesseractSettingsButton">
-                <property name="maximumSize">
+                <property name="minimumSize">
                  <size>
-                  <width>30</width>
-                  <height>16777215</height>
+                  <width>150</width>
+                  <height>0</height>
                  </size>
                 </property>
-                <property name="text">
-                 <string notr="true">...</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QRadioButton" name="textProcessingOCREngineOllamaVisionRadio">
                 <property name="text">
                  <string notr="true">Ollama Vision</string>
                 </property>
@@ -1042,18 +1043,54 @@ font-weight: 700;
               </item>
              </layout>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>OCR Engine</string>
-              </property>
-             </widget>
+            <item row="2" column="0" colspan="2">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <widget class="QRadioButton" name="textProcessingOCREngineTesseractRadio">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string notr="true">Tesseract</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="textProcessingOCREngineTesseractSettingsButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string notr="true">...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_13">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -1069,17 +1106,17 @@ font-weight: 700;
             <string>String replacement</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="1" column="0">
-             <widget class="QPushButton" name="textProcessingAddRowButton">
-              <property name="text">
-               <string>Add</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QPushButton" name="textProcessingRemoveRowButton">
               <property name="text">
                <string>Remove</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="textProcessingAddRowButton">
+              <property name="text">
+               <string>Add</string>
               </property>
              </widget>
             </item>
@@ -1121,6 +1158,11 @@ font-weight: 700;
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
           <widget class="QGroupBox" name="groupBox_4">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {
+font-weight: 700;
+}</string>
+           </property>
            <property name="title">
             <string>General</string>
            </property>

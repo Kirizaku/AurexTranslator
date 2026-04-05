@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -127,7 +127,7 @@ void TesseractOcr::run()
 
             if (cache_output != output) {
                 cache_output = output;
-                emit currentOutputOCR(output);
+                emit currentOutputOCR("Tesseract", output.trimmed());
             }
         }
     }

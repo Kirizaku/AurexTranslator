@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
+    <width>534</width>
     <height>180</height>
    </rect>
   </property>
@@ -78,9 +78,6 @@ QPushButton:flat:hover {
 QPushButton:flat:pressed {
     background-color: #222;
 }</string>
-        </property>
-        <property name="text">
-         <string/>
         </property>
         <property name="icon">
          <iconset resource="../../../resources.qrc">
@@ -161,6 +158,9 @@ QPushButton:flat:pressed {
       </item>
       <item>
        <widget class="QPushButton" name="historyButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
         <property name="toolTip">
          <string>Show translation history</string>
         </property>

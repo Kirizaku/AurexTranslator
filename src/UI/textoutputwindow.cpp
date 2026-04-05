@@ -1,5 +1,5 @@
 /******************************************************************************
-    Copyright (C) 2025 by Daniil Nabiulin
+    Copyright (C) 2025-2026 by Daniil Nabiulin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,12 +65,30 @@ TextOutputWindow::~TextOutputWindow()
     delete ui;
 }
 
-void TextOutputWindow::setCurrentOutputOCR(const QString &translatorName, const QString &original, const QString &result)
+void TextOutputWindow::setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result)
 {
-    m_translatorsResults[translatorName] = result;
-    m_originalTexts[translatorName] = original;
+    TranslationEntry entry;
+    entry.source = source;
+    entry.translatorName = translatorName;
+    entry.original = original;
+    entry.result = result;
+
+    bool updated = false;
+    for (auto &existing : m_translationEntries) {
+        if (existing.translatorName == translatorName && existing.source == source) {
+            existing = entry;
+            updated = true;
+            break;
+        }
+    }
+
+    if (!updated) {
+        m_translationEntries.append(entry);
+    }
+
     int scrollValue = m_historyTextEdit->verticalScrollBar()->value();
-    QString historyItem = QString(tr("Translator: %1\nOriginal:\n %2\nResult:\n %3"))
+    QString historyItem = QString(tr("Source: %1\nTranslator: %2\nOriginal:\n %3\nResult:\n %4"))
+                              .arg(source)
                               .arg(translatorName)
                               .arg(original)
                               .arg(result);
@@ -78,7 +96,7 @@ void TextOutputWindow::setCurrentOutputOCR(const QString &translatorName, const 
 
     QString historyText;
     for (const auto &item : m_translationHistory) {
-        historyText += item + "\n";
+        historyText += item + "\n\n";
     }
     m_historyTextEdit->setPlainText(historyText);
     m_historyTextEdit->verticalScrollBar()->setValue(scrollValue);
@@ -86,13 +104,22 @@ void TextOutputWindow::setCurrentOutputOCR(const QString &translatorName, const 
     updateText();
 }
 
-void TextOutputWindow::clearOverlayText(const QString &translatorName)
+void TextOutputWindow::clearResultsBySource(const QString &source)
 {
-    if (m_translatorsResults.contains(translatorName)) {
-        m_translatorsResults.remove(translatorName);
+    for (int i = m_translationEntries.size() - 1; i >= 0; --i) {
+        if (m_translationEntries[i].source == source) {
+            m_translationEntries.removeAt(i);
+        }
     }
-    if (m_originalTexts.contains(translatorName)) {
-        m_originalTexts.remove(translatorName);
+    updateText();
+}
+
+void TextOutputWindow::clearResultsByTranslator(const QString &translatorName)
+{
+    for (int i = m_translationEntries.size() - 1; i >= 0; --i) {
+        if (m_translationEntries[i].translatorName == translatorName) {
+            m_translationEntries.removeAt(i);
+        }
     }
     updateText();
 }
@@ -101,7 +128,6 @@ void TextOutputWindow::showHistory()
 {
     m_historyTextEdit->show();
 }
-
 
 bool TextOutputWindow::event(QEvent* event)
 {
@@ -209,12 +235,12 @@ void TextOutputWindow::closeEvent(QCloseEvent* event)
 
 void TextOutputWindow::on_selectionZoneButton_clicked()
 {
-    emit on_selectNewRegion();
+    emit selectNewRegionRequested();
 }
 
 void TextOutputWindow::on_createIgnoreZoneButton_clicked()
 {
-    emit on_selectNewInnerRegion();
+    emit selectNewInnerRegionRequested();
 }
 
 void TextOutputWindow::on_copyButton_clicked()
@@ -224,7 +250,7 @@ void TextOutputWindow::on_copyButton_clicked()
 
 void TextOutputWindow::on_retranslateButton_clicked()
 {
-    emit on_retranslate();
+    emit retranslateRequested();
 }
 
 void TextOutputWindow::on_settingsButton_clicked()
@@ -249,23 +275,36 @@ void TextOutputWindow::updateMargin()
 
 void TextOutputWindow::updateText()
 {
-    if (!m_translatorsResults.isEmpty())
-    {
-        QString text;
-        for (auto it = m_translatorsResults.begin(); it != m_translatorsResults.end(); ++it) {
-            if (m_showTranslatorName->isChecked()) {
-                text += it.key() + "\n";
-            }
-            if (m_showOriginalText->isChecked()) {
-                text += m_originalTexts[it.key()] + "\n";
-            }
-            text += it.value() + "\n";
-        }
-        ui->label->setText(text);
-    } else {
-        ui->label->clear();
-        ui->label->setText(m_initText);
+    QStringList allTexts;
+
+    if (m_hasInfoMessage && !m_currentInfoMessage.isEmpty()) {
+        allTexts.append(m_currentInfoMessage);
     }
+
+    for (const auto &entry : m_translationEntries) {
+        if (entry.result.isEmpty()) continue;
+
+        QStringList parts;
+
+        if (m_showSource && m_showSource->isChecked() && !entry.source.isEmpty()) {
+            parts.append(QString("[%1]").arg(entry.source));
+        }
+        if (m_showTranslatorName && m_showTranslatorName->isChecked()) {
+            parts.append(QString("[%1]").arg(entry.translatorName));
+        }
+
+        QString header = parts.join(" ");
+        if (!header.isEmpty()) header += "\n";
+
+        QString originalText;
+        if (m_showOriginalText && m_showOriginalText->isChecked() && !entry.original.isEmpty()) {
+            originalText = entry.original + "\n\n";
+        }
+
+        allTexts.append(header + originalText + entry.result);
+    }
+
+    ui->label->setText(allTexts.isEmpty() ? m_initText : allTexts.join("\n\n"));
 }
 
 void TextOutputWindow::updateCursorShape(const QPoint& pos)
@@ -323,6 +362,9 @@ void TextOutputWindow::createMenus()
     m_marginLeft = new QSpinBox;
     m_marginRight = new QSpinBox;
 
+    m_showSource = new QCheckBox();
+    m_showSource->setText(tr("Show/Hide source"));
+
     m_showOriginalText = new QCheckBox();
     m_showOriginalText->setText(tr("Show/Hide original text"));
 
@@ -340,6 +382,7 @@ void TextOutputWindow::createMenus()
     formLayout->addRow(tr("Margin bottom"), m_marginBottom);
     formLayout->addRow(tr("Margin left"), m_marginLeft);
     formLayout->addRow(tr("Margin right"), m_marginRight);
+    formLayout->addRow(m_showSource);
     formLayout->addRow(m_showOriginalText);
     formLayout->addRow(m_showTranslatorName);
 
@@ -386,6 +429,7 @@ void TextOutputWindow::createMenus()
         ui->content->setStyleSheet("#content { background-color: rgba(20, 20, 20, " + QString::number(value) + "); }");
     });
 
+    connect(m_showSource, &QCheckBox::stateChanged, this, &TextOutputWindow::updateText);
     connect(m_showOriginalText, &QCheckBox::stateChanged, this, &TextOutputWindow::updateText);
     connect(m_showTranslatorName, &QCheckBox::stateChanged, this, &TextOutputWindow::updateText);
 }
@@ -441,6 +485,7 @@ void TextOutputWindow::loadConfig()
     m_marginBottom->setValue(output_window["margin_bottom"].toInt());
     m_marginLeft->setValue(output_window["margin_left"].toInt());
     m_marginRight->setValue(output_window["margin_right"].toInt());
+    m_showSource->setChecked(output_window["is_show_source_name"].toBool());
     m_showOriginalText->setChecked(output_window["is_show_original_text"].toBool());
     m_showTranslatorName->setChecked(output_window["is_show_translator_name"].toBool());
 }
@@ -462,10 +507,10 @@ void TextOutputWindow::saveConfig()
     output_window["margin_bottom"] = m_marginBottom->value();
     output_window["margin_left"] = m_marginLeft->value();
     output_window["margin_right"] = m_marginRight->value();
+    output_window["is_show_source_name"] = m_showSource->isChecked();
     output_window["is_show_original_text"] = m_showOriginalText->isChecked();
     output_window["is_show_translator_name"] = m_showTranslatorName->isChecked();
 
     Config::setValue("output_window", output_window);
     Config::saveConfig("settings.json");
 }
-

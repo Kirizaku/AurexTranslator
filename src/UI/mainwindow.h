@@ -19,6 +19,7 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
+#include <QNetworkProxy>
 
 #ifdef __linux__
 #include <globalshortcuts_portal_interface.h>
@@ -55,20 +56,18 @@ public:
     ~MainWindow();
 
 signals:
-    void currentOverlayText(const QString &translatorName, const QString &original, const QString &result);
-    void clearOverlayText(const QString &translatorName);
-    void on_showHistoryText();
+    void currentTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
+    void clearResultsByTranslator(const QString &translatorName);
+    void showHistoryRequested();
     void screenCastFinished();
 
 private slots:
     void on_availableGeometryChanged();
-    void on_widgetChanged();
-    void on_translatorChanged();
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_portalShortcutActivated(const QString &shortcutId);
     void on_portalShortcutDeactivated();
 
-#ifdef __linux__
+#ifdef Q_OS_LINUX
     void on_generalBindShortcut_clicked();
 #endif
     void on_outputGeneralSelect_clicked();
@@ -77,6 +76,7 @@ private slots:
     void on_outputToggledScreencast_stateChanged(int arg1);
     void on_outputProcessedOtsu_stateChanged(int arg1);
     void on_translatorOnlineGoogleSettingsButton_clicked();
+    void on_textProcessingOCREngineToggled_stateChanged(int arg1);
     void on_textProcessingOCREngineTesseractSettingsButton_clicked();
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
@@ -85,9 +85,11 @@ private slots:
     void on_logsOpenDirectoryButton_clicked();
     void on_proxyEnabledCheckBox_stateChanged(int arg1);
 
+#ifdef Q_OS_LINUX
     // Pipewire
     void setCurrentRestoreToken(const QString &restoreToken);
     void setCurrentNodeId(const uint &nodeId);
+#endif
 
     // OpenCV
     void setCurrentOriginalFrame(const QImage &frame);
@@ -99,20 +101,39 @@ private slots:
     void stopScreenCapture();
 
     // Utility Actions
-    void setCurrentOutputOCR(const QString &output);
+    void setCurrentOutput(const QString &source, const QString &output);
     void openOllamaSettings();
     void ollamaVisionTimerTimeout();
-    void triggerManualOCR();
+    void retranslateText();
 
     // Output Window
-    void selectNewRegionRequest();
-    void selectNewInnerRegionRequest();
+    void selectNewRegion();
+    void selectNewInnerRegion();
+
 
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *m_manager;
     QScreen *m_screen;
     TextOutputWindow *m_outputWindow = nullptr;
+
+    void setupBaseUI();
+    void setupCoreConnections();
+    void loadApplicationConfig();
+    void initSubsystems();
+    void setupSettingsConnections();
+    void loadLogMessages();
+    void setupFinalUI();
+
+    QList<QObject*> m_changedWidgets;
+    bool m_generalChanged = false;
+    bool m_outputChanged = false;
+    bool m_textProcessingChanged = false;
+    bool m_translatorChanged = false;
+    bool m_proxyChanged = false;
+
+    bool widgetChanged(QWidget *widget);
+    void setPropertyChanged(const bool &value);
 
     QMenu* createMenu(const QString &title, void (MainWindow::*slot)());
     QMap<QLabel*, QMenu*> contextMenus;
@@ -163,6 +184,14 @@ private:
     QString m_googleTargetLang;
 
     // OCR Engine
+    enum OcrEngine {
+        Tesseract,
+        OllamaVision
+    };
+
+    bool m_ocrEnabled = true;
+    OcrEngine m_ocrEngine = OcrEngine::Tesseract;
+
     TesseractOcr *m_tesseractOcr = nullptr;
     TesseractSettingsDialog *m_tesseractSettingsDialog = nullptr;
     QString m_tesseractSelectedLang = "";
@@ -170,7 +199,6 @@ private:
     QStringList m_tesserractLangList;
     QString m_tesseractTessdataPath = "./tessdata";
     bool m_tesseractUseSystemTessdata = false;
-    void initTesseractOCR();
 
     enum ProcessingMode {
         Auto,
@@ -190,6 +218,9 @@ private:
     // Replace Text
     QString replaceText(QString output);
 
+    // Proxy
+    QNetworkProxy::ProxyType m_proxyType = QNetworkProxy::HttpProxy;
+
     // Config
     QString m_currentRestoreToken;
     bool m_isCaptureDesktop = true;
@@ -203,8 +234,23 @@ private:
 #ifdef __linux__
     QString m_initHotKeyMode = "x11";
 #endif
-    void loadLogMessages();
+
+    // Config
     void loadConfig();
+    void loadGeneralSettings(const QJsonObject& general);
+    void loadOutputSettings(const QJsonObject& output);
+    void loadTranslatorSettings(const QJsonObject& translator);
+    void loadTextProcessingSettings(const QJsonObject& textProcessing);
+    void loadProxySettings(const QJsonObject& proxy);
+    void loadScreencastSettings();
+
+    void loadOcrSettings();
+    void stopAllOcrEngines();
+    void stopTesseractEngine();
+    void stopOllamaVisionEngine();
+    void configureTesseractEngine();
+    void configureOllamaVisionEngine();
+
     void saveConfig();
 };
 #endif // MAINWINDOW_H
