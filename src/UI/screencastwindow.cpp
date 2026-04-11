@@ -146,6 +146,8 @@ void ScreenCastWindow::updateList()
     } else {
         updateWindowList();
     }
+    m_screenCapture->setIsProcessed(true);
+    m_screenCapture->wakeWaitCondition();
 }
 
 void ScreenCastWindow::updateDisplayList()
