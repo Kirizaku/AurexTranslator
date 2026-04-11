@@ -442,6 +442,7 @@ void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
             m_google->setSourceLang(m_googleSourceLang);
             m_google->setTargetLang(m_googleTargetLang);
 
+            m_translatorChanged = true;
             ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
         }
     });
@@ -1397,7 +1398,7 @@ void MainWindow::saveConfig()
         translator_online.insert("google", google);
         translator.insert("translator_online", translator_online);
 
-        QJsonObject translator_offline = Config::getValue("translator_offline").toJsonObject();
+        QJsonObject translator_offline = translator.value("translator_offline").toObject();
         QJsonObject ollama = translator_offline.value("ollama").toObject();
 
         if (widgetChanged(ui->translatorOfflineOllamaToggled))
@@ -1418,6 +1419,10 @@ void MainWindow::saveConfig()
     if (m_textProcessingChanged) {
         QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
 
+        // OCR
+        if (widgetChanged(ui->textProcessingOCREngineToggled))
+            textProcessing["is_ocr"] = ui->textProcessingOCREngineToggled->isChecked();
+
         // Tesseract
         QJsonObject tesseract = textProcessing.value("tesseract").toObject();
         if (widgetChanged(ui->textProcessingOCREngineTesseractRadio))
@@ -1437,9 +1442,6 @@ void MainWindow::saveConfig()
         ollama_vision["prompt"] = m_ollamaVisionPrompt;
         ollama_vision["mode"] = m_ollamaVisionMode;
         ollama_vision["delay"] = m_ollamaVisionAutoInterval;
-
-        if (widgetChanged(ui->textProcessingOCREngineToggled))
-            textProcessing["is_ocr"] = ui->textProcessingOCREngineToggled->isChecked();
 
         textProcessing.insert("tesseract", tesseract);
         textProcessing.insert("ollama_vision", ollama_vision);
