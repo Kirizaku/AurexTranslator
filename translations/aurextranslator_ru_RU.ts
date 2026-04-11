@@ -17,6 +17,14 @@
     </message>
 </context>
 <context>
+    <name>HookSettingsDialog</name>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="30"/>
+        <source>Game</source>
+        <translation>Игра</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="20"/>
@@ -25,9 +33,9 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="94"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="406"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1167"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1288"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
@@ -47,320 +55,365 @@
         <translation>Обработка текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="64"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="69"/>
         <source>Proxy</source>
         <translation>Прокси</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="69"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="74"/>
         <source>Logs</source>
         <translation>Логи</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="74"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1297"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1418"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="100"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="105"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="123"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="128"/>
         <source>Hide window on startup</source>
         <translation>Скрыть окно при запуске</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="157"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="162"/>
         <source>Global shortcuts</source>
         <translation>Глобальные горячие клавиши</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="166"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1220"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="255"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="260"/>
         <source>[Portal] Open hotkey binding</source>
         <translation>[Portal] Открыть привязку горячих клавиш</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="223"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="228"/>
         <source>Show/Hide translation history</source>
         <translation>Показать/Скрыть историю перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="275"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="280"/>
         <source>Manual Translate</source>
         <translation>Ручной перевод</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="321"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="326"/>
         <source>Screencast</source>
         <translation>Трансляция экрана</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="333"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="338"/>
         <source>Original screencast</source>
         <translation>Оригинальная трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="364"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="369"/>
         <source>Processed screencast</source>
         <translation>Обработанная трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="437"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="442"/>
         <source>Open selector</source>
         <translation>Открыть переключатель</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="444"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="449"/>
         <source>Show original screencast</source>
         <translation>Отображать оригинальную трансляцию</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="454"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="459"/>
         <source>Show processed screencast</source>
         <translation>Отображать обработанную трансляцию</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="464"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="469"/>
         <source>Frame rate</source>
         <translation>Частота кадров</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="521"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="526"/>
         <source>Enable blur</source>
         <translation>Включить размытие</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="514"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="519"/>
         <source>Threshold method</source>
         <translation>Метод порогового значения</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="530"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="535"/>
         <source>Simple</source>
         <translation>Простой</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="540"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="545"/>
         <source>Adaptive</source>
         <translation>Адаптивный</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="718"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="723"/>
         <source>Blur settings</source>
         <translation>Настройки размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="798"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="803"/>
         <source>Normalize result</source>
         <translation>Нормализовать результат</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="576"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="581"/>
         <source>Simple threshold settings</source>
         <translation>Настройки простого порога</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="562"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="567"/>
         <source>Disable screencast</source>
         <translation>Отключить трансляцию экрана</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="585"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="590"/>
         <source>Simple threshold type</source>
         <translation>Тип простого порога</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="621"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="626"/>
         <source>Threshold value</source>
         <translation>Пороговое значение</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="647"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="652"/>
         <source>Use Otsu&apos;s binarization</source>
         <translation>Использовать бинаризацию Оцу</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="671"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="676"/>
         <source>Adaptive threshold settings</source>
         <translation>Настройки адаптивного порога</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="680"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="685"/>
         <source>Adaptive method</source>
         <translation>Адаптивный метод</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="785"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="790"/>
         <source>Subtract blurred</source>
         <translation>Вычесть размытие</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="846"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="851"/>
         <source>Online</source>
         <translation>Онлайн</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="914"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="919"/>
         <source>Offline</source>
         <translation>Автономный</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="982"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="987"/>
         <source>OCR Engine</source>
         <translation>OCR движок</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="993"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="998"/>
         <source>Enable OCR</source>
         <translation>Включить OCR</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1106"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1176"/>
         <source>String replacement</source>
         <translation>Замена строки</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1112"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1317"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1265"/>
+        <source>Open plugins directory</source>
+        <translation>Открыть папку с плагинами</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1272"/>
+        <source>Reload</source>
+        <translation>Обновить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1438"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation>Свободный и открытый инструмент для перевода текста на экране</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="213"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="218"/>
         <source>Capture OCR region</source>
         <translation>Выделить область OCR</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="724"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="64"/>
+        <source>Plugins</source>
+        <translation>Плагины</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="729"/>
         <source>Blur method</source>
         <translation>Метод размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="750"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="755"/>
         <source>Blur intensity</source>
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1119"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1142"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1212"/>
         <source>Original content</source>
         <translation>Исходное содержание</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1147"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1217"/>
         <source>Replace with</source>
         <translation>Заменить на</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1173"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1242"/>
+        <source>Name</source>
+        <translation>Имя</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
+        <source>Description</source>
+        <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1247"/>
+        <source>Version</source>
+        <translation>Версия</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1252"/>
+        <source>Dependencies</source>
+        <translation>Зависимости</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1294"/>
         <source>Use proxy</source>
         <translation>Использовать прокси</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1190"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1311"/>
         <source>Port</source>
         <translation>Порт</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1200"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
         <source>User</source>
         <translation>Пользователь</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1210"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1268"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1389"/>
         <source>Copy all</source>
         <translation>Скопировать все</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1275"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1396"/>
         <source>Open logs directory</source>
         <translation>Показать файлы с логами</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1369"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1490"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="276"/>
+        <location filename="../src/UI/mainwindow.cpp" line="344"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="279"/>
+        <location filename="../src/UI/mainwindow.cpp" line="347"/>
         <source>Open Processed Screencast in New Window</source>
         <translatorcomment>Открыть обработанную трансляцию в новом окне</translatorcomment>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="340"/>
+        <location filename="../src/UI/mainwindow.cpp" line="409"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="345"/>
+        <location filename="../src/UI/mainwindow.cpp" line="414"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="461"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="461"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="806"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="806"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1324"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <source>[Hook] No game selected. Please choose a game in the settings</source>
+        <translation>[Hook] Не выбрана игра. Пожалуйста, выберите игру в настройках</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="191"/>
+        <source>[Hook] Failed to load plugin &apos;libat-injector</source>
+        <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="1515"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1325"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1516"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1327"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1518"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1328"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1519"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -598,57 +651,57 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
 <context>
     <name>TextOutputWindow</name>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="71"/>
+        <location filename="../src/UI/textoutputwindow.h" line="78"/>
         <source>Welcome!</source>
         <translation>Добро пожаловать!</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="44"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
         <source>Translation history</source>
         <translation>История перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="349"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="385"/>
         <source>Left</source>
         <translation>По левому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="350"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="386"/>
         <source>Right</source>
         <translation>По правому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="351"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="387"/>
         <source>Center</source>
         <translation>По центру</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="369"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
         <source>Show/Hide original text</source>
         <translation>Показать/Скрыть исходный текст</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="372"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
         <source>Show/Hide translator name</source>
         <translation>Показать/Скрыть имя переводчика</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="376"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
         <source>Transparency</source>
         <translation>Прозрачность</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="378"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
         <source>Font size</source>
         <translation>Размер шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="377"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="90"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="96"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -663,37 +716,37 @@ Result:
  %4</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="366"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
         <source>Show/Hide source</source>
         <translation>Показать/Скрыть источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="379"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="380"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
         <source>Text alignment</source>
         <translation>Выравнивание текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="381"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
         <source>Margin top</source>
         <translation>Верхний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="382"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
         <source>Margin bottom</source>
         <translation>Нижний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="383"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
         <source>Margin left</source>
         <translation>Левый отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="384"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
         <source>Margin right</source>
         <translation>Правый отступ</translation>
     </message>
@@ -719,16 +772,28 @@ Result:
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="199"/>
+        <source>Clear all translated texts</source>
+        <translation>Очистить все переведенные тексты</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="233"/>
         <source>Retranslate</source>
         <translation>Ручной перевод</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="233"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="267"/>
+        <source>Manual injection
+Use if automatic injection failed</source>
+        <translation>Ручная инъекция
+Используйте, если автоматическая инъекция не удалась</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="302"/>
         <source>Open settings</source>
         <translation>Открыть настройки</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="280"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="349"/>
         <source>Exit</source>
         <translation>Закрыть</translation>
     </message>

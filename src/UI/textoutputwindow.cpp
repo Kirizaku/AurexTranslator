@@ -40,6 +40,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->toolBar->hide();
+    ui->injectHookButton->setVisible(false);
 
     m_historyTextEdit->setWindowTitle(tr("Translation history"));
     m_historyTextEdit->setReadOnly(true);
@@ -63,6 +64,11 @@ TextOutputWindow::~TextOutputWindow()
 {
     saveConfig();
     delete ui;
+}
+
+void TextOutputWindow::sethookState(bool isActive)
+{
+    ui->injectHookButton->setVisible(isActive);
 }
 
 void TextOutputWindow::setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result)
@@ -104,6 +110,13 @@ void TextOutputWindow::setTranslationResult(const QString &source, const QString
     updateText();
 }
 
+void TextOutputWindow::clearInfoMessage()
+{
+    m_hasInfoMessage = false;
+    m_currentInfoMessage.clear();
+    updateText();
+}
+
 void TextOutputWindow::clearResultsBySource(const QString &source)
 {
     for (int i = m_translationEntries.size() - 1; i >= 0; --i) {
@@ -121,6 +134,19 @@ void TextOutputWindow::clearResultsByTranslator(const QString &translatorName)
             m_translationEntries.removeAt(i);
         }
     }
+    updateText();
+}
+
+void TextOutputWindow::clearAllResultsByTranslator()
+{
+    m_translationEntries.clear();
+    updateText();
+}
+
+void TextOutputWindow::setInfoMessage(const QString &message)
+{
+    m_hasInfoMessage = true;
+    m_currentInfoMessage = message;
     updateText();
 }
 
@@ -248,9 +274,19 @@ void TextOutputWindow::on_copyButton_clicked()
     QApplication::clipboard()->setText(ui->label->text());
 }
 
+void TextOutputWindow::on_clearTranslationsButton_clicked()
+{
+    clearAllResultsByTranslator();
+}
+
 void TextOutputWindow::on_retranslateButton_clicked()
 {
     emit retranslateRequested();
+}
+
+void TextOutputWindow::on_injectHookButton_clicked()
+{
+    emit manualInjectHookRequested();
 }
 
 void TextOutputWindow::on_settingsButton_clicked()

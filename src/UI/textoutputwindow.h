@@ -38,16 +38,21 @@ public:
     explicit TextOutputWindow(QWidget *parent = nullptr);
     ~TextOutputWindow();
 
+    void sethookState(bool isActive);
     void setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
+    void clearInfoMessage();
     void clearResultsBySource(const QString &source);
     void clearResultsByTranslator(const QString &translatorName);
+    void clearAllResultsByTranslator();
 
 signals:
     void selectNewRegionRequested();
     void selectNewInnerRegionRequested();
     void retranslateRequested();
+    void manualInjectHookRequested();
 
 public slots:
+    void setInfoMessage(const QString &message);
     void showHistory();
 
 protected:
@@ -60,7 +65,9 @@ private slots:
     void on_selectionZoneButton_clicked();
     void on_createIgnoreZoneButton_clicked();
     void on_copyButton_clicked();
+    void on_clearTranslationsButton_clicked();
     void on_retranslateButton_clicked();
+    void on_injectHookButton_clicked();
     void on_settingsButton_clicked();
     void on_exitButton_clicked();
     void updateMargin();

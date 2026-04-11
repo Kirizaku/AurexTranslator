@@ -42,8 +42,10 @@ MainWindow::MainWindow(QWidget *parent)
     , m_opencv(new OpenCV(this))
     , m_ollama(new Ollama(m_manager, this))
     , m_google(new Google(m_manager, this))
+    , m_pluginManager(new PluginManager(this))
 {
     setupBaseUI();
+    initPlugins();
     setupCoreConnections();
     loadApplicationConfig();
     initSubsystems();
@@ -78,6 +80,10 @@ MainWindow::~MainWindow()
     if (m_overlayWindow) { delete m_overlayWindow; }
     if (m_screenCastWindow) { delete m_screenCastWindow; }
     if (m_outputWindow) { delete m_outputWindow; }
+
+    if (m_hookPlugin) {
+        m_hookPlugin->execute("stop", { QString(), QString() });
+    }
 
     Logger::instance()->destroyInstance();
     Config::instance()->destroyInstance();
@@ -130,6 +136,7 @@ void MainWindow::setupBaseUI()
         ui->textProcessingOCREngineToggled,
         ui->textProcessingOCREngineTesseractRadio,
         ui->textProcessingOCREngineOllamaVisionRadio,
+        ui->textProcessingHookCheckBox,
         ui->textProcessingTableWidget,
         ui->proxyEnabledCheckBox,
         ui->proxyAddressEdit,
@@ -139,6 +146,65 @@ void MainWindow::setupBaseUI()
         ui->proxyTypeHttp,
         ui->proxyTypeSocks
     };
+}
+
+void MainWindow::initPlugins()
+{
+    m_registry = m_pluginManager->scanPlugins();
+    m_pluginManager->loadPlugins();
+
+    ui->groupBox_hook->setVisible(false);
+
+    QMap<QString, QStringList> dependencyErrors = m_pluginManager->validateDependencies(m_registry);
+
+    ui->pluginsTableWidget->setRowCount(m_registry.size());
+    int row = 0;
+    for (const auto &p : m_registry) {     
+        bool hasErrors = dependencyErrors.contains(p.name);
+        QStringList missingList = hasErrors ? dependencyErrors[p.name] : QStringList();
+
+        QString depsText = p.dependencies.join(", ");
+
+        QTableWidgetItem *depsItem = new QTableWidgetItem(depsText);
+        if (hasErrors) depsItem->setForeground(QBrush(Qt::red));
+
+        ui->pluginsTableWidget->setItem(row, 0, new QTableWidgetItem(p.name));
+        ui->pluginsTableWidget->setItem(row, 1, new QTableWidgetItem(p.version));
+        ui->pluginsTableWidget->setItem(row, 2, depsItem);
+        ui->pluginsTableWidget->setItem(row, 3, new QTableWidgetItem(p.description));
+        ++row;
+
+        if (p.type == "hook" && p.targetTitle != "main-program") {
+            m_hookPluginList.insert(p.name, p.targetTitle);
+        }
+
+        if (p.name == "libat-injector" && !hasErrors) {
+            ui->textProcessingHookCheckBox->setEnabled(true);
+            ui->groupBox_hook->setVisible(true);
+
+            if (!m_hookPlugin) {
+                QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
+                m_hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
+
+                if (!m_hookPlugin) {
+                    Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
+                    m_outputWindow->setInfoMessage(tr("[Hook] Failed to load plugin 'libat-injector"));
+                    ui->textProcessingHookCheckBox->setChecked(false);
+                    saveConfig();
+                    return;
+                }
+
+                connect(m_hookPlugin, &PluginInterface::pluginMessage, m_outputWindow, &TextOutputWindow::setInfoMessage, Qt::UniqueConnection);
+                connect(m_hookPlugin, &PluginInterface::currentOutput, this, &MainWindow::setCurrentOutput, Qt::UniqueConnection);
+            }
+        }
+
+        if (hasErrors) {
+            Log(Logger::Level::Warning, QString("[plugin-loader] Plugin '%1' is invalid. Missing dependencies: %2")
+                                        .arg(p.name, missingList.join(", ")));
+            ui->textProcessingHookCheckBox->setEnabled(false);
+        }
+    }
 }
 
 void MainWindow::setupCoreConnections()
@@ -188,6 +254,7 @@ void MainWindow::initSubsystems()
     connect(m_outputWindow, &TextOutputWindow::retranslateRequested, this, &MainWindow::retranslateText);
     connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
     connect(m_outputWindow, &TextOutputWindow::selectNewInnerRegionRequested, this, &MainWindow::selectNewInnerRegion);
+    connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
 
     // Ollama Settings
     m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ollama, m_ollamaCurrentModel, m_ollamaModels, this);
@@ -243,6 +310,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->textProcessingOCREngineToggled, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineToggled));
     connect(ui->textProcessingOCREngineTesseractRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineTesseractRadio));
     connect(ui->textProcessingOCREngineOllamaVisionRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineOllamaVisionRadio));
+    connect(ui->textProcessingHookCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingHookCheckBox));
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
 
     // Proxy
@@ -296,6 +364,7 @@ void MainWindow::setPropertyChanged(const bool &value)
     m_outputChanged = value;
     m_textProcessingChanged = value;
     m_translatorChanged = value;
+    m_pluginChanged = value;
     m_proxyChanged = value;
 
     for (QObject *w : m_changedWidgets) {
@@ -494,6 +563,25 @@ void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
     m_tesseractSettingsDialog->show();
 }
 
+void MainWindow::on_textProcessingHookSettingsButton_clicked()
+{
+    m_hookSettingsDialog = new HookSettingsDialog(m_hookPluginList, m_hookCurrentPlugin, this);
+    m_hookSettingsDialog->setWindowModality(Qt::WindowModal);
+    m_hookSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(m_hookSettingsDialog, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted) {
+            m_hookCurrentPlugin = m_hookSettingsDialog->getCurrentNamePlugin();
+
+            m_textProcessingChanged = true;
+            ui->textProcessingHookCheckBox->setProperty("changed", true);
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        }
+    });
+
+    m_hookSettingsDialog->show();
+}
+
 void MainWindow::on_textProcessingAddRowButton_clicked()
 {
     int row = ui->textProcessingTableWidget->rowCount();
@@ -506,6 +594,32 @@ void MainWindow::on_textProcessingRemoveRowButton_clicked()
 
     if (row >= 0) {
         ui->textProcessingTableWidget->removeRow(row);
+    }
+}
+
+void MainWindow::on_pluginsReloadButton_clicked()
+{
+    if (m_pluginManager) {
+        if (m_hookPlugin) {
+            stopCurrentHookPlugin();
+            m_hookPlugin = nullptr;
+        }
+        m_pluginManager->unloadPlugins();
+        m_hookPluginList.clear();
+        ui->textProcessingHookCheckBox->setProperty("changed", true);
+
+        initPlugins();
+        loadHookPluginSettings();
+    }
+}
+
+void MainWindow::on_pluginsOpenDirectoryButton_clicked()
+{
+    QDir dir(Config::getConfigDirPath() + "plugins/");
+    if (dir.exists()) {
+        QString path = dir.path();
+        QUrl url = QUrl::fromLocalFile(path);
+        QDesktopServices::openUrl(url);
     }
 }
 
@@ -681,6 +795,12 @@ void MainWindow::setCurrentOutput(const QString &source, const QString &output)
             });
         }
     }
+
+    // Hook
+    if (source == "Hook") {
+        m_outputWindow->clearInfoMessage();
+        m_currentHookText = output;
+    }
 }
 
 void MainWindow::openOllamaSettings()
@@ -743,6 +863,23 @@ void MainWindow::retranslateText()
             default:
                 break;
         }
+    }
+
+    if (ui->textProcessingHookCheckBox->isChecked() && !m_currentHookText.isEmpty()) {
+        setCurrentOutput("Hook", m_currentHookText);
+    }
+}
+
+void MainWindow::manualInjectHook()
+{
+    if (!m_currentRunningPlugin.isEmpty())
+    {
+        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                                     [this](const PluginManager::PluginInfo& info) {
+                                         return info.name == m_currentRunningPlugin;
+                                     });
+        stopCurrentHookPlugin();
+        startHookPlugin(*pluginIt);
     }
 }
 
@@ -914,6 +1051,7 @@ void MainWindow::loadConfig()
 
     loadScreencastSettings();
     loadOcrSettings();
+    loadHookPluginSettings();
 
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
     setPropertyChanged(false);
@@ -1079,6 +1217,13 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         m_ollamaVisionMode = ollama_vision["mode"].toInt(Manual);
         m_ollamaVisionAutoInterval = ollama_vision["delay"].toInt(10);
 
+        // HOOK
+        QJsonObject hook = textProcessing["hook"].toObject();
+        if (widgetChanged(ui->textProcessingHookCheckBox))
+            ui->textProcessingHookCheckBox->setChecked(hook["is_hook"].toBool());
+
+        m_hookCurrentPlugin = hook["current_plugin"].toString();
+
         // Text Replacement
         QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
         if (widgetChanged(ui->textProcessingTableWidget)) {
@@ -1192,8 +1337,8 @@ void MainWindow::loadOcrSettings()
     if (!tesseractChanged && !ollamaChanged) return;
 
     m_ocrEngine = ui->textProcessingOCREngineTesseractRadio->isChecked()
-    ? OcrEngine::Tesseract
-    : OcrEngine::OllamaVision;
+                      ? OcrEngine::Tesseract
+                      : OcrEngine::OllamaVision;
 
     if (!isEnabled) return;
 
@@ -1282,6 +1427,52 @@ void MainWindow::configureOllamaVisionEngine()
             delete m_ollamaVisionTimer;
             m_ollamaVisionTimer = nullptr;
         }
+    }
+}
+
+void MainWindow::stopCurrentHookPlugin()
+{
+    m_hookPlugin->execute("stop", { QString(), QString() });
+    m_outputWindow->clearResultsBySource("Hook");
+    m_outputWindow->sethookState(false);
+    m_outputWindow->clearInfoMessage();
+    m_currentRunningPlugin.clear();
+}
+
+void MainWindow::startHookPlugin(const PluginManager::PluginInfo& info)
+{
+    m_hookPlugin->execute("start", { info.targetExecutable, info.filePath });
+    m_outputWindow->sethookState(true);
+    m_currentRunningPlugin = info.name;
+    m_outputWindow->clearInfoMessage();
+}
+
+void MainWindow::loadHookPluginSettings()
+{
+    if (!m_hookPlugin || !widgetChanged(ui->textProcessingHookCheckBox)) {
+        return;
+    }
+
+    if (ui->textProcessingHookCheckBox->isChecked() &&
+        ui->textProcessingHookCheckBox->isEnabled()) {
+
+        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                                     [this](const PluginManager::PluginInfo& info) {
+                                         return info.name == m_hookCurrentPlugin;
+                                     });
+
+        if (pluginIt == m_registry.cend()) {
+            Log(Logger::Level::Warning, "[Hook] No game selected. Please choose a game in the settings");
+            m_outputWindow->setInfoMessage(tr("[Hook] No game selected. Please choose a game in the settings"));
+            return;
+        }
+
+        if (!m_currentRunningPlugin.isEmpty()) {
+            stopCurrentHookPlugin();
+        }
+        startHookPlugin(*pluginIt);
+    } else {
+        stopCurrentHookPlugin();
     }
 }
 
@@ -1419,7 +1610,6 @@ void MainWindow::saveConfig()
     if (m_textProcessingChanged) {
         QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
 
-        // OCR
         if (widgetChanged(ui->textProcessingOCREngineToggled))
             textProcessing["is_ocr"] = ui->textProcessingOCREngineToggled->isChecked();
 
@@ -1443,8 +1633,16 @@ void MainWindow::saveConfig()
         ollama_vision["mode"] = m_ollamaVisionMode;
         ollama_vision["delay"] = m_ollamaVisionAutoInterval;
 
+        // Hook
+        QJsonObject hook = textProcessing.value("hook").toObject();
+        if (widgetChanged(ui->textProcessingHookCheckBox))
+            hook["is_hook"] = ui->textProcessingHookCheckBox->isChecked();
+
+        hook["current_plugin"] = m_hookCurrentPlugin;
+
         textProcessing.insert("tesseract", tesseract);
         textProcessing.insert("ollama_vision", ollama_vision);
+        textProcessing.insert("hook", hook);
 
         if (widgetChanged(ui->textProcessingTableWidget)) {
             QJsonArray jsonArray;

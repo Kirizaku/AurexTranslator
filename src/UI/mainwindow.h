@@ -29,6 +29,7 @@
 #include "src/screencasts/linux-capture-x11/screencast-x11.h"
 #endif
 
+#include "src/utils/pluginloader.h"
 #include "src/utils/opencv.h"
 #include "src/utils/tesseractocr.h"
 #include "src/utils/ollama.h"
@@ -36,6 +37,7 @@
 #include "src/translations/google.h"
 #include "tesseractsettingsdialog.h"
 #include "ollamasettingsdialog.h"
+#include "hooksettingsdialog.h"
 #include "textoutputwindow.h"
 #include "screencastwindow.h"
 #include "overlaywindow.h"
@@ -78,8 +80,11 @@ private slots:
     void on_translatorOnlineGoogleSettingsButton_clicked();
     void on_textProcessingOCREngineToggled_stateChanged(int arg1);
     void on_textProcessingOCREngineTesseractSettingsButton_clicked();
+    void on_textProcessingHookSettingsButton_clicked();
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
+    void on_pluginsReloadButton_clicked();
+    void on_pluginsOpenDirectoryButton_clicked();
     void on_logsNewLogMessage(const QString& message);
     void on_logsCopyAllButton_clicked();
     void on_logsOpenDirectoryButton_clicked();
@@ -105,6 +110,7 @@ private slots:
     void openOllamaSettings();
     void ollamaVisionTimerTimeout();
     void retranslateText();
+    void manualInjectHook();
 
     // Output Window
     void selectNewRegion();
@@ -116,8 +122,10 @@ private:
     QNetworkAccessManager *m_manager;
     QScreen *m_screen;
     TextOutputWindow *m_outputWindow = nullptr;
+    PluginManager *m_pluginManager;
 
     void setupBaseUI();
+    void initPlugins();
     void setupCoreConnections();
     void loadApplicationConfig();
     void initSubsystems();
@@ -130,6 +138,7 @@ private:
     bool m_outputChanged = false;
     bool m_textProcessingChanged = false;
     bool m_translatorChanged = false;
+    bool m_pluginChanged = false;
     bool m_proxyChanged = false;
 
     bool widgetChanged(QWidget *widget);
@@ -215,6 +224,15 @@ private:
     bool m_waitForOllamaResponse = true;
     bool m_ollamaVisionRequestInProgress = false;
 
+    // Hook
+    HookSettingsDialog *m_hookSettingsDialog = nullptr;
+    QMap<QString, QString> m_hookPluginList;
+    QString m_hookCurrentPlugin;
+    QString m_currentRunningPlugin;
+    PluginInterface *m_hookPlugin = nullptr;
+    QList<PluginManager::PluginInfo> m_registry;
+    QString m_currentHookText;
+
     // Replace Text
     QString replaceText(QString output);
 
@@ -250,6 +268,9 @@ private:
     void stopOllamaVisionEngine();
     void configureTesseractEngine();
     void configureOllamaVisionEngine();
+    void stopCurrentHookPlugin();
+    void startHookPlugin(const PluginManager::PluginInfo& info);
+    void loadHookPluginSettings();
 
     void saveConfig();
 };

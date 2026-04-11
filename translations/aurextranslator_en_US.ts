@@ -15,6 +15,14 @@
     </message>
 </context>
 <context>
+    <name>HookSettingsDialog</name>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="30"/>
+        <source>Game</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="20"/>
@@ -23,9 +31,9 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="94"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="406"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1167"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1288"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
@@ -46,319 +54,364 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="64"/>
-        <source>Proxy</source>
+        <source>Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="69"/>
-        <source>Logs</source>
+        <source>Proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="74"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1297"/>
+        <source>Logs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1418"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="100"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="105"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="123"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="128"/>
         <source>Hide window on startup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="157"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="162"/>
         <source>Global shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="166"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1220"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="213"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="218"/>
         <source>Capture OCR region</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="223"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="228"/>
         <source>Show/Hide translation history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="255"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="260"/>
         <source>[Portal] Open hotkey binding</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="275"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="280"/>
         <source>Manual Translate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="321"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="326"/>
         <source>Screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="333"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="338"/>
         <source>Original screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="364"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="369"/>
         <source>Processed screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="437"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="442"/>
         <source>Open selector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="444"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="449"/>
         <source>Show original screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="454"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="459"/>
         <source>Show processed screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="464"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="469"/>
         <source>Frame rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="514"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="519"/>
         <source>Threshold method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="521"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="526"/>
         <source>Enable blur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="530"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="535"/>
         <source>Simple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="540"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="545"/>
         <source>Adaptive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="562"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="567"/>
         <source>Disable screencast</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="576"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="581"/>
         <source>Simple threshold settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="585"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="590"/>
         <source>Simple threshold type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="621"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="626"/>
         <source>Threshold value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="647"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="652"/>
         <source>Use Otsu&apos;s binarization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="671"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="676"/>
         <source>Adaptive threshold settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="680"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="685"/>
         <source>Adaptive method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="718"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="723"/>
         <source>Blur settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="724"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="729"/>
         <source>Blur method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="750"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="755"/>
         <source>Blur intensity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="785"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="790"/>
         <source>Subtract blurred</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="798"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="803"/>
         <source>Normalize result</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="846"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="851"/>
         <source>Online</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="914"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="919"/>
         <source>Offline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="982"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="987"/>
         <source>OCR Engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="993"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="998"/>
         <source>Enable OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1106"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1176"/>
         <source>String replacement</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1119"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1112"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1142"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1212"/>
         <source>Original content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1147"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1217"/>
         <source>Replace with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1173"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1242"/>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1247"/>
+        <source>Version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1252"/>
+        <source>Dependencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1265"/>
+        <source>Open plugins directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1272"/>
+        <source>Reload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1294"/>
         <source>Use proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1190"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1311"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1200"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1210"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1268"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1389"/>
         <source>Copy all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1275"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1396"/>
         <source>Open logs directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1317"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1438"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1369"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1490"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="276"/>
+        <location filename="../src/UI/mainwindow.cpp" line="344"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="279"/>
+        <location filename="../src/UI/mainwindow.cpp" line="347"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="340"/>
+        <location filename="../src/UI/mainwindow.cpp" line="409"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="345"/>
+        <location filename="../src/UI/mainwindow.cpp" line="414"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="461"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="461"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="806"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="806"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1324"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <source>[Hook] No game selected. Please choose a game in the settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="1515"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1325"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1516"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1327"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1518"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1328"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1519"/>
         <source>Later</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="191"/>
+        <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -613,31 +666,42 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="199"/>
-        <source>Retranslate</source>
+        <source>Clear all translated texts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="233"/>
+        <source>Retranslate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="267"/>
+        <source>Manual injection
+Use if automatic injection failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="302"/>
         <source>Open settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="280"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="349"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="71"/>
+        <location filename="../src/UI/textoutputwindow.h" line="78"/>
         <source>Welcome!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="44"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
         <source>Translation history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="90"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="96"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -647,77 +711,77 @@ Result:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="349"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="385"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="350"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="386"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="351"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="387"/>
         <source>Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="366"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
         <source>Show/Hide source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="369"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
         <source>Show/Hide original text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="372"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
         <source>Show/Hide translator name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="376"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
         <source>Transparency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="377"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="378"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
         <source>Font size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="379"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
         <source>Text color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="380"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
         <source>Text alignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="381"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
         <source>Margin top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="382"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
         <source>Margin bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="383"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
         <source>Margin left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="384"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
         <source>Margin right</source>
         <translation type="unfinished"></translation>
     </message>

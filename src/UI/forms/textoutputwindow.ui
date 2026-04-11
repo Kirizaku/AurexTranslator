@@ -191,6 +191,40 @@ QPushButton:flat:pressed {
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="clearTranslationsButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Clear all translated texts</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/3rdparty/icons/eraser.svg</normaloff>:/icons/3rdparty/icons/eraser.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="retranslateButton">
         <property name="mouseTracking">
          <bool>true</bool>
@@ -218,6 +252,41 @@ QPushButton:flat:pressed {
         <property name="icon">
          <iconset resource="../../../resources.qrc">
           <normaloff>:/icons/3rdparty/icons/reload.svg</normaloff>:/icons/3rdparty/icons/reload.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="injectHookButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Manual injection
+Use if automatic injection failed</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/3rdparty/icons/vaccine.svg</normaloff>:/icons/3rdparty/icons/vaccine.svg</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>

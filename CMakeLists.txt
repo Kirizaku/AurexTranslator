@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(aurextranslator VERSION 0.0.4 LANGUAGES CXX)
 
@@ -40,14 +40,18 @@ set(PROJECT_SOURCES
     src/UI/ollamasettingsdialog.h src/UI/ollamasettingsdialog.cpp
     src/UI/tesseractsettingsdialog.h src/UI/tesseractsettingsdialog.cpp
     src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
+    src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
 
     src/utils/opencv.cpp src/utils/opencv.h
     src/utils/tesseractocr.cpp src/utils/tesseractocr.h
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
-    src/utils/hotkeys.h src/utils/hotkeys.cpp
-    src/utils/ollama.h src/utils/ollama.cpp
-    src/translations/google.h src/translations/google.cpp
+    src/utils/hotkeys.cpp src/utils/hotkeys.h
+    src/utils/ollama.cpp src/utils/ollama.h
+    src/utils/plugininterface.h
+    src/utils/pluginloader.cpp src/utils/pluginloader.h
+    src/utils/metadatareader.cpp src/utils/metadatareader.h
+    src/translations/google.cpp src/translations/google.h
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -77,7 +81,6 @@ qt_add_executable(${PROJECT_NAME}
     ${RESOURCES}
 )
 
-target_link_libraries(aurextranslator PRIVATE Qt6::Core)
 qt_add_translations(${CMAKE_PROJECT_NAME}
   TS_FILES
     translations/${PROJECT_NAME}_en_US.ts

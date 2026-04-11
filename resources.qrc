@@ -7,5 +7,7 @@
         <file>3rdparty/icons/box-margin.svg</file>
         <file>3rdparty/icons/square-x.svg</file>
         <file>3rdparty/icons/history.svg</file>
+        <file>3rdparty/icons/eraser.svg</file>
+        <file>3rdparty/icons/vaccine.svg</file>
     </qresource>
 </RCC>
