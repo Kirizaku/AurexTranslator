@@ -118,6 +118,10 @@ target_link_libraries(${PROJECT_NAME}
         ${LINUX_LIBS}
 )
 
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE version)
+endif()
+
 target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${LIBPIPIPEWIRE_INCLUDE_DIRS}
