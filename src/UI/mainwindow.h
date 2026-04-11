@@ -198,7 +198,6 @@ private:
         OllamaVision
     };
 
-    bool m_ocrEnabled = true;
     OcrEngine m_ocrEngine = OcrEngine::Tesseract;
 
     TesseractOcr *m_tesseractOcr = nullptr;

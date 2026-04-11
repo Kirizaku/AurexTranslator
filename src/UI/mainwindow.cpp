@@ -850,7 +850,7 @@ void MainWindow::ollamaVisionTimerTimeout()
 
 void MainWindow::retranslateText()
 {
-    if (!m_overlayWindow->getIsRectBrushEmpty() && m_ocrEnabled) {
+    if (!m_overlayWindow->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
         switch (m_ocrEngine) {
             case OcrEngine::Tesseract:
                 m_tesseractOcr->clearCache();
