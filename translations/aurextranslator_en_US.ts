@@ -4,12 +4,12 @@
 <context>
     <name>GoogleSettingsDialog</name>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="30"/>
+        <location filename="../src/UI/googlesettingsdialog.cpp" line="29"/>
         <source>Source language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="34"/>
+        <location filename="../src/UI/googlesettingsdialog.cpp" line="33"/>
         <source>Target language</source>
         <translation type="unfinished"></translation>
     </message>
@@ -33,7 +33,7 @@
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1288"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1293"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
@@ -69,7 +69,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1418"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1423"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
@@ -90,7 +90,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1346"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -255,13 +255,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
-        <source>Add</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
+        <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
-        <source>Remove</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
+        <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -280,138 +280,143 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
-        <source>Description</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1247"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1252"/>
+        <source>Architecture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
         <source>Dependencies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1265"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1262"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1270"/>
         <source>Open plugins directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1272"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1277"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1294"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1299"/>
         <source>Use proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1311"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1316"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1326"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1336"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1389"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1394"/>
         <source>Copy all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1396"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1401"/>
         <source>Open logs directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1438"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1443"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1490"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1495"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="344"/>
+        <location filename="../src/UI/mainwindow.cpp" line="196"/>
+        <source>[Hook] Failed to load plugin &apos;libat-injector</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="349"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="347"/>
+        <location filename="../src/UI/mainwindow.cpp" line="352"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="409"/>
+        <location filename="../src/UI/mainwindow.cpp" line="414"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="414"/>
+        <location filename="../src/UI/mainwindow.cpp" line="419"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="536"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="536"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="949"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="949"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1476"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1515"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1526"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1516"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1527"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1518"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1529"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1519"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
         <source>Later</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/mainwindow.cpp" line="191"/>
-        <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -570,73 +575,73 @@
 <context>
     <name>TesseractSettingsDialog</name>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="51"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="50"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="55"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="54"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="65"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="64"/>
         <source>Update list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="73"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="72"/>
         <source>Tessdata path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="77"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="76"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="90"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="89"/>
         <source>Use system tessdata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="94"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="93"/>
         <source>Processing mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="95"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="94"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="96"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="95"/>
         <source>Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="113"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="112"/>
         <source>Auto OCR interval (sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="216"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="215"/>
         <source>Invalid Tesseract Data Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="217"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="216"/>
         <source>The specified Tesseract data directory does not exist or is invalid.
 Please provide a valid path or try using the system default directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="229"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="228"/>
         <source>No Tesseract available languages found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="230"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="229"/>
         <source>Tesseract could not find any language data in system locations.
 Please install Tesseract language packs or specify a custom &apos;tessdata&apos; directory.</source>
         <translation type="unfinished"></translation>
@@ -696,12 +701,12 @@ Use if automatic injection failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="42"/>
         <source>Translation history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="96"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="93"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -711,77 +716,77 @@ Result:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="385"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="382"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="386"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="383"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="387"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="384"/>
         <source>Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="399"/>
         <source>Show/Hide source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
         <source>Show/Hide original text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
         <source>Show/Hide translator name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="409"/>
         <source>Transparency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="410"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="411"/>
         <source>Font size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
         <source>Text color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
         <source>Text alignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
         <source>Margin top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
         <source>Margin bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
         <source>Margin left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
         <source>Margin right</source>
         <translation type="unfinished"></translation>
     </message>

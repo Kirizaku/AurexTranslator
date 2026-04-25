@@ -41,18 +41,11 @@ PluginManager::~PluginManager()
 
 QList<PluginManager::PluginInfo> PluginManager::scanPlugins()
 {
-    QDir pluginDir(Config::getConfigDirPath() + "plugins/");
-    if (!pluginDir.exists()) {
-        pluginDir.mkpath(".");
-    }
-
+    m_registry.clear();
     Log(Logger::Level::Info, QStringLiteral("[plugin-loader] Scanning for plugins"));
 
-    for (const QString &file : pluginDir.entryList({"*.dll", "*.so"})) {
-        QString path = pluginDir.absoluteFilePath(file);
-        path = QDir::toNativeSeparators(path);
+    auto processFile = [&](const QString& path) {
         PluginInfo info;
-
         QPluginLoader loader(path);
         if (!loader.metaData().isEmpty()) {
             info = getQtPluginMeta(path);
@@ -60,43 +53,61 @@ QList<PluginManager::PluginInfo> PluginManager::scanPlugins()
             info = getCppPluginMeta(path);
         }
 
-        if (!info.name.isEmpty()) {
-            info.filePath = path;
-            m_registry << info;
-            Log(Logger::Level::Info, QStringLiteral("[plugin-loader] Registered: %1 (%2)").arg(info.name, file));
-        } else {
-            Log(Logger::Level::Warning, QStringLiteral("[plugin-loader] Metadata missing or invalid for plugin: %1").arg(file));
+        if (info.name.isEmpty()) {
+            Log(Logger::Level::Warning,
+                QStringLiteral("[plugin-loader] Metadata missing or invalid: %1").arg(path));
+            return;
         }
-    }
 
-    QDir binDir(Config::getConfigDirPath() + "plugins/" + "bin/");
-    QMap<QString, PluginInfo> uniquePlugins;
+        const QString arch = getFileArch(path);
+        if (arch.isEmpty()) {
+            Log(Logger::Level::Warning,
+                QStringLiteral("[plugin-loader] Unknown architecture, skipping: %1").arg(path));
+            return;
+        }
 
-    if (binDir.exists()) {
-        QFileInfoList entries = binDir.entryInfoList(QDir::Files | QDir::Executable | QDir::NoDotAndDotDot);
-
-        for (const QFileInfo &entry : entries) {
-            PluginInfo info = getCppPluginMeta(entry.absoluteFilePath());
-
-            if (!info.name.isEmpty()) {
-                info.filePath = entry.absoluteFilePath();
-                if (!uniquePlugins.contains(info.name)) {
-                    uniquePlugins[info.name] = info;
-                }
+        for (int i = 0; i < m_registry.size(); ++i) {
+            if (m_registry[i].name == info.name) {
+                m_registry[i].archPaths[arch] = path;
+                Log(Logger::Level::Info,
+                    QStringLiteral("[plugin-loader] Added %1 path for: %2").arg(arch, info.name));
+                return;
             }
         }
-        Log(Logger::Level::Info, QStringLiteral("[plugin-loader] Registering %1 unique binary plugin(s) from /bin").arg(uniquePlugins.size()));
-        for (const PluginInfo &info : uniquePlugins) {
-            m_registry << info;
+
+        info.archPaths[arch] = path;
+        m_registry << info;
+        Log(Logger::Level::Info,
+            QStringLiteral("[plugin-loader] Registered: %1 (%2)").arg(info.name, arch));
+    };
+
+    QDir pluginDir(Config::getConfigDirPath() + "plugins/");
+    if (!pluginDir.exists())
+        pluginDir.mkpath(".");
+
+    const QStringList files = pluginDir.entryList({"*.dll", "*.so"}, QDir::Files);
+    for (const QString& file : files) {
+        processFile(QDir::toNativeSeparators(pluginDir.absoluteFilePath(file)));
+    }
+
+    QDir binDir(Config::getConfigDirPath() + "plugins/bin/");
+    if (binDir.exists()) {
+        const QFileInfoList entries = binDir.entryInfoList(QDir::Files | QDir::Executable | QDir::NoDotAndDotDot);
+        for (const QFileInfo& entry : entries) {
+            processFile(entry.absoluteFilePath());
         }
     }
+
+    Log(Logger::Level::Info,
+        QStringLiteral("[plugin-loader] Scan complete: %1 plugin(s) registered").arg(m_registry.size()));
 
     return m_registry;
 }
 
 void PluginManager::loadPlugins()
 {
-    for (const auto &info : m_registry) {
+    const auto registry = m_registry;
+    for (const auto& info : registry) {
         if (info.targetTitle == "main-program") {
             loadPlugin(info.name);
         }
@@ -125,20 +136,23 @@ QObject* PluginManager::getPlugin(const QString &name)
 
 bool PluginManager::loadPlugin(const QString &name)
 {
-    for (const auto &info : m_registry) {
-        if (info.name == name) {
-            QPluginLoader *loader = new QPluginLoader(info.filePath, this);
-            QObject *plugin = loader->instance();
-            if (plugin) {
-                m_loaded[name] = loader;
-
-                auto currentPlugin = qobject_cast<PluginInterface*>(plugin);
-                currentPlugin->setLanguage(m_currentLanguage);
-
-                return true;
-            }
-            delete loader;
+    const auto registry = m_registry;
+    for (const auto& info : registry) {
+        if (info.name != name) continue;
+#if defined(Q_PROCESSOR_X86_64)
+        const QString arch = QStringLiteral("x64");
+#else
+        const QString arch = QStringLiteral("x86");
+#endif
+        const QString path = info.archPaths.value(arch);
+        QPluginLoader* loader = new QPluginLoader(path, this);
+        QObject* plugin = loader->instance();
+        if (plugin) {
+            m_loaded[name] = loader;
+            qobject_cast<PluginInterface*>(plugin)->setLanguage(m_currentLanguage);
+            return true;
         }
+        delete loader;
     }
     return false;
 }
@@ -159,17 +173,16 @@ PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
     PluginInfo info;
     QPluginLoader loader(path);
     QJsonObject meta = loader.metaData();
-    QJsonObject obj = meta["MetaData"].toObject();
+    QJsonObject obj  = meta["MetaData"].toObject();
     info.name        = obj["name"].toString();
     info.version     = obj["version"].toString();
     info.description = obj["description"].toString();
     info.type        = obj["type"].toString();
+    info.category    = obj["category"].toString();
 
-    if (obj.contains("dependencies") && obj["dependencies"].isArray()) {
-        QJsonArray arr = obj["dependencies"].toArray();
-        for (const QJsonValue &val : arr) {
-            info.dependencies << val.toString();
-        }
+    const QJsonArray arr = obj["dependencies"].toArray();
+    for (const QJsonValue& val : arr) {
+        info.dependencies << val.toString();
     }
 
     QJsonObject target = obj["target"].toObject();
@@ -189,12 +202,11 @@ PluginManager::PluginInfo PluginManager::getCppPluginMeta(const QString &path)
     info.version     = obj["version"].toString();
     info.description = obj["description"].toString();
     info.type        = obj["type"].toString();
+    info.category    = obj["category"].toString();
 
-    if (obj.contains("dependencies") && obj["dependencies"].isArray()) {
-        QJsonArray arr = obj["dependencies"].toArray();
-        for (const QJsonValue &val : arr) {
-            info.dependencies << val.toString();
-        }
+    const QJsonArray arr = obj["dependencies"].toArray();
+    for (const QJsonValue& val : arr) {
+        info.dependencies << val.toString();
     }
 
     QJsonObject target = obj["target"].toObject();
@@ -202,6 +214,36 @@ PluginManager::PluginInfo PluginManager::getCppPluginMeta(const QString &path)
     info.targetExecutable  = target["executable"].toString();
 
     return info;
+}
+
+QString PluginManager::getFileArch(const QString &path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) return QString();
+
+    QByteArray header = f.read(64);
+    f.close();
+
+    // ELF (Linux)
+    if (header.size() >= 5 && header.startsWith("\x7F""ELF")) {
+        return header[4] == 1 ? QStringLiteral("x86") : QStringLiteral("x64");
+    }
+
+    // PE (Windows)
+    if (header.size() >= 0x40 && header.startsWith("MZ")) {
+        uint32_t peOffset = *reinterpret_cast<const uint32_t*>(header.constData() + 0x3C);
+        QFile f2(path);
+        if (!f2.open(QIODevice::ReadOnly)) return QString();
+        if (!f2.seek(peOffset + 4)) return QString();
+        QByteArray machine = f2.read(2);
+        f2.close();
+        if (machine.size() < 2) return QString();
+        uint16_t m = *reinterpret_cast<const uint16_t*>(machine.constData());
+        if (m == 0x014C) return QStringLiteral("x86");
+        if (m == 0x8664) return QStringLiteral("x64");
+    }
+
+    return QString();
 }
 
 QMap<QString, QStringList> PluginManager::validateDependencies(const QList<PluginInfo>& plugins)

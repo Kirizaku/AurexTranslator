@@ -163,6 +163,10 @@ void MainWindow::initPlugins()
         bool hasErrors = dependencyErrors.contains(p.name);
         QStringList missingList = hasErrors ? dependencyErrors[p.name] : QStringList();
 
+        QStringList archs = p.archPaths.keys();
+        archs.sort();
+        QTableWidgetItem* archItem = new QTableWidgetItem(archs.join(" | "));
+
         QString depsText = p.dependencies.join(", ");
 
         QTableWidgetItem *depsItem = new QTableWidgetItem(depsText);
@@ -170,11 +174,12 @@ void MainWindow::initPlugins()
 
         ui->pluginsTableWidget->setItem(row, 0, new QTableWidgetItem(p.name));
         ui->pluginsTableWidget->setItem(row, 1, new QTableWidgetItem(p.version));
-        ui->pluginsTableWidget->setItem(row, 2, depsItem);
-        ui->pluginsTableWidget->setItem(row, 3, new QTableWidgetItem(p.description));
+        ui->pluginsTableWidget->setItem(row, 2, archItem);
+        ui->pluginsTableWidget->setItem(row, 3, depsItem);
+        ui->pluginsTableWidget->setItem(row, 4, new QTableWidgetItem(p.description));
         ++row;
 
-        if (p.type == "hook" && p.targetTitle != "main-program") {
+        if (p.type == "hook" && (p.category == "game" || p.category == "application")) {
             m_hookPluginList.insert(p.name, p.targetTitle);
         }
 
@@ -1441,7 +1446,12 @@ void MainWindow::stopCurrentHookPlugin()
 
 void MainWindow::startHookPlugin(const PluginManager::PluginInfo& info)
 {
-    m_hookPlugin->execute("start", { info.targetExecutable, info.filePath });
+    QStringList archList;
+    for (auto it = info.archPaths.constBegin(); it != info.archPaths.constEnd(); ++it) {
+        archList << (it.key() + ":" + it.value());
+    }
+
+    m_hookPlugin->execute("start", { info.targetExecutable, info.name, archList.join(";")});
     m_outputWindow->sethookState(true);
     m_currentRunningPlugin = info.name;
     m_outputWindow->clearInfoMessage();

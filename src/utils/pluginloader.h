@@ -38,9 +38,10 @@ public:
         QStringList dependencies;
         QString description;
         QString type;
-        QString filePath;
+        QString category;
         QString targetTitle;
         QString targetExecutable;
+        QMap<QString, QString> archPaths;
     };
 
     QList<PluginInfo> scanPlugins();
@@ -58,8 +59,9 @@ private:
     bool loadPlugin(const QString &name);
     bool unloadPlugin(const QString &name);
 
-    PluginInfo getQtPluginMeta(const QString &filePath);
-    PluginInfo getCppPluginMeta(const QString &filePath);
+    PluginInfo getQtPluginMeta(const QString &path);
+    PluginInfo getCppPluginMeta(const QString &path);
+    QString getFileArch(const QString &path);
 };
 
 #endif // PLUGINMANAGER_H

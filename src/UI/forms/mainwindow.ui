@@ -1249,6 +1249,11 @@ font-weight: 700;
            </column>
            <column>
             <property name="text">
+             <string>Architecture</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
              <string>Dependencies</string>
             </property>
            </column>

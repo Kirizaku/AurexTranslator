@@ -4,13 +4,13 @@
 <context>
     <name>GoogleSettingsDialog</name>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="30"/>
+        <location filename="../src/UI/googlesettingsdialog.cpp" line="29"/>
         <source>Source language</source>
         <oldsource>Source Language</oldsource>
         <translation>Исходный язык</translation>
     </message>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="34"/>
+        <location filename="../src/UI/googlesettingsdialog.cpp" line="33"/>
         <source>Target language</source>
         <oldsource>Target Language</oldsource>
         <translation>Целевой язык</translation>
@@ -35,7 +35,7 @@
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1288"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1293"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
@@ -66,7 +66,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1418"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1423"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
@@ -87,7 +87,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1346"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
@@ -242,17 +242,22 @@
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1265"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1252"/>
+        <source>Architecture</source>
+        <translation>Архитектура</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1270"/>
         <source>Open plugins directory</source>
         <translation>Открыть папку с плагинами</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1272"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1277"/>
         <source>Reload</source>
         <translation>Обновить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1438"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1443"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation>Свободный и открытый инструмент для перевода текста на экране</translation>
     </message>
@@ -297,7 +302,7 @@
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1262"/>
         <source>Description</source>
         <translation>Описание</translation>
     </message>
@@ -307,113 +312,113 @@
         <translation>Версия</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1252"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
         <source>Dependencies</source>
         <translation>Зависимости</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1294"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1299"/>
         <source>Use proxy</source>
         <translation>Использовать прокси</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1311"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1316"/>
         <source>Port</source>
         <translation>Порт</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1326"/>
         <source>User</source>
         <translation>Пользователь</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1336"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1389"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1394"/>
         <source>Copy all</source>
         <translation>Скопировать все</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1396"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1401"/>
         <source>Open logs directory</source>
         <translation>Показать файлы с логами</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1490"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1495"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="344"/>
+        <location filename="../src/UI/mainwindow.cpp" line="349"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="347"/>
+        <location filename="../src/UI/mainwindow.cpp" line="352"/>
         <source>Open Processed Screencast in New Window</source>
         <translatorcomment>Открыть обработанную трансляцию в новом окне</translatorcomment>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="409"/>
+        <location filename="../src/UI/mainwindow.cpp" line="414"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="414"/>
+        <location filename="../src/UI/mainwindow.cpp" line="419"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="536"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="536"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="949"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="949"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1476"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation>[Hook] Не выбрана игра. Пожалуйста, выберите игру в настройках</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="191"/>
+        <location filename="../src/UI/mainwindow.cpp" line="196"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1515"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1526"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1516"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1527"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1518"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1529"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1519"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -574,74 +579,74 @@
 <context>
     <name>TesseractSettingsDialog</name>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="51"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="50"/>
         <source>Status</source>
         <translation>Статус</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="55"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="54"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="65"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="64"/>
         <source>Update list</source>
         <translation>Обновить список</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="73"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="72"/>
         <source>Tessdata path</source>
         <translation>Путь к tessdata</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="77"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="76"/>
         <source>Browse</source>
         <translation>Обзор</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="90"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="89"/>
         <source>Use system tessdata</source>
         <translation>Использовать системный tessdata</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="94"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="93"/>
         <source>Processing mode</source>
         <translation>Режим обработки</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="95"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="94"/>
         <source>Automatic</source>
         <translation>Автоматический</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="96"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="95"/>
         <source>Manual</source>
         <translation>Ручной</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="113"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="112"/>
         <source>Auto OCR interval (sec)</source>
         <translation>Интервал авто-распознавания (сек)</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="216"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="215"/>
         <source>Invalid Tesseract Data Directory</source>
         <translation>Недопустимая директория Tesseract</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="217"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="216"/>
         <source>The specified Tesseract data directory does not exist or is invalid.
 Please provide a valid path or try using the system default directory.</source>
         <translation>Указанная директория с данными Tesseract не существует или содержит ошибки.
 Проверьте правильность пути к tessdata или используйте системную директорию по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="229"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="228"/>
         <source>No Tesseract available languages found</source>
         <translation>Не найдены языковые данные Tesseract</translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="230"/>
+        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="229"/>
         <source>Tesseract could not find any language data in system locations.
 Please install Tesseract language packs or specify a custom &apos;tessdata&apos; directory.</source>
         <translation>Tesseract не обнаружил языковые данные в стандартных системных расположениях.
@@ -656,52 +661,52 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
         <translation>Добро пожаловать!</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="42"/>
         <source>Translation history</source>
         <translation>История перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="385"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="382"/>
         <source>Left</source>
         <translation>По левому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="386"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="383"/>
         <source>Right</source>
         <translation>По правому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="387"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="384"/>
         <source>Center</source>
         <translation>По центру</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
         <source>Show/Hide original text</source>
         <translation>Показать/Скрыть исходный текст</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
         <source>Show/Hide translator name</source>
         <translation>Показать/Скрыть имя переводчика</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="409"/>
         <source>Transparency</source>
         <translation>Прозрачность</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="411"/>
         <source>Font size</source>
         <translation>Размер шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="410"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="96"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="93"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -716,37 +721,37 @@ Result:
  %4</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="402"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="399"/>
         <source>Show/Hide source</source>
         <translation>Показать/Скрыть источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="412"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="413"/>
         <source>Text alignment</source>
         <translation>Выравнивание текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="414"/>
         <source>Margin top</source>
         <translation>Верхний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
         <source>Margin bottom</source>
         <translation>Нижний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
         <source>Margin left</source>
         <translation>Левый отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
         <source>Margin right</source>
         <translation>Правый отступ</translation>
     </message>
