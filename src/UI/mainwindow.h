@@ -225,8 +225,12 @@ private:
 
     // Hook
     HookSettingsDialog *m_hookSettingsDialog = nullptr;
-    QMap<QString, QString> m_hookPluginList;
-    QString m_hookCurrentPlugin;
+    HookSettingsDialog::HookMode m_hookMode = HookSettingsDialog::HookMode::GameAppMode;
+    QMap<QString, QString> m_hookGameAppPluginList;
+    QMap<QString, QString> m_hookEnginePluginList;
+    QString m_currentGameAppPlugin;
+    QString m_currentEnginePlugin;
+    QString m_currentEngineProcess;
     QString m_currentRunningPlugin;
     PluginInterface *m_hookPlugin = nullptr;
     QList<PluginManager::PluginInfo> m_registry;

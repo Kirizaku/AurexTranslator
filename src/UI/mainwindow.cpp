@@ -163,11 +163,11 @@ void MainWindow::initPlugins()
         bool hasErrors = dependencyErrors.contains(p.name);
         QStringList missingList = hasErrors ? dependencyErrors[p.name] : QStringList();
 
+        QString depsText = p.dependencies.join(", ");
+
         QStringList archs = p.archPaths.keys();
         archs.sort();
         QTableWidgetItem* archItem = new QTableWidgetItem(archs.join(" | "));
-
-        QString depsText = p.dependencies.join(", ");
 
         QTableWidgetItem *depsItem = new QTableWidgetItem(depsText);
         if (hasErrors) depsItem->setForeground(QBrush(Qt::red));
@@ -180,7 +180,11 @@ void MainWindow::initPlugins()
         ++row;
 
         if (p.type == "hook" && (p.category == "game" || p.category == "application")) {
-            m_hookPluginList.insert(p.name, p.targetTitle);
+            m_hookGameAppPluginList.insert(p.name, p.targetTitle);
+        }
+
+        if (p.type == "hook" && p.category == "engine") {
+            m_hookEnginePluginList.insert(p.name, p.targetTitle);
         }
 
         if (p.name == "libat-injector" && !hasErrors) {
@@ -570,13 +574,16 @@ void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
 
 void MainWindow::on_textProcessingHookSettingsButton_clicked()
 {
-    m_hookSettingsDialog = new HookSettingsDialog(m_hookPluginList, m_hookCurrentPlugin, this);
+    m_hookSettingsDialog = new HookSettingsDialog(m_hookMode, m_hookGameAppPluginList, m_hookEnginePluginList, m_currentGameAppPlugin, m_currentEnginePlugin, this);
     m_hookSettingsDialog->setWindowModality(Qt::WindowModal);
     m_hookSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(m_hookSettingsDialog, &QDialog::finished, this, [this](int result) {
         if (result == QDialog::Accepted) {
-            m_hookCurrentPlugin = m_hookSettingsDialog->getCurrentNamePlugin();
+            m_hookMode = m_hookSettingsDialog->getCurrentMode();
+            m_currentGameAppPlugin = m_hookSettingsDialog->getCurrentGameAppPlugin();
+            m_currentEnginePlugin = m_hookSettingsDialog->getSelectedEngine();
+            m_currentEngineProcess = m_hookSettingsDialog->getSelectedProcessName();
 
             m_textProcessingChanged = true;
             ui->textProcessingHookCheckBox->setProperty("changed", true);
@@ -610,7 +617,7 @@ void MainWindow::on_pluginsReloadButton_clicked()
             m_hookPlugin = nullptr;
         }
         m_pluginManager->unloadPlugins();
-        m_hookPluginList.clear();
+        m_hookGameAppPluginList.clear();
         ui->textProcessingHookCheckBox->setProperty("changed", true);
 
         initPlugins();
@@ -1227,7 +1234,10 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         if (widgetChanged(ui->textProcessingHookCheckBox))
             ui->textProcessingHookCheckBox->setChecked(hook["is_hook"].toBool());
 
-        m_hookCurrentPlugin = hook["current_plugin"].toString();
+        m_hookMode = static_cast<HookSettingsDialog::HookMode>(hook["hook_mode"].toInt());
+        m_currentGameAppPlugin = hook["current_game_app_plugin"].toString();
+        m_currentEnginePlugin = hook["current_engine_plugin"].toString();
+        m_currentEngineProcess = hook["current_engine_process"].toString();
 
         // Text Replacement
         QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
@@ -1446,12 +1456,20 @@ void MainWindow::stopCurrentHookPlugin()
 
 void MainWindow::startHookPlugin(const PluginManager::PluginInfo& info)
 {
+    QString exe;
+
+    if (m_hookMode == HookSettingsDialog::HookMode::GameAppMode) {
+        exe = info.targetExecutable;
+    } else {
+        exe = m_currentEngineProcess;
+    }
+
     QStringList archList;
     for (auto it = info.archPaths.constBegin(); it != info.archPaths.constEnd(); ++it) {
         archList << (it.key() + ":" + it.value());
     }
 
-    m_hookPlugin->execute("start", { info.targetExecutable, info.name, archList.join(";")});
+    m_hookPlugin->execute("start", { exe, info.name, archList.join(";")});
     m_outputWindow->sethookState(true);
     m_currentRunningPlugin = info.name;
     m_outputWindow->clearInfoMessage();
@@ -1462,21 +1480,28 @@ void MainWindow::loadHookPluginSettings()
     if (!m_hookPlugin || !widgetChanged(ui->textProcessingHookCheckBox)) {
         return;
     }
-
     if (ui->textProcessingHookCheckBox->isChecked() &&
         ui->textProcessingHookCheckBox->isEnabled()) {
 
-        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
-                                     [this](const PluginManager::PluginInfo& info) {
-                                         return info.name == m_hookCurrentPlugin;
-                                     });
-
-        if (pluginIt == m_registry.cend()) {
-            Log(Logger::Level::Warning, "[Hook] No game selected. Please choose a game in the settings");
-            m_outputWindow->setInfoMessage(tr("[Hook] No game selected. Please choose a game in the settings"));
+        if (m_hookMode == HookSettingsDialog::HookMode::EngineMode && m_currentEngineProcess.isEmpty()) {
+            const QString msg = tr("[Hook] No process selected. Please choose a process in the settings");
+            Log(Logger::Level::Warning, msg);
+            m_outputWindow->setInfoMessage(msg);
             return;
         }
 
+        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                                     [this](const PluginManager::PluginInfo& info) {
+                                         return (m_hookMode == HookSettingsDialog::HookMode::GameAppMode)
+                                         ? (info.name == m_currentGameAppPlugin)
+                                         : (info.name == m_currentEnginePlugin);
+                                     });
+        if (pluginIt == m_registry.cend()) {
+            const QString msg = tr("[Hook] No game selected. Please choose a game in the settings");
+            Log(Logger::Level::Warning, msg);
+            m_outputWindow->setInfoMessage(msg);
+            return;
+        }
         if (!m_currentRunningPlugin.isEmpty()) {
             stopCurrentHookPlugin();
         }
@@ -1648,7 +1673,10 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->textProcessingHookCheckBox))
             hook["is_hook"] = ui->textProcessingHookCheckBox->isChecked();
 
-        hook["current_plugin"] = m_hookCurrentPlugin;
+        hook["hook_mode"] = m_hookMode;
+        hook["current_game_app_plugin"] = m_currentGameAppPlugin;
+        hook["current_engine_plugin"] = m_currentEnginePlugin;
+        hook["current_engine_process"] = m_currentEngineProcess;
 
         textProcessing.insert("tesseract", tesseract);
         textProcessing.insert("ollama_vision", ollama_vision);

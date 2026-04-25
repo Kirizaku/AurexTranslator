@@ -19,9 +19,55 @@
 <context>
     <name>HookSettingsDialog</name>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="30"/>
-        <source>Game</source>
-        <translation>Игра</translation>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="48"/>
+        <source>Game / Application</source>
+        <translation>Игра / Приложение</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="49"/>
+        <source>Engine</source>
+        <translation>Движок</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="63"/>
+        <source>— Select game/app —</source>
+        <translation>— Выберите игру/приложение —</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="74"/>
+        <source>Target:</source>
+        <translation>Цель</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="197"/>
+        <source>— Select engine —</source>
+        <translation>— Выберите движок —</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="92"/>
+        <source>Engine:</source>
+        <translation>Движок</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="94"/>
+        <source>Process</source>
+        <translation>Процесс</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="97"/>
+        <source>Filter by PID or process name...</source>
+        <translation>Фильтр по PID или имени процесса...</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="107"/>
+        <source>Process name</source>
+        <translation>Имя процесса</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="100"/>
+        <source>Refresh</source>
+        <translation>Обновить</translation>
     </message>
 </context>
 <context>
@@ -352,73 +398,78 @@
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="349"/>
+        <location filename="../src/UI/mainwindow.cpp" line="353"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="352"/>
+        <location filename="../src/UI/mainwindow.cpp" line="356"/>
         <source>Open Processed Screencast in New Window</source>
         <translatorcomment>Открыть обработанную трансляцию в новом окне</translatorcomment>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="414"/>
+        <location filename="../src/UI/mainwindow.cpp" line="418"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="419"/>
+        <location filename="../src/UI/mainwindow.cpp" line="423"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="536"/>
+        <location filename="../src/UI/mainwindow.cpp" line="540"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="536"/>
+        <location filename="../src/UI/mainwindow.cpp" line="540"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="956"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="956"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1476"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1487"/>
+        <source>[Hook] No process selected. Please choose a process in the settings</source>
+        <translation>[Hook] Процесс не выбран. Пожалуйста, выберите процесс в настройках</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="1500"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation>[Hook] Не выбрана игра. Пожалуйста, выберите игру в настройках</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="196"/>
+        <location filename="../src/UI/mainwindow.cpp" line="200"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1526"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1527"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1552"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1529"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1554"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1555"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>

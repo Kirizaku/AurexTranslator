@@ -17,8 +17,54 @@
 <context>
     <name>HookSettingsDialog</name>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="30"/>
-        <source>Game</source>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="48"/>
+        <source>Game / Application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="49"/>
+        <source>Engine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="63"/>
+        <source>— Select game/app —</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="74"/>
+        <source>Target:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="197"/>
+        <source>— Select engine —</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="92"/>
+        <source>Engine:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="94"/>
+        <source>Process</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="97"/>
+        <source>Filter by PID or process name...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="107"/>
+        <source>Process name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="100"/>
+        <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -255,13 +301,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
-        <source>Remove</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
+        <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1189"/>
-        <source>Add</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1182"/>
+        <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -280,6 +326,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1262"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1247"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
@@ -292,11 +343,6 @@
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1257"/>
         <source>Dependencies</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1262"/>
-        <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -350,72 +396,77 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="196"/>
+        <location filename="../src/UI/mainwindow.cpp" line="200"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="349"/>
+        <location filename="../src/UI/mainwindow.cpp" line="353"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="352"/>
+        <location filename="../src/UI/mainwindow.cpp" line="356"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="414"/>
+        <location filename="../src/UI/mainwindow.cpp" line="418"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="419"/>
+        <location filename="../src/UI/mainwindow.cpp" line="423"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="536"/>
+        <location filename="../src/UI/mainwindow.cpp" line="540"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="536"/>
+        <location filename="../src/UI/mainwindow.cpp" line="540"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="956"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="956"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1476"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1487"/>
+        <source>[Hook] No process selected. Please choose a process in the settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="1500"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1526"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1527"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1552"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1529"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1554"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1555"/>
         <source>Later</source>
         <translation type="unfinished"></translation>
     </message>
