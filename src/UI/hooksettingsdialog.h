@@ -57,7 +57,7 @@ private slots:
     void onModeChanged();
     void onRefreshProcesses();
     void onFilterTextChanged(const QString &text);
-    void onEngineChanged(int index);
+    void onEngineChanged();
 
 private:
     void loadProcesses();

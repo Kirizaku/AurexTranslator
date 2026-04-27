@@ -144,7 +144,7 @@ HookSettingsDialog::HookSettingsDialog(HookMode currentMode,
     connect(m_engineComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &HookSettingsDialog::onEngineChanged);
 
-    onEngineChanged(m_engineComboBox->currentIndex());
+    onEngineChanged();
 
     if (currentMode == EngineMode)
         m_engineRadio->setChecked(true);
@@ -204,7 +204,7 @@ void HookSettingsDialog::setEngineList(const QStringList &engines, const QString
             m_engineComboBox->setCurrentIndex(idx);
     }
     m_engineComboBox->blockSignals(false);
-    onEngineChanged(m_engineComboBox->currentIndex());
+    onEngineChanged();
 }
 
 void HookSettingsDialog::onModeChanged()
@@ -216,7 +216,7 @@ void HookSettingsDialog::onModeChanged()
     }
 }
 
-void HookSettingsDialog::onEngineChanged(int /*index*/)
+void HookSettingsDialog::onEngineChanged()
 {
     const bool hasEngine = !getSelectedEngine().isEmpty();
 
