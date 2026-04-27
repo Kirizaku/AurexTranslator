@@ -136,7 +136,7 @@ namespace
         trayIcon.setIcon(qApp->style()->standardIcon(QStyle::SP_ComputerIcon));
         trayIcon.setToolTip(APP_NAME);
 
-        QMenu* trayMenu = new QMenu();
+        QMenu* trayMenu = new QMenu(&mainWin);
 
         QAction* restoreAction = new QAction(QObject::tr("Open"), trayMenu);
         QObject::connect(restoreAction, &QAction::triggered, [&mainWin]() {
