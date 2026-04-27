@@ -19,6 +19,7 @@
 #include "metadatareader.h"
 #include "logger.h"
 #include "config.h"
+#include "src/data.h"
 
 #include <QPluginLoader>
 #include <QJsonArray>
@@ -62,7 +63,22 @@ QList<PluginManager::PluginInfo> PluginManager::scanPlugins()
         const QString arch = getFileArch(path);
         if (arch.isEmpty()) {
             Log(Logger::Level::Warning,
-                QStringLiteral("[plugin-loader] Unknown architecture, skipping: %1").arg(path));
+                QStringLiteral("[plugin-loader] Skipping '%1' v%2: unknown architecture: %3")
+                .arg(info.name, info.version, path));
+            return;
+        }
+
+        if (info.minAppVersion.isEmpty()) {
+            Log(Logger::Level::Warning,
+                QStringLiteral("[plugin-loader] Skipping '%1' v%2 (%3): minAppVersion not specified")
+                .arg(info.name, info.version, arch));
+            return;
+        }
+
+        if (isVersionLess(APP_VERSION, info.minAppVersion)) {
+            Log(Logger::Level::Warning,
+                QStringLiteral("[plugin-loader] Skipping '%1' v%2 (%3): requires app version >= %4, current: %5")
+                .arg(info.name, info.version, arch, info.minAppVersion, APP_VERSION));
             return;
         }
 
@@ -134,6 +150,24 @@ QObject* PluginManager::getPlugin(const QString &name)
     return m_loaded[name]->instance();
 }
 
+bool PluginManager::isVersionLess(const QString &a, const QString &b)
+{
+    const QString cleanA = a.section(' ', 0, 0);
+    const QString cleanB = b.section(' ', 0, 0);
+
+    const QStringList aParts = cleanA.split('.');
+    const QStringList bParts = cleanB.split('.');
+    const int count = qMax(aParts.size(), bParts.size());
+
+    for (int i = 0; i < count; ++i) {
+        const int aVal = i < aParts.size() ? aParts[i].toInt() : 0;
+        const int bVal = i < bParts.size() ? bParts[i].toInt() : 0;
+        if (aVal != bVal)
+            return aVal < bVal;
+    }
+    return false;
+}
+
 bool PluginManager::loadPlugin(const QString &name)
 {
     const auto registry = m_registry;
@@ -172,13 +206,14 @@ PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
 {
     PluginInfo info;
     QPluginLoader loader(path);
-    QJsonObject meta = loader.metaData();
-    QJsonObject obj  = meta["MetaData"].toObject();
-    info.name        = obj["name"].toString();
-    info.version     = obj["version"].toString();
-    info.description = obj["description"].toString();
-    info.type        = obj["type"].toString();
-    info.category    = obj["category"].toString();
+    QJsonObject meta    = loader.metaData();
+    QJsonObject obj     = meta["MetaData"].toObject();
+    info.name           = obj["name"].toString();
+    info.version        = obj["version"].toString();
+    info.minAppVersion  = obj["minAppVersion"].toString();
+    info.description    = obj["description"].toString();
+    info.type           = obj["type"].toString();
+    info.category       = obj["category"].toString();
 
     const QJsonArray arr = obj["dependencies"].toArray();
     for (const QJsonValue& val : arr) {
@@ -198,11 +233,12 @@ PluginManager::PluginInfo PluginManager::getCppPluginMeta(const QString &path)
     QJsonObject obj = loader.metaData();
 
     PluginInfo info;
-    info.name        = obj["name"].toString();
-    info.version     = obj["version"].toString();
-    info.description = obj["description"].toString();
-    info.type        = obj["type"].toString();
-    info.category    = obj["category"].toString();
+    info.name           = obj["name"].toString();
+    info.version        = obj["version"].toString();
+    info.minAppVersion  = obj["minAppVersion"].toString();
+    info.description    = obj["description"].toString();
+    info.type           = obj["type"].toString();
+    info.category       = obj["category"].toString();
 
     const QJsonArray arr = obj["dependencies"].toArray();
     for (const QJsonValue& val : arr) {

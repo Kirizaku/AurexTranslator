@@ -35,6 +35,7 @@ public:
     struct PluginInfo {
         QString name;
         QString version;
+        QString minAppVersion;
         QStringList dependencies;
         QString description;
         QString type;
@@ -55,6 +56,8 @@ private:
     QList<PluginInfo> m_registry;
     QMap<QString, QPluginLoader*> m_loaded;
     QString m_currentLanguage;
+
+    bool isVersionLess(const QString &a, const QString &b);
 
     bool loadPlugin(const QString &name);
     bool unloadPlugin(const QString &name);
