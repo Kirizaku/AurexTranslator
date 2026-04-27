@@ -62,6 +62,7 @@ signals:
     void clearResultsByTranslator(const QString &translatorName);
     void showHistoryRequested();
     void screenCastFinished();
+    void restartRequested();
 
 private slots:
     void on_availableGeometryChanged();

@@ -19,6 +19,9 @@
 #include <QDir>
 #include <QMenu>
 #include <QTranslator>
+#include <QMessageBox>
+#include <QLockFile>
+#include <QProcess>
 #include <QSystemTrayIcon>
 #include <QStandardPaths>
 #include <QApplication>
@@ -48,7 +51,7 @@ namespace
         return defaultDir + QDir::separator();
     }
 
-#ifdef __linux__
+#ifdef Q_OS_LINUX
     QString getKernelVersion()
     {
         struct utsname info;
@@ -80,19 +83,19 @@ namespace
     }
 #endif
 
+    bool isAlreadyRunning(QLockFile &lock)
+    {
+        lock.setStaleLockTime(0);
+        return !lock.tryLock(0);
+    }
+
     void logSystemInfo()
     {
-#ifdef __linux__
+#ifdef Q_OS_LINUX
         QString sessionType = qEnvironmentVariable("XDG_SESSION_TYPE");
         QString sessionDesktop = qEnvironmentVariable("XDG_CURRENT_DESKTOP");
 
-        if (sessionType == "wayland") {
-            qputenv("QT_QPA_PLATFORM", "xcb");
-            Log(Logger::Level::Info, "Session Type: Wayland");
-        } else if (sessionType == "x11") {
-            Log(Logger::Level::Info, "Session Type: X11");
-        }
-
+        Log(Logger::Level::Info, QString("Session Type: %1").arg(sessionType.isEmpty() ? "Unknown" : sessionType));
         Log(Logger::Level::Info, QString("Distribution: %1").arg(getDistroName()));
         Log(Logger::Level::Info, QString("Kernel Version: %1").arg(getKernelVersion()));
         Log(Logger::Level::Info, QString("Session Desktop: %1").arg(sessionDesktop));
@@ -163,23 +166,47 @@ int main(int argc, char *argv[])
 {
     QCoreApplication::setApplicationName(APP_NAME);
 
+#ifdef Q_OS_LINUX
+    if (qEnvironmentVariable("XDG_SESSION_TYPE") == "wayland")
+        qputenv("QT_QPA_PLATFORM", "xcb");
+#endif
+
+    QApplication app(argc, argv);
+
     QString configPath = getAppSettingsPath();
+
     Logger::instance()->initInstance(configPath);
     Config::instance()->initInstance(configPath);
     Config::loadConfig("settings.json");
 
     logSystemInfo();
 
-    QApplication app(argc, argv);
-
     QTranslator translator;
     setupTranslations(translator, app);
+
+    QLockFile lock(configPath + QStringLiteral("aurextranslator.lock"));
+    if (isAlreadyRunning(lock)) {
+        QMessageBox::warning(nullptr,
+            APP_NAME,
+            QObject::tr("AurexTranslator is already running"));
+
+        Logger::instance()->destroyInstance();
+        Config::instance()->destroyInstance();
+        return 0;
+    }
 
     MainWindow mainWin;
     QSystemTrayIcon trayIcon;
     createTrayIcon(trayIcon, mainWin, app);
 
     trayIcon.show();
+
+    QObject::connect(&mainWin, &MainWindow::restartRequested, [&]() {
+        const QStringList args = qApp->arguments();
+        lock.unlock();
+        QApplication::quit();
+        QProcess::startDetached(args[0], args);
+    });
 
     return app.exec();
 }

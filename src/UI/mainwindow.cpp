@@ -21,7 +21,6 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QJsonArray>
-#include <QProcess>
 #include <QMenu>
 
 #include "mainwindow.h"
@@ -1557,8 +1556,7 @@ void MainWindow::saveConfig()
             int ret = msgBox.exec();
             switch (ret) {
             case QMessageBox::Yes:
-                QApplication::quit();
-                QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+                emit restartRequested();
                 break;
             case QMessageBox::No:
                 break;

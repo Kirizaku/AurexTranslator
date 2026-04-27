@@ -36,7 +36,7 @@
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="74"/>
         <source>Target:</source>
-        <translation>Цель</translation>
+        <translation>Цель:</translation>
     </message>
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
@@ -47,7 +47,7 @@
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="92"/>
         <source>Engine:</source>
-        <translation>Движок</translation>
+        <translation>Движок:</translation>
     </message>
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="94"/>
@@ -398,78 +398,78 @@
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="353"/>
+        <location filename="../src/UI/mainwindow.cpp" line="352"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="356"/>
+        <location filename="../src/UI/mainwindow.cpp" line="355"/>
         <source>Open Processed Screencast in New Window</source>
         <translatorcomment>Открыть обработанную трансляцию в новом окне</translatorcomment>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="418"/>
+        <location filename="../src/UI/mainwindow.cpp" line="417"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="423"/>
+        <location filename="../src/UI/mainwindow.cpp" line="422"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="540"/>
+        <location filename="../src/UI/mainwindow.cpp" line="539"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="540"/>
+        <location filename="../src/UI/mainwindow.cpp" line="539"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="956"/>
+        <location filename="../src/UI/mainwindow.cpp" line="955"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="956"/>
+        <location filename="../src/UI/mainwindow.cpp" line="955"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1487"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1486"/>
         <source>[Hook] No process selected. Please choose a process in the settings</source>
         <translation>[Hook] Процесс не выбран. Пожалуйста, выберите процесс в настройках</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1500"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1499"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation>[Hook] Не выбрана игра. Пожалуйста, выберите игру в настройках</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="200"/>
+        <location filename="../src/UI/mainwindow.cpp" line="199"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1550"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1552"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1554"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1553"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1555"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1554"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -574,14 +574,19 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main.cpp" line="141"/>
+        <location filename="../src/main.cpp" line="144"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="146"/>
+        <location filename="../src/main.cpp" line="149"/>
         <source>Exit</source>
         <translation>Закрыть</translation>
+    </message>
+    <message>
+        <location filename="../src/main.cpp" line="191"/>
+        <source>AurexTranslator is already running</source>
+        <translation>AurexTranslator уже запущен</translation>
     </message>
 </context>
 <context>
