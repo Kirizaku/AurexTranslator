@@ -23,6 +23,45 @@
 
 #ifdef __linux__
 #include "src/screencasts/linux-capture-x11/screencast-x11.h"
+
+// Xlib defines several uppercase macros (Always, None, Bool, Status...) that collide with Qt
+
+#ifdef Always
+#  undef Always
+#endif
+#ifdef None
+#  undef None
+#endif
+#ifdef Bool
+#  undef Bool
+#endif
+#ifdef Status
+#  undef Status
+#endif
+#ifdef CursorShape
+#  undef CursorShape
+#endif
+#ifdef KeyPress
+#  undef KeyPress
+#endif
+#ifdef KeyRelease
+#  undef KeyRelease
+#endif
+#ifdef FocusIn
+#  undef FocusIn
+#endif
+#ifdef FocusOut
+#  undef FocusOut
+#endif
+#ifdef FontChange
+#  undef FontChange
+#endif
+#ifdef Expose
+#  undef Expose
+#endif
+#ifdef Unsorted
+#  undef Unsorted
+#endif
 #else
 #include "src/screencasts/win-capture/screencast-win.h"
 #endif

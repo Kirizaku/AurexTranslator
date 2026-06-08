@@ -21,27 +21,20 @@
 #include <QWidget>
 #include <QNetworkProxy>
 
-#ifdef __linux__
-#include <globalshortcuts_portal_interface.h>
-#include "src/utils/portal_hotkeys.h"
-#include "src/screencasts/linux-capture-portal/screencast-pipewire.h"
-#include "src/screencasts/linux-capture-portal/screencast-portal.h"
-#include "src/screencasts/linux-capture-x11/screencast-x11.h"
-#endif
-
 #include "src/utils/pluginloader.h"
 #include "src/utils/opencv.h"
-#include "src/utils/tesseractocr.h"
-#include "src/utils/ollama.h"
-#include "src/utils/hotkeys.h"
-#include "src/translations/google.h"
 #include "tesseractsettingsdialog.h"
 #include "ollamasettingsdialog.h"
 #include "hooksettingsdialog.h"
 #include "textoutputwindow.h"
-#include "screencastwindow.h"
 #include "overlaywindow.h"
 #include "previewwindow.h"
+
+class TranslationController;
+class HotkeyController;
+class CaptureController;
+class OcrController;
+class HookController;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -67,8 +60,6 @@ signals:
 private slots:
     void on_availableGeometryChanged();
     void on_buttonBox_clicked(QAbstractButton *button);
-    void on_portalShortcutActivated(const QString &shortcutId);
-    void on_portalShortcutDeactivated();
 
 #ifdef Q_OS_LINUX
     void on_generalBindShortcut_clicked();
@@ -91,12 +82,6 @@ private slots:
     void on_logsOpenDirectoryButton_clicked();
     void on_proxyEnabledCheckBox_stateChanged(int arg1);
 
-#ifdef Q_OS_LINUX
-    // Pipewire
-    void setCurrentRestoreToken(const QString &restoreToken);
-    void setCurrentNodeId(const uint &nodeId);
-#endif
-
     // OpenCV
     void setCurrentOriginalFrame(const QImage &frame);
     void setCurrentProcessedFrame(const QImage &frame);
@@ -109,7 +94,6 @@ private slots:
     // Utility Actions
     void setCurrentOutput(const QString &source, const QString &output);
     void openOllamaSettings();
-    void ollamaVisionTimerTimeout();
     void retranslateText();
     void manualInjectHook();
 
@@ -124,6 +108,7 @@ private:
     QScreen *m_screen;
     TextOutputWindow *m_outputWindow = nullptr;
     PluginManager *m_pluginManager;
+    TranslationController *m_translationController = nullptr;
 
     void setupBaseUI();
     void initPlugins();
@@ -153,14 +138,8 @@ private:
     void openProcessedPreview();
 
     // Global Shortcuts
-    HotKeys *m_captureRegionHotKey = nullptr;
-    HotKeys *m_showHistoryTranslationHotKey = nullptr;
-    HotKeys *m_manualTranslateHotKey = nullptr;
-#ifdef __linux__
-    PortalHotkeys *m_portalHotKeys = nullptr;
-#endif
+    HotkeyController *m_hotkeyController = nullptr;
     bool m_isShortcuts = false;
-    void initHotKeys();
 
     // Overlay
     OverlayWindow *m_overlayWindow = nullptr;
@@ -170,18 +149,12 @@ private:
     void showOverlayWindow();
 
     // Screen Casting
-#ifdef __linux__
-    Pipewire *m_pipewire = nullptr;
-    bool m_stopPipewire = false;
-    ScreenCastPortal *m_portalScreencast = nullptr;
-#endif
-    ScreenCast *m_screenCapture = nullptr;
-    ScreenCastWindow *m_screenCastWindow = nullptr;
+    CaptureController *m_captureController = nullptr;
     OpenCV *m_opencv = nullptr;
     void initScreenCast();
 
     // Translator
-    Ollama *m_ollama = nullptr;
+    OcrController *m_ocrController = nullptr;
     OllamaSettingsDialog *m_ollamaSettingsDialog = nullptr;
     QString m_ollamaUrl = "http://localhost:11434/";
     QString m_ollamaCurrentModel;
@@ -189,7 +162,6 @@ private:
     QString m_ollamaVisionPrompt = "";
     QJsonArray m_ollamaModels;
 
-    Google *m_google = nullptr;
     QString m_googleSourceLang;
     QString m_googleTargetLang;
 
@@ -201,7 +173,6 @@ private:
 
     OcrEngine m_ocrEngine = OcrEngine::Tesseract;
 
-    TesseractOcr *m_tesseractOcr = nullptr;
     TesseractSettingsDialog *m_tesseractSettingsDialog = nullptr;
     QString m_tesseractSelectedLang = "";
     QString m_tesseractActiveLang = "";
@@ -219,10 +190,7 @@ private:
 
     int m_ollamaVisionMode = Manual;
     int m_ollamaVisionAutoInterval = 10;
-    QTimer *m_ollamaVisionTimer = nullptr;
-    QString m_ollamaVisionCacheOutput = "";
     bool m_waitForOllamaResponse = true;
-    bool m_ollamaVisionRequestInProgress = false;
 
     // Hook
     HookSettingsDialog *m_hookSettingsDialog = nullptr;
@@ -232,8 +200,7 @@ private:
     QString m_currentGameAppPlugin;
     QString m_currentEnginePlugin;
     QString m_currentEngineProcess;
-    QString m_currentRunningPlugin;
-    PluginInterface *m_hookPlugin = nullptr;
+    HookController *m_hookController = nullptr;
     QList<PluginManager::PluginInfo> m_registry;
     QString m_currentHookText;
 
@@ -267,13 +234,6 @@ private:
     void loadScreencastSettings();
 
     void loadOcrSettings();
-    void stopAllOcrEngines();
-    void stopTesseractEngine();
-    void stopOllamaVisionEngine();
-    void configureTesseractEngine();
-    void configureOllamaVisionEngine();
-    void stopCurrentHookPlugin();
-    void startHookPlugin(const PluginManager::PluginInfo& info);
     void loadHookPluginSettings();
 
     void saveConfig();

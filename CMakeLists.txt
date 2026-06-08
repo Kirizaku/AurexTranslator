@@ -42,6 +42,12 @@ set(PROJECT_SOURCES
     src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
     src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
 
+    src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
+    src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp
+    src/controllers/capturecontroller.h src/controllers/capturecontroller.cpp
+    src/controllers/ocrcontroller.h src/controllers/ocrcontroller.cpp
+    src/controllers/hookcontroller.h src/controllers/hookcontroller.cpp
+
     src/utils/opencv.cpp src/utils/opencv.h
     src/utils/tesseractocr.cpp src/utils/tesseractocr.h
     src/utils/config.cpp src/utils/config.h

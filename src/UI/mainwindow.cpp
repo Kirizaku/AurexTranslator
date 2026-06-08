@@ -26,6 +26,13 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "googlesettingsdialog.h"
+#include "screencastwindow.h"
+#include "src/controllers/translationcontroller.h"
+#include "src/controllers/hotkeycontroller.h"
+#include "src/controllers/capturecontroller.h"
+#include "src/controllers/ocrcontroller.h"
+#include "src/controllers/hookcontroller.h"
+#include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
 #include "src/data.h"
@@ -37,11 +44,13 @@ MainWindow::MainWindow(QWidget *parent)
     , m_overlayWindow(new OverlayWindow())
     , m_outputWindow(new TextOutputWindow())
     , m_manager(new QNetworkAccessManager(this))
-    , m_tesseractOcr(new TesseractOcr(this))
     , m_opencv(new OpenCV(this))
-    , m_ollama(new Ollama(m_manager, this))
-    , m_google(new Google(m_manager, this))
     , m_pluginManager(new PluginManager(this))
+    , m_translationController(new TranslationController(m_manager, this))
+    , m_hotkeyController(new HotkeyController(this))
+    , m_captureController(new CaptureController(this))
+    , m_ocrController(new OcrController(m_manager, this))
+    , m_hookController(new HookController(this))
 {
     setupBaseUI();
     initPlugins();
@@ -49,40 +58,29 @@ MainWindow::MainWindow(QWidget *parent)
     loadApplicationConfig();
     initSubsystems();
     setupSettingsConnections();
+
+    connect(m_translationController, &TranslationController::translationReady,
+            m_outputWindow, &TextOutputWindow::setTranslationResult);
+
     loadLogMessages();
     setupFinalUI();
 }
 
 MainWindow::~MainWindow()
 {
-    if (m_tesseractOcr) {
-        m_tesseractOcr->stop();
-        m_tesseractOcr->wait();
-    }
-
     if (m_opencv) {
         m_opencv->setIsStopped(true);
     }
 
-#ifdef Q_OS_LINUX
-    if (m_pipewire) {
-        m_pipewire->stop();
-        delete m_pipewire;
+    if (m_captureController) {
+        m_captureController->stop();
     }
-#endif
-
-    if (m_screenCapture) {
-        m_screenCapture->stop();
-        delete m_screenCapture;
+    if (m_hookController) {
+        m_hookController->stop();
     }
 
     if (m_overlayWindow) { delete m_overlayWindow; }
-    if (m_screenCastWindow) { delete m_screenCastWindow; }
     if (m_outputWindow) { delete m_outputWindow; }
-
-    if (m_hookPlugin) {
-        m_hookPlugin->execute("stop", { QString(), QString() });
-    }
 
     Logger::instance()->destroyInstance();
     Config::instance()->destroyInstance();
@@ -151,6 +149,7 @@ void MainWindow::initPlugins()
 {
     m_registry = m_pluginManager->scanPlugins();
     m_pluginManager->loadPlugins();
+    m_hookController->setRegistry(m_registry);
 
     ui->groupBox_hook->setVisible(false);
 
@@ -158,7 +157,7 @@ void MainWindow::initPlugins()
 
     ui->pluginsTableWidget->setRowCount(m_registry.size());
     int row = 0;
-    for (const auto &p : m_registry) {     
+    for (const auto &p : m_registry) {
         bool hasErrors = dependencyErrors.contains(p.name);
         QStringList missingList = hasErrors ? dependencyErrors[p.name] : QStringList();
 
@@ -190,11 +189,11 @@ void MainWindow::initPlugins()
             ui->textProcessingHookCheckBox->setEnabled(true);
             ui->groupBox_hook->setVisible(true);
 
-            if (!m_hookPlugin) {
+            if (!m_hookController->isPluginLoaded()) {
                 QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
-                m_hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
+                PluginInterface *hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
 
-                if (!m_hookPlugin) {
+                if (!hookPlugin) {
                     Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
                     m_outputWindow->setInfoMessage(tr("[Hook] Failed to load plugin 'libat-injector"));
                     ui->textProcessingHookCheckBox->setChecked(false);
@@ -202,14 +201,13 @@ void MainWindow::initPlugins()
                     return;
                 }
 
-                connect(m_hookPlugin, &PluginInterface::pluginMessage, m_outputWindow, &TextOutputWindow::setInfoMessage, Qt::UniqueConnection);
-                connect(m_hookPlugin, &PluginInterface::currentOutput, this, &MainWindow::setCurrentOutput, Qt::UniqueConnection);
+                m_hookController->setPlugin(hookPlugin);
             }
         }
 
         if (hasErrors) {
             Log(Logger::Level::Warning, QString("[plugin-loader] Plugin '%1' is invalid. Missing dependencies: %2")
-                                        .arg(p.name, missingList.join(", ")));
+                                            .arg(p.name, missingList.join(", ")));
             ui->textProcessingHookCheckBox->setEnabled(false);
         }
     }
@@ -265,13 +263,69 @@ void MainWindow::initSubsystems()
     connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
 
     // Ollama Settings
-    m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ollama, m_ollamaCurrentModel, m_ollamaModels, this);
+    m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
 
-    initHotKeys();
+    const HotkeyController::Mode hkMode =
+#ifdef Q_OS_LINUX
+        ui->generalRadioHotKey->isChecked() ? HotkeyController::X11 : HotkeyController::Portal;
+#else
+        HotkeyController::X11;
+#endif
+    m_hotkeyController->initialize(hkMode);
+
+    if (hkMode == HotkeyController::X11) {
+        m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
+        m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
+        m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
+
+        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
+        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setRetranslateShortcut);
+
+        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
+        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyManualTranslateEdit->clearFocus(); });
+    }
+
+    connect(m_hotkeyController, &HotkeyController::captureRegionTriggered,
+            this, &MainWindow::captureRegion);
+    connect(m_hotkeyController, &HotkeyController::showHistoryTriggered,
+            this, &MainWindow::showHistory);
+    connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
+            this, &MainWindow::retranslateText);
+    connect(m_hotkeyController, &HotkeyController::shortcutReleased, this, [this] {
+        if (m_isShortcuts) m_isShortcuts = false;
+    });
+
     initScreenCast();
 
-    // Tesseract
-    connect(m_tesseractOcr, &TesseractOcr::currentOutputOCR, this, &MainWindow::setCurrentOutput);
+    connect(m_ocrController, &OcrController::textRecognized,
+            this, &MainWindow::setCurrentOutput);
+
+    connect(m_ocrController, &OcrController::engineDeactivated, m_outputWindow,
+            [this](const QString &source) {
+                m_outputWindow->clearResultsBySource(source);
+            });
+
+    connect(m_hookController, &HookController::textReceived,
+            this, &MainWindow::setCurrentOutput);
+    connect(m_hookController, &HookController::infoMessage,
+            m_outputWindow, &TextOutputWindow::setInfoMessage);
+    connect(m_hookController, &HookController::hookStateChanged,
+            m_outputWindow, &TextOutputWindow::sethookState);
+    connect(m_hookController, &HookController::shouldClearResults, m_outputWindow, [this] {
+        m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
+    });
+    connect(m_hookController, &HookController::shouldClearInfoMessage,
+            m_outputWindow, &TextOutputWindow::clearInfoMessage);
+
+    m_outputWindow->sethookState(m_hookController->isRunning());
 }
 
 void MainWindow::setupSettingsConnections()
@@ -444,37 +498,16 @@ void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
     loadConfig();
 }
 
-void MainWindow::on_portalShortcutActivated(const QString &shortcutId)
-{
-    if (shortcutId == "CaptureRegion") captureRegion();
-    if (shortcutId == "HistoryTranslation") showHistory();
-    if (shortcutId == "ManualTranslate") retranslateText();
-}
-
-void MainWindow::on_portalShortcutDeactivated()
-{
-    if (m_isShortcuts) {
-        m_isShortcuts = false;
-    }
-}
-
 #ifdef Q_OS_LINUX
 void MainWindow::on_generalBindShortcut_clicked()
 {
-    m_portalHotKeys->bindShortcuts();
+    m_hotkeyController->bindPortalShortcuts();
 }
 #endif
 
 void MainWindow::on_outputGeneralSelect_clicked()
 {
-#ifdef Q_OS_LINUX
-    if (m_portalScreencast) {
-        stopScreenCapture();
-        m_portalScreencast->reload();
-        return;
-    }
-#endif
-    m_screenCastWindow->show();
+    m_captureController->openSourceSelector();
 }
 
 void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
@@ -516,8 +549,8 @@ void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
         if (result == QDialog::Accepted) {
             m_googleSourceLang = dialog->getSourceLang();
             m_googleTargetLang = dialog->getTargetLang();
-            m_google->setSourceLang(m_googleSourceLang);
-            m_google->setTargetLang(m_googleTargetLang);
+            m_translationController->setGoogleSourceLang(m_googleSourceLang);
+            m_translationController->setGoogleTargetLang(m_googleTargetLang);
 
             m_translatorChanged = true;
             ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
@@ -536,7 +569,7 @@ void MainWindow::on_textProcessingOCREngineToggled_stateChanged(int arg1)
 void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
 {
     const QString status = QStringLiteral("<b>%1%2</b>").arg(
-        m_tesseractOcr->isRunning() ? tr("Active") : tr("Inactive"),
+        m_ocrController->isTesseractRunning() ? tr("Active") : tr("Inactive"),
         m_tesseractActiveLang.isEmpty() ? QString() : QStringLiteral(" [%1]").arg(m_tesseractActiveLang)
     );
 
@@ -547,7 +580,7 @@ void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
                                                             m_tesseractUseSystemTessdata,
                                                             m_tesseractMode,
                                                             m_tesseractAutoInterval,
-                                                            m_tesseractOcr,
+                                                            m_ocrController->tesseract(),
                                                             this);
 
     m_tesseractSettingsDialog->setWindowModality(Qt::WindowModal);
@@ -611,9 +644,9 @@ void MainWindow::on_textProcessingRemoveRowButton_clicked()
 void MainWindow::on_pluginsReloadButton_clicked()
 {
     if (m_pluginManager) {
-        if (m_hookPlugin) {
-            stopCurrentHookPlugin();
-            m_hookPlugin = nullptr;
+        if (m_hookController->isPluginLoaded()) {
+            m_hookController->stop();
+            m_hookController->setPlugin(nullptr);
         }
         m_pluginManager->unloadPlugins();
         m_hookGameAppPluginList.clear();
@@ -670,26 +703,6 @@ void MainWindow::on_proxyEnabledCheckBox_stateChanged(int arg1)
     ui->proxyTypeSocks->setEnabled(enabled);
 }
 
-#ifdef Q_OS_LINUX
-void MainWindow::setCurrentRestoreToken(const QString &restoreToken)
-{
-    QJsonObject screencast;
-    m_currentRestoreToken = restoreToken;
-    screencast["restore_token"] = m_currentRestoreToken;
-    Config::setValue("screencast_portal", screencast);
-    Config::saveConfig("settings.json");
-}
-
-void MainWindow::setCurrentNodeId(const uint &nodeId)
-{
-    Log(Logger::Level::Info, "[pipewire] Source selected");
-    m_opencv->setIsStopped(false);
-    m_pipewire->init(nodeId);
-    m_pipewire->start();
-    m_pipewire->setIsStopped(false);
-}
-#endif
-
 void MainWindow::setCurrentOriginalFrame(const QImage &frame)
 {
     m_overlayImage = frame.copy();
@@ -698,17 +711,8 @@ void MainWindow::setCurrentOriginalFrame(const QImage &frame)
     if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
         ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_overlayImage).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
     }
-#ifdef Q_OS_LINUX
-    if (m_pipewire) {
-        m_pipewire->setIsProcessed(true);
-        m_pipewire->wakeWaitCondition();
-    }
-#endif
 
-    if (m_screenCapture) {
-        m_screenCapture->setIsProcessed(true);
-        m_screenCapture->wakeWaitCondition();
-    }
+    m_captureController->notifyFrameProcessed();
 }
 
 void MainWindow::setCurrentProcessedFrame(const QImage &frame)
@@ -723,13 +727,8 @@ void MainWindow::setCurrentProcessedFrame(const QImage &frame)
 
 void MainWindow::setCurrentProcessedMat(const cv::Mat &frame)
 {
-    if (frame.empty())
-        return;
-
-    if (m_ocrEngine == OcrEngine::Tesseract)
-        m_tesseractOcr->frameMat(frame);
-    else
-        m_ollama->frameMat(frame);
+    if (frame.empty()) return;
+    m_ocrController->processFrame(frame);
 }
 
 void MainWindow::startScreenCapture()
@@ -737,16 +736,7 @@ void MainWindow::startScreenCapture()
     if (m_opencv) {
         m_opencv->setIsStopped(false);
     }
-#ifdef Q_OS_LINUX
-    if (m_portalScreencast) {
-        m_portalScreencast->init(m_currentRestoreToken);
-    } else {
-#endif
-        m_screenCapture->init();
-        m_screenCapture->start();
-#ifdef Q_OS_LINUX
-    }
-#endif
+    m_captureController->start();
 }
 
 void MainWindow::stopScreenCapture()
@@ -760,27 +750,11 @@ void MainWindow::stopScreenCapture()
         emit screenCastFinished();
     }
 
-#ifdef Q_OS_LINUX
-    if (m_pipewire) {
-        m_pipewire->stop();
-    }
-
-    if (m_portalScreencast) {
-        m_portalScreencast->stop();
-    }
-#endif
-
-    if (m_screenCastWindow) {
-        m_screenCastWindow->hide();
-    }
+    m_captureController->stop();
 
     if (!m_overlayWindow->isHidden()) {
         m_overlayWindow->hide();
         m_outputWindow->show();
-    }
-
-    if (m_screenCapture) {
-        m_screenCapture->stop();
     }
 }
 
@@ -788,24 +762,7 @@ void MainWindow::setCurrentOutput(const QString &source, const QString &output)
 {
     QString outputFilt = replaceText(output);
 
-    // Google
-    if (ui->translatorOnlineGoogleToggled->isChecked()) {
-        m_google->translateText(outputFilt, [this, source, outputFilt](QString result) {
-            m_outputWindow->setTranslationResult(source, "Google", outputFilt, result);
-        });
-    }
-
-    // Ollama
-    if (ui->translatorOfflineOllamaToggled->isChecked()) {
-        QJsonObject ollama_translator = Config::getValue("translator").toJsonObject()
-                                                .value("translator_offline").toObject()
-                                                .value("ollama").toObject();
-            if (!ollama_translator.isEmpty()) {
-                m_ollama->generate(ollama_translator["translation_prompt"].toString() + outputFilt, m_ollamaCurrentModel, [this, source, outputFilt](QString result) {
-                m_outputWindow->setTranslationResult(source, "Ollama", outputFilt, result);
-            });
-        }
-    }
+    m_translationController->translate(source, outputFilt);
 
     // Hook
     if (source == "Hook") {
@@ -830,6 +787,17 @@ void MainWindow::openOllamaSettings()
             m_ollamaVisionAutoInterval = m_ollamaSettingsDialog->getAutoInterval();
             m_waitForOllamaResponse = m_ollamaSettingsDialog->getIsWaitForResponse();
 
+            m_translationController->setOllamaUrl(m_ollamaUrl);
+            m_translationController->setOllamaModel(m_ollamaCurrentModel);
+            m_translationController->setOllamaPrompt(m_ollamaTranslationPrompt);
+
+            m_ocrController->setOllamaUrl(m_ollamaUrl);
+            m_ocrController->setOllamaModel(m_ollamaCurrentModel);
+            m_ocrController->setOllamaVisionPrompt(m_ollamaVisionPrompt);
+            m_ocrController->setOllamaVisionMode(m_ollamaVisionMode);
+            m_ocrController->setOllamaVisionAutoInterval(m_ollamaVisionAutoInterval);
+            m_ocrController->setOllamaWaitForResponse(m_waitForOllamaResponse);
+
             m_translatorChanged = true; m_textProcessingChanged = true;
             ui->textProcessingOCREngineOllamaVisionRadio->setProperty("changed", true);
             ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
@@ -839,41 +807,10 @@ void MainWindow::openOllamaSettings()
     m_ollamaSettingsDialog->show();
 }
 
-void MainWindow::ollamaVisionTimerTimeout()
-{
-    if (m_waitForOllamaResponse && m_ollamaVisionRequestInProgress) {
-        return;
-    }
-
-    m_ollamaVisionRequestInProgress = true;
-
-    m_ollama->generateVision(m_ollamaVisionPrompt, m_ollamaCurrentModel, [this](QString result) {
-        m_ollamaVisionRequestInProgress = false;
-
-        if (m_ollamaVisionCacheOutput == result || result.isEmpty()) {
-            return;
-        }
-
-        m_ollamaVisionCacheOutput = result;
-        setCurrentOutput("Ollama Vision", result);
-    });
-}
-
 void MainWindow::retranslateText()
 {
     if (!m_overlayWindow->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
-        switch (m_ocrEngine) {
-            case OcrEngine::Tesseract:
-                m_tesseractOcr->clearCache();
-                m_tesseractOcr->triggerManualOCR();
-                break;
-            case OcrEngine::OllamaVision:
-                m_ollama->generateVision(m_ollamaVisionPrompt, m_ollamaCurrentModel, [this](QString result){
-                    setCurrentOutput("Ollama Vision", result);
-                });
-            default:
-                break;
-        }
+        m_ocrController->triggerManual();
     }
 
     if (ui->textProcessingHookCheckBox->isChecked() && !m_currentHookText.isEmpty()) {
@@ -883,15 +820,7 @@ void MainWindow::retranslateText()
 
 void MainWindow::manualInjectHook()
 {
-    if (!m_currentRunningPlugin.isEmpty())
-    {
-        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
-                                     [this](const PluginManager::PluginInfo& info) {
-                                         return info.name == m_currentRunningPlugin;
-                                     });
-        stopCurrentHookPlugin();
-        startHookPlugin(*pluginIt);
-    }
+    m_hookController->manualInject();
 }
 
 void MainWindow::selectNewRegion()
@@ -907,43 +836,6 @@ void MainWindow::selectNewInnerRegion()
         m_overlayWindow->setInnerBrushActive(true);
         showOverlayWindow();
     }
-}
-
-void MainWindow::initHotKeys()
-{
-    if (ui->generalRadioHotKey->isChecked()) {
-        m_captureRegionHotKey = new HotKeys(this);
-        m_captureRegionHotKey->setShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
-        connect(m_captureRegionHotKey, &HotKeys::activated, this, &MainWindow::captureRegion);
-        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, m_captureRegionHotKey, &HotKeys::setShortcut);
-        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this, [this] {
-            ui->generalHotkeySelectNewRegionEdit->clearFocus();
-        });
-
-        m_showHistoryTranslationHotKey = new HotKeys(this);
-        m_showHistoryTranslationHotKey->setShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
-        connect(m_showHistoryTranslationHotKey, &HotKeys::activated, this, &MainWindow::showHistory);
-        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, m_showHistoryTranslationHotKey, &HotKeys::setShortcut);
-        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this, [this] {
-            ui->generalHotkeyHistoryTranslationEdit->clearFocus();
-        });
-
-        m_manualTranslateHotKey = new HotKeys(this);
-        m_manualTranslateHotKey->setShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
-        connect(m_manualTranslateHotKey, &HotKeys::activated, this, &MainWindow::retranslateText);
-        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, m_manualTranslateHotKey, &HotKeys::setShortcut);
-        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this, [this] {
-            ui->generalHotkeyManualTranslateEdit->clearFocus();
-        });
-    }
-#ifdef Q_OS_LINUX
-    else {
-        m_portalHotKeys = new PortalHotkeys(this);
-        m_portalHotKeys->init();
-        connect(m_portalHotKeys, &PortalHotkeys::activated, this, &MainWindow::on_portalShortcutActivated);
-        connect(m_portalHotKeys, &PortalHotkeys::deactivated, this, &MainWindow::on_portalShortcutDeactivated);
-    }
-#endif
 }
 
 void MainWindow::captureRegion()
@@ -996,55 +888,71 @@ QString MainWindow::replaceText(QString output)
 
 void MainWindow::initScreenCast()
 {
-#ifdef Q_OS_LINUX
-    m_pipewire = new Pipewire();
-    m_pipewire->setCurrentFramerate(ui->outputGeneralBoxFramerate->currentText());
+    connect(m_captureController, &CaptureController::frameBufferReady,
+            m_opencv, &OpenCV::setCurrentFrameBuffer);
 
-    connect(ui->outputGeneralBoxFramerate, &QComboBox::currentTextChanged, m_pipewire, &Pipewire::setCurrentFramerate);
-    connect(m_pipewire, &Pipewire::currentFrameBuffer, m_opencv, &OpenCV::setCurrentFrameBuffer);
-#endif
+    // Persist restore token from Portal session
+    connect(m_captureController, &CaptureController::restoreTokenChanged, this,
+            [](const QString &token) {
+                QJsonObject screencast;
+                screencast["restore_token"] = token;
+                Config::setValue("screencast_portal", screencast);
+                Config::saveConfig("settings.json");
+            });
+
+    // When the controller is about to tear down its backend, stop OpenCV first
+    connect(m_captureController, &CaptureController::aboutToReconfigure, this, [this] {
+        if (m_opencv) m_opencv->setIsStopped(true);
+    });
+
+    // After a new backend is producing frames, re-enable OpenCV
+    connect(m_captureController, &CaptureController::captureRestarted, this, [this] {
+        if (m_opencv) m_opencv->setIsStopped(false);
+    });
+
+    // Framerate
+    m_captureController->setFramerate(ui->outputGeneralBoxFramerate->currentText());
+    connect(ui->outputGeneralBoxFramerate, &QComboBox::currentTextChanged,
+            m_captureController, &CaptureController::setFramerate);
+
+    // OpenCV
     connect(m_opencv, &OpenCV::currentOriginalFrame, this, &MainWindow::setCurrentOriginalFrame);
     connect(m_opencv, &OpenCV::currentProcessedFrame, this, &MainWindow::setCurrentProcessedFrame);
     connect(m_opencv, &OpenCV::currentProcessedMat, this, &MainWindow::setCurrentProcessedMat);
     connect(m_overlayWindow, &OverlayWindow::currentRoi, m_opencv, &OpenCV::setCurrentRoi);
     connect(m_overlayWindow, &OverlayWindow::currentInnerRoi, m_opencv, &OpenCV::setCurrentIgnoreRoi);
-#ifdef Q_OS_LINUX
-    m_portalScreencast = new ScreenCastPortal();
-    connect(m_portalScreencast, &ScreenCastPortal::currentRestoreToken, this, &MainWindow::setCurrentRestoreToken);
-    connect(m_portalScreencast, &ScreenCastPortal::currentNodeId, this, &MainWindow::setCurrentNodeId);
 
-    connect(m_portalScreencast, &ScreenCastPortal::failedPortal, this, [this]
-    {
-        delete m_portalScreencast; m_portalScreencast = nullptr;
-        delete m_pipewire; m_pipewire = nullptr;
-#endif
-        m_screenCapture = new ScreenCast();
-        m_screenCapture->init();
-        m_screenCapture->setIsCaptureDesktop(m_isCaptureDesktop);
+    // Target config (loaded earlier into m_isCaptureDesktop / m_currentDisplay / m_currentWindow)
+    m_captureController->setCaptureDesktop(m_isCaptureDesktop);
+    if (m_isCaptureDesktop) {
+        m_captureController->setDisplayIndex(m_currentDisplay);
+    } else {
+        m_captureController->setCurrentWindow(m_currentWindow);
+    }
 
-        m_screenCastWindow = new ScreenCastWindow(m_screenCapture);
+    m_captureController->initialize(m_currentRestoreToken);
 
-        connect(m_screenCapture, &ScreenCast::currentFrameBuffer, m_opencv, &OpenCV::setCurrentFrameBuffer);
-        connect(ui->outputGeneralBoxFramerate, &QComboBox::currentTextChanged, m_screenCapture, &ScreenCast::setCurrentFramerate);
-        connect(m_screenCastWindow, &ScreenCastWindow::screencastWindowShown, this, [this] {
-            connect(m_opencv, &OpenCV::currentOriginalFrame, m_screenCastWindow, &ScreenCastWindow::setCurrentOriginalFrame);
-        });
-        connect(m_screenCastWindow, &ScreenCastWindow::screencastWindowHidden, this, [this] {
-            disconnect(m_opencv, &OpenCV::currentOriginalFrame, m_screenCastWindow, &ScreenCastWindow::setCurrentOriginalFrame);
-        });
-
-        if (m_isCaptureDesktop) {
-            m_screenCapture->setCurrentDisplayIndex(m_currentDisplay);
-        } else {
-            m_screenCapture->setCurrentWindow(m_currentWindow);
+    auto wireScreenCastWindow = [this] {
+        if (auto *w = m_captureController->screenCastWindow()) {
+            connect(w, &ScreenCastWindow::screencastWindowShown, this, [this, w] {
+                connect(m_opencv, &OpenCV::currentOriginalFrame, w, &ScreenCastWindow::setCurrentOriginalFrame);
+            });
+            connect(w, &ScreenCastWindow::screencastWindowHidden, this, [this, w] {
+                disconnect(m_opencv, &OpenCV::currentOriginalFrame, w, &ScreenCastWindow::setCurrentOriginalFrame);
+            });
         }
+    };
+    wireScreenCastWindow();
 
-        if (!ui->outputToggledScreencast->isChecked()) m_screenCapture->start();
 #ifdef Q_OS_LINUX
-    });
-
-    if (!ui->outputToggledScreencast->isChecked()) m_portalScreencast->init(m_currentRestoreToken);
+    // If Portal fails at runtime, the controller swaps to ScreenCast backend
+    // and creates a ScreenCastWindow. Re-attempt wiring after that happens
+    connect(m_captureController, &CaptureController::captureFinished, this, wireScreenCastWindow);
 #endif
+
+    if (!ui->outputToggledScreencast->isChecked()) {
+        m_captureController->start();
+    }
 }
 
 void MainWindow::loadConfig()
@@ -1169,8 +1077,9 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
 
         m_googleSourceLang = google["google_source_lang"].toString();
         m_googleTargetLang = google["google_target_lang"].toString();
-        m_google->setSourceLang(m_googleSourceLang);
-        m_google->setTargetLang(m_googleTargetLang);
+        m_translationController->setGoogleSourceLang(m_googleSourceLang);
+        m_translationController->setGoogleTargetLang(m_googleTargetLang);
+        m_translationController->setGoogleEnabled(ui->translatorOnlineGoogleToggled->isChecked());
     }
 
     if (!ui->translatorOnlineGoogleToggled->isChecked() && widgetChanged(ui->translatorOnlineGoogleToggled)) {
@@ -1184,11 +1093,19 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
             ui->translatorOfflineOllamaToggled->setChecked(ollama_translator["is_ollama_translator"].toBool());
 
         QString ollamaUrl = ollama_translator["url"].toString();
-        if (ollamaUrl != "") {m_ollamaUrl = ollamaUrl; m_ollama->setUrl(m_ollamaUrl); }
+        if (ollamaUrl != "") {
+            m_ollamaUrl = ollamaUrl;
+            m_ocrController->setOllamaUrl(m_ollamaUrl);
+        }
         m_ollamaCurrentModel = ollama_translator["current_model"].toString();
         m_ollamaModels = ollama_translator["models"].toArray();
         m_ollamaTranslationPrompt = ollama_translator["translation_prompt"].toString();
         m_waitForOllamaResponse = ollama_translator["wait_for_responce"].toBool();
+
+        m_translationController->setOllamaUrl(m_ollamaUrl);
+        m_translationController->setOllamaModel(m_ollamaCurrentModel);
+        m_translationController->setOllamaPrompt(m_ollamaTranslationPrompt);
+        m_translationController->setOllamaEnabled(ui->translatorOfflineOllamaToggled->isChecked());
     }
 
     if (!ui->translatorOfflineOllamaToggled->isChecked() && widgetChanged(ui->translatorOfflineOllamaToggled)) {
@@ -1216,8 +1133,8 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         m_tesseractAutoInterval = tesseract["delay"].toDouble();
         m_tesseractSelectedLang = m_tesseractActiveLang;
 
-        m_tesseractOcr->setMode(m_tesseractMode);
-        m_tesseractOcr->setDelay(m_tesseractAutoInterval);
+        m_ocrController->setTesseractMode(m_tesseractMode);
+        m_ocrController->setTesseractAutoInterval(m_tesseractAutoInterval);
 
         // Ollama Vision
         QJsonObject ollama_vision = textProcessing["ollama_vision"].toObject();
@@ -1326,6 +1243,15 @@ void MainWindow::loadScreencastSettings()
         m_currentRestoreToken = keyStr;
 #endif
     }
+
+    if (m_captureController) {
+        m_captureController->setCaptureDesktop(m_isCaptureDesktop);
+        if (m_isCaptureDesktop) {
+            m_captureController->setDisplayIndex(m_currentDisplay);
+        } else {
+            m_captureController->setCurrentWindow(m_currentWindow);
+        }
+    }
 }
 
 void MainWindow::loadOcrSettings()
@@ -1334,9 +1260,7 @@ void MainWindow::loadOcrSettings()
     bool isEnabled = ui->textProcessingOCREngineToggled->isChecked();
 
     if (!isEnabled && toggledChanged) {
-        stopAllOcrEngines();
-        m_outputWindow->clearResultsBySource("Tesseract");
-        m_outputWindow->clearResultsBySource("Ollama Vision");
+        m_ocrController->setEnabled(false);
         return;
     }
 
@@ -1354,160 +1278,43 @@ void MainWindow::loadOcrSettings()
                       ? OcrEngine::Tesseract
                       : OcrEngine::OllamaVision;
 
-    if (!isEnabled) return;
+    m_ocrController->setEngine(m_ocrEngine == OcrEngine::Tesseract
+                                   ? OcrController::Tesseract
+                                   : OcrController::OllamaVision);
+    m_ocrController->setEnabled(isEnabled);
 
+    m_ocrController->setTesseractTessdataPath(m_tesseractTessdataPath);
+    m_ocrController->setTesseractUseSystemTessdata(m_tesseractUseSystemTessdata);
+    m_ocrController->setTesseractLanguage(m_tesseractActiveLang);
+    m_ocrController->setTesseractMode(m_tesseractMode);
+    m_ocrController->setTesseractAutoInterval(m_tesseractAutoInterval);
+
+    m_ocrController->setOllamaVisionPrompt(m_ollamaVisionPrompt);
+    m_ocrController->setOllamaVisionMode(m_ollamaVisionMode);
+    m_ocrController->setOllamaVisionAutoInterval(m_ollamaVisionAutoInterval);
+    m_ocrController->setOllamaWaitForResponse(m_waitForOllamaResponse);
+
+    m_ocrController->applyConfiguration();
+
+    // Refresh language list from Tesseract (only meaningful for Tesseract path).
     if (m_ocrEngine == OcrEngine::Tesseract && tesseractChanged) {
-        stopOllamaVisionEngine();
-        configureTesseractEngine();
-    } else if (m_ocrEngine == OcrEngine::OllamaVision && ollamaChanged) {
-        stopTesseractEngine();
-        configureOllamaVisionEngine();
+        m_tesserractLangList = m_ocrController->availableTesseractLanguages();
     }
-}
-
-void MainWindow::stopAllOcrEngines()
-{
-    if (m_tesseractOcr && m_tesseractOcr->isRunning()) {
-        m_tesseractOcr->stop();
-    }
-    if (m_ollamaVisionTimer) {
-        m_ollamaVisionTimer->stop();
-        delete m_ollamaVisionTimer;
-        m_ollamaVisionTimer = nullptr;
-    }
-}
-
-void MainWindow::stopTesseractEngine()
-{
-    if (m_tesseractOcr && m_tesseractOcr->isRunning()) {
-        m_tesseractOcr->stop();
-    }
-}
-
-void MainWindow::stopOllamaVisionEngine()
-{
-    if (m_ollamaVisionTimer) {
-        m_ollamaVisionTimer->stop();
-        delete m_ollamaVisionTimer;
-        m_ollamaVisionTimer = nullptr;
-    }
-}
-
-void MainWindow::configureTesseractEngine()
-{
-    stopTesseractEngine();
-
-    m_outputWindow->clearResultsBySource("Ollama Vision");
-
-    if (m_tesseractUseSystemTessdata) {
-        m_tesseractOcr->setTessdataPath(QString());
-        QString tessdataPath = QString();
-    } else {
-        QString tessdataPath = m_tesseractTessdataPath;
-        QDir dir(tessdataPath);
-        if (dir.exists()) {
-            m_tesseractOcr->setTessdataPath(tessdataPath);
-        } else {
-            m_tesseractUseSystemTessdata = true;
-            Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
-        }
-    }
-    std::vector<std::string> languages = m_tesseractOcr->checkAvailableLanguages();
-    m_tesserractLangList.clear();
-    for (const auto& language : languages) {
-        m_tesserractLangList << QString::fromStdString(language);
-    }
-
-    const QString language = m_tesseractActiveLang;
-    if (!language.isEmpty()) {
-        m_tesseractOcr->init(language);
-    }
-}
-
-void MainWindow::configureOllamaVisionEngine()
-{
-    m_outputWindow->clearResultsBySource("Tesseract");
-
-    if (ui->textProcessingOCREngineOllamaVisionRadio->isChecked() && m_ollamaVisionMode == Auto) {
-        if (!m_ollamaVisionTimer) {
-            m_ollamaVisionTimer = new QTimer(this);
-            connect(m_ollamaVisionTimer, &QTimer::timeout, this, &MainWindow::ollamaVisionTimerTimeout);
-        }
-        m_ollamaVisionTimer->setInterval(m_ollamaVisionAutoInterval * 1000);
-        m_ollamaVisionTimer->start();
-    } else {
-        if (m_ollamaVisionTimer) {
-            m_ollamaVisionTimer->stop();
-            delete m_ollamaVisionTimer;
-            m_ollamaVisionTimer = nullptr;
-        }
-    }
-}
-
-void MainWindow::stopCurrentHookPlugin()
-{
-    m_hookPlugin->execute("stop", { QString(), QString() });
-    m_outputWindow->clearResultsBySource("Hook");
-    m_outputWindow->sethookState(false);
-    m_outputWindow->clearInfoMessage();
-    m_currentRunningPlugin.clear();
-}
-
-void MainWindow::startHookPlugin(const PluginManager::PluginInfo& info)
-{
-    QString exe;
-
-    if (m_hookMode == HookSettingsDialog::HookMode::GameAppMode) {
-        exe = info.targetExecutable;
-    } else {
-        exe = m_currentEngineProcess;
-    }
-
-    QStringList archList;
-    for (auto it = info.archPaths.constBegin(); it != info.archPaths.constEnd(); ++it) {
-        archList << (it.key() + ":" + it.value());
-    }
-
-    m_hookPlugin->execute("start", { exe, info.name, archList.join(";")});
-    m_outputWindow->sethookState(true);
-    m_currentRunningPlugin = info.name;
-    m_outputWindow->clearInfoMessage();
 }
 
 void MainWindow::loadHookPluginSettings()
 {
-    if (!m_hookPlugin || !widgetChanged(ui->textProcessingHookCheckBox)) {
+    if (!m_hookController->isPluginLoaded() || !widgetChanged(ui->textProcessingHookCheckBox)) {
         return;
     }
-    if (ui->textProcessingHookCheckBox->isChecked() &&
-        ui->textProcessingHookCheckBox->isEnabled()) {
 
-        if (m_hookMode == HookSettingsDialog::HookMode::EngineMode && m_currentEngineProcess.isEmpty()) {
-            const QString msg = tr("[Hook] No process selected. Please choose a process in the settings");
-            Log(Logger::Level::Warning, msg);
-            m_outputWindow->setInfoMessage(msg);
-            return;
-        }
+    m_hookController->setMode(m_hookMode);
+    m_hookController->setCurrentGameAppPlugin(m_currentGameAppPlugin);
+    m_hookController->setCurrentEnginePlugin(m_currentEnginePlugin);
+    m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
 
-        auto pluginIt = std::find_if(m_registry.cbegin(), m_registry.cend(),
-                                     [this](const PluginManager::PluginInfo& info) {
-                                         return (m_hookMode == HookSettingsDialog::HookMode::GameAppMode)
-                                         ? (info.name == m_currentGameAppPlugin)
-                                         : (info.name == m_currentEnginePlugin);
-                                     });
-        if (pluginIt == m_registry.cend()) {
-            const QString msg = tr("[Hook] No game selected. Please choose a game in the settings");
-            Log(Logger::Level::Warning, msg);
-            m_outputWindow->setInfoMessage(msg);
-            return;
-        }
-        if (!m_currentRunningPlugin.isEmpty()) {
-            stopCurrentHookPlugin();
-        }
-        startHookPlugin(*pluginIt);
-    } else {
-        stopCurrentHookPlugin();
-    }
+    m_hookController->apply(ui->textProcessingHookCheckBox->isChecked(),
+                            ui->textProcessingHookCheckBox->isEnabled());
 }
 
 void MainWindow::saveConfig()
@@ -1520,13 +1327,13 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->generalToggledStartup))
             general["settings_startup"] = ui->generalToggledStartup->isChecked();
 
-    #ifdef Q_OS_LINUX
+#ifdef Q_OS_LINUX
         if (ui->generalRadioHotKey->isChecked() && widgetChanged(ui->generalRadioHotKey)) {
             general["hotkeys_type"] = "x11";
         } else if (!ui->generalRadioHotKey->isChecked() && widgetChanged(ui->generalRadioHotKey)) {
             general["hotkeys_type"] = "portal";
         }
-    #endif
+#endif
         if (widgetChanged(ui->generalHotkeySelectNewRegionEdit))
             general["hotkey_select_region"] = ui->generalHotkeySelectNewRegionEdit->keySequence().toString();
         if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit))
