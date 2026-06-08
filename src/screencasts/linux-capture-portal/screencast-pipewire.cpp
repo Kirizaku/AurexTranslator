@@ -174,7 +174,7 @@ void Pipewire::on_param_changed(void* userdata, uint32_t id, const struct spa_po
 }
 
 const pw_stream_events Pipewire::stream_events = {
-    PW_VERSION_STREAM_EVENTS,
+    .version = PW_VERSION_STREAM_EVENTS,
     .state_changed = on_stream_state_changed,
     .param_changed = on_param_changed,
     .process = on_process,
