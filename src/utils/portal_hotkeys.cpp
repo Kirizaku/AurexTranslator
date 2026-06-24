@@ -39,8 +39,8 @@ bool PortalHotkeys::init()
                                                                          QDBusConnection::sessionBus(), this);
 
     auto reply = m_portalShortcuts->CreateSession({
-                                                   { QLatin1String("session_handle_token"), QString("g%1").arg(m_sessionTokenCounter += 1) },
-                                                   { QLatin1String("handle_token"), QString("g%1").arg(m_requestTokenCounter += 1) },
+                                                   { QLatin1String("session_handle_token"), QString("hk%1").arg(m_sessionTokenCounter += 1) },
+                                                   { QLatin1String("handle_token"), QString("hk%1").arg(m_requestTokenCounter += 1) },
                                                    });
 
     reply.waitForFinished();
@@ -81,7 +81,7 @@ void PortalHotkeys::bindShortcuts()
         { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } }
     };
 
-    auto reply = m_portalShortcuts->BindShortcuts(m_globalShortcutsSession, shortcuts, 0, {{ "handle_token", QString("g%1").arg(m_requestTokenCounter += 1) }} );
+    auto reply = m_portalShortcuts->BindShortcuts(m_globalShortcutsSession, shortcuts, 0, {{ "handle_token", QString("hk%1").arg(m_requestTokenCounter += 1) }} );
     reply.waitForFinished();
     if (reply.isError()) {
         Log(Logger::Level::Warning, QString("[shortcuts] Failed to call BindShortcuts: %1").arg(reply.error().message()));

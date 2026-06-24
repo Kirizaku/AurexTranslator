@@ -33,13 +33,13 @@ const QDBusArgument &operator >> (const QDBusArgument &arg, ScreenCastPortal::St
 QString ScreenCastPortal::getSessionToken()
 {
     m_sessionTokenCounter += 1;
-    return QString("u%1").arg(m_sessionTokenCounter);
+    return QString("sc%1").arg(m_sessionTokenCounter);
 }
 
 QString ScreenCastPortal::getRequestToken()
 {
     m_requestTokenCounter += 1;
-    return QString("u%1").arg(m_requestTokenCounter);
+    return QString("sc%1").arg(m_requestTokenCounter);
 }
 
 void ScreenCastPortal::init(QString setCurrentRestoreToken)
