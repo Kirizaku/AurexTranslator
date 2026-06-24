@@ -30,6 +30,10 @@
 #include <sys/utsname.h>
 #endif
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 #include "src/UI/mainwindow.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
