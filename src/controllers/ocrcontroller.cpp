@@ -17,8 +17,8 @@
 
 #include "ocrcontroller.h"
 
-#include "src/utils/tesseractocr.h"
-#include "src/utils/ollama.h"
+#include "src/engines/tesseractocr.h"
+#include "src/engines/ollama.h"
 #include "src/utils/logger.h"
 
 #include <QtNetwork/QNetworkAccessManager>

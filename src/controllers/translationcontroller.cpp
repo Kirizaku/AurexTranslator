@@ -18,7 +18,7 @@
 #include "translationcontroller.h"
 
 #include "src/translations/google.h"
-#include "src/utils/ollama.h"
+#include "src/engines/ollama.h"
 
 #include <QtNetwork/QNetworkAccessManager>
 

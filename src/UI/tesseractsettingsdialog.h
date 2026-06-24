@@ -20,7 +20,7 @@
 
 #include <QDialog>
 
-#include "../utils/tesseractocr.h"
+#include "../engines/tesseractocr.h"
 
 class QLabel;
 class QComboBox;

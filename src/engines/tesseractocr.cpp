@@ -16,7 +16,7 @@
 ******************************************************************************/
 
 #include "tesseractocr.h"
-#include "logger.h"
+#include "src/utils/logger.h"
 
 TesseractOcr::TesseractOcr(QObject *parent)
     : QThread{parent}

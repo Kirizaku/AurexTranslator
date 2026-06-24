@@ -27,7 +27,7 @@
 #include <QSpinBox>
 #include <QCheckBox>
 
-#include "../utils/ollama.h"
+#include "../engines/ollama.h"
 
 class OllamaSettingsDialog : public QDialog
 {

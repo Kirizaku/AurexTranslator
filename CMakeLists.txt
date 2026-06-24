@@ -48,12 +48,13 @@ set(PROJECT_SOURCES
     src/controllers/ocrcontroller.h src/controllers/ocrcontroller.cpp
     src/controllers/hookcontroller.h src/controllers/hookcontroller.cpp
 
-    src/utils/opencv.cpp src/utils/opencv.h
-    src/utils/tesseractocr.cpp src/utils/tesseractocr.h
+    src/engines/opencv.cpp src/engines/opencv.h
+    src/engines/tesseractocr.cpp src/engines/tesseractocr.h
+    src/engines/ollama.cpp src/engines/ollama.h
+
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
     src/utils/hotkeys.cpp src/utils/hotkeys.h
-    src/utils/ollama.cpp src/utils/ollama.h
     src/utils/plugininterface.h
     src/utils/pluginloader.cpp src/utils/pluginloader.h
     src/utils/metadatareader.cpp src/utils/metadatareader.h

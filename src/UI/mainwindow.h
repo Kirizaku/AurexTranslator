@@ -22,7 +22,7 @@
 #include <QNetworkProxy>
 
 #include "src/utils/pluginloader.h"
-#include "src/utils/opencv.h"
+#include "src/engines/opencv.h"
 #include "tesseractsettingsdialog.h"
 #include "ollamasettingsdialog.h"
 #include "hooksettingsdialog.h"
