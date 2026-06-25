@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(aurextranslator VERSION 0.0.6 LANGUAGES CXX)
+project(aurextranslator VERSION 0.0.6 LANGUAGES C CXX)
 
 set(APP_NAME "AurexTranslator")
 set(APP_VERSION "${PROJECT_VERSION} (alpha)")
@@ -25,6 +25,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Qt6 REQUIRED COMPONENTS Core)
     find_package(X11 REQUIRED)
     pkg_check_modules(LIBPIPIPEWIRE REQUIRED libpipewire-0.3)
+    pkg_check_modules(WAYLAND_CLIENT wayland-client)
+    find_program(WAYLAND_SCANNER wayland-scanner)
 endif()
 
 pkg_check_modules(TESSERACT REQUIRED tesseract)
@@ -47,10 +49,12 @@ set(PROJECT_SOURCES
     src/controllers/capturecontroller.h src/controllers/capturecontroller.cpp
     src/controllers/ocrcontroller.h src/controllers/ocrcontroller.cpp
     src/controllers/hookcontroller.h src/controllers/hookcontroller.cpp
+    src/controllers/clipboardcontroller.h src/controllers/clipboardcontroller.cpp
 
     src/engines/opencv.cpp src/engines/opencv.h
     src/engines/tesseractocr.cpp src/engines/tesseractocr.h
     src/engines/ollama.cpp src/engines/ollama.h
+    src/engines/clipboardqt.h src/engines/clipboardqt.cpp
 
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
@@ -58,6 +62,7 @@ set(PROJECT_SOURCES
     src/utils/plugininterface.h
     src/utils/pluginloader.cpp src/utils/pluginloader.h
     src/utils/metadatareader.cpp src/utils/metadatareader.h
+
     src/translations/google.cpp src/translations/google.h
 )
 
@@ -67,10 +72,71 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         src/screencasts/linux-capture-portal/screencast-portal.cpp src/screencasts/linux-capture-portal/screencast-portal.h
         src/screencasts/linux-capture-x11/screencast-x11.cpp src/screencasts/linux-capture-x11/screencast-x11.h
         src/utils/portal_hotkeys.h src/utils/portal_hotkeys.cpp
+        src/engines/clipboardportal.h src/engines/clipboardportal.cpp
     )
 
-qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.ScreenCast.xml screencast_portal_interface)
-qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.GlobalShortcuts.xml globalshortcuts_portal_interface)
+    qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.ScreenCast.xml screencast_portal_interface)
+    qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.GlobalShortcuts.xml globalshortcuts_portal_interface)
+    qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.RemoteDesktop.xml remotedesktop_portal_interface)
+    qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.Clipboard.xml clipboard_portal_interface)
+
+    # Wayland clipboard: generate C bindings from bundled protocol XML
+    if(WAYLAND_SCANNER AND WAYLAND_CLIENT_FOUND)
+        # ext-data-control-v1
+        set(WL_EXT_XML    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wayland-protocols/ext-data-control-v1.xml)
+        set(WL_EXT_HEADER ${CMAKE_CURRENT_BINARY_DIR}/ext-data-control-v1-client-protocol.h)
+        set(WL_EXT_CODE   ${CMAKE_CURRENT_BINARY_DIR}/ext-data-control-v1-client-protocol.c)
+
+        add_custom_command(
+            OUTPUT ${WL_EXT_HEADER}
+            COMMAND ${WAYLAND_SCANNER} client-header ${WL_EXT_XML} ${WL_EXT_HEADER}
+            DEPENDS ${WL_EXT_XML}
+            COMMENT "Generating ext-data-control client header"
+        )
+        add_custom_command(
+            OUTPUT ${WL_EXT_CODE}
+            COMMAND ${WAYLAND_SCANNER} private-code ${WL_EXT_XML} ${WL_EXT_CODE}
+            DEPENDS ${WL_EXT_XML}
+            COMMENT "Generating ext-data-control client code"
+        )
+
+        # wlr-data-control-unstable-v1
+        set(WL_ZWL_XML    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wayland-protocols/wlr-data-control-unstable-v1.xml)
+        set(WL_ZWL_HEADER ${CMAKE_CURRENT_BINARY_DIR}/wlr-data-control-unstable-v1-client-protocol.h)
+        set(WL_ZWL_CODE   ${CMAKE_CURRENT_BINARY_DIR}/wlr-data-control-unstable-v1-client-protocol.c)
+
+        add_custom_command(
+            OUTPUT ${WL_ZWL_HEADER}
+            COMMAND ${WAYLAND_SCANNER} client-header ${WL_ZWL_XML} ${WL_ZWL_HEADER}
+            DEPENDS ${WL_ZWL_XML}
+            COMMENT "Generating wlr-data-control client header"
+        )
+        add_custom_command(
+            OUTPUT ${WL_ZWL_CODE}
+            COMMAND ${WAYLAND_SCANNER} private-code ${WL_ZWL_XML} ${WL_ZWL_CODE}
+            DEPENDS ${WL_ZWL_XML}
+            COMMENT "Generating wlr-data-control client code"
+        )
+
+        add_library(wlr_data_control_protocol STATIC
+            ${WL_EXT_CODE}   ${WL_EXT_HEADER}
+            ${WL_ZWL_CODE}   ${WL_ZWL_HEADER}
+        )
+        set_target_properties(wlr_data_control_protocol PROPERTIES LINKER_LANGUAGE C)
+        target_include_directories(wlr_data_control_protocol PUBLIC
+            ${CMAKE_CURRENT_BINARY_DIR}
+            ${WAYLAND_CLIENT_INCLUDE_DIRS}
+        )
+        target_link_libraries(wlr_data_control_protocol PUBLIC ${WAYLAND_CLIENT_LIBRARIES})
+
+        list(APPEND PROJECT_SOURCES
+            src/engines/clipboardwayland.h src/engines/clipboardwayland.cpp
+        )
+
+        add_compile_definitions(AT_WAYLAND_DATA_CONTROL)
+    else()
+        message(WARNING "wayland-scanner or wayland-client not found – WaylandClipboardController disabled")
+    endif()
 
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND PROJECT_SOURCES
@@ -107,6 +173,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         X11::Xrandr
         ${LIBPIPIPEWIRE_LIBRARIES}
 )
+    if(WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
+        list(APPEND LINUX_LIBS wlr_data_control_protocol)
+    endif()
 endif()
 
 target_link_libraries(${PROJECT_NAME}

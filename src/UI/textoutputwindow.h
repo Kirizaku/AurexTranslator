@@ -50,6 +50,7 @@ signals:
     void selectNewInnerRegionRequested();
     void retranslateRequested();
     void manualInjectHookRequested();
+    void internalClipboardWrite(const QString &text);
 
 public slots:
     void setInfoMessage(const QString &message);

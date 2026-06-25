@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="ext_data_control_v1">
+  <!--
+    Copyright © 2018 Simon Ser
+    Copyright © 2019 Ivan Molodetskikh
+    Copyright © 2024 Neal Gompa
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, DAMAGES OR OTHER DAMAGES OF ANY KIND, RESULTING FROM LOSS
+    OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+    NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+    CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  -->
+
+  <description summary="control data devices">
+    This protocol allows a privileged client to control data devices. In
+    particular, the client will be able to manage the current selection and
+    take the role of a clipboard manager.
+
+    This protocol is a stable analog of the unstable
+    zwlr_data_control_v1 protocol.
+  </description>
+
+  <interface name="ext_data_control_manager_v1" version="1">
+    <description summary="manager to control data devices">
+      This interface is a manager that allows creating per-seat data device
+      controls.
+    </description>
+
+    <request name="create_data_source">
+      <description summary="create a new data source">
+        Creates a data source object.
+      </description>
+      <arg name="id" type="new_id" interface="ext_data_control_source_v1"
+        summary="the new data source"/>
+    </request>
+
+    <request name="get_data_device">
+      <description summary="get a data device for a seat">
+        Creates a data device that can be used to manage a seat's selection.
+      </description>
+      <arg name="id" type="new_id" interface="ext_data_control_device_v1"
+        summary="the new data device"/>
+      <arg name="seat" type="object" interface="wl_seat"
+        summary="the seat"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager">
+        All objects created by the manager will still remain valid, until
+        their appropriate destroy request has been called.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="ext_data_control_device_v1" version="1">
+    <description summary="manage a seat's data device">
+      This interface allows a client to manage a seat's selection.
+    </description>
+
+    <request name="set_selection">
+      <description summary="copy data to the selection">
+        This request asks the compositor to set the selection to the data
+        from the source on behalf of the client.
+
+        To unset the selection, set the source to NULL.
+      </description>
+      <arg name="source" type="object" interface="ext_data_control_source_v1"
+        allow-null="true" summary="the data source"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy this data device">
+        Destroys the data device object.
+      </description>
+    </request>
+
+    <event name="data_offer">
+      <description summary="introduce a new ext_data_control_offer">
+        The data_offer event introduces a new ext_data_control_offer object,
+        which will subsequently be used in either the
+        ext_data_control_device.selection event (for the regular clipboard
+        selections) or the ext_data_control_device.primary_selection event
+        (for the primary clipboard selections).
+      </description>
+      <arg name="id" type="new_id" interface="ext_data_control_offer_v1"
+        summary="the new data_offer object"/>
+    </event>
+
+    <event name="selection">
+      <description summary="advertise new selection">
+        The selection event is sent out to notify the client of a new
+        ext_data_control_offer for the selection of this device.
+      </description>
+      <arg name="id" type="object" interface="ext_data_control_offer_v1"
+        allow-null="true" summary="selection data_offer object"/>
+    </event>
+
+    <event name="finished">
+      <description summary="this data control is no longer valid">
+        This data control object is no longer valid and should be destroyed.
+      </description>
+    </event>
+
+    <event name="primary_selection">
+      <description summary="advertise new primary selection">
+        The primary_selection event is sent out to notify the client of a new
+        ext_data_control_offer for the primary selection of this device.
+      </description>
+      <arg name="id" type="object" interface="ext_data_control_offer_v1"
+        allow-null="true" summary="primary_selection data_offer object"/>
+    </event>
+
+    <request name="set_primary_selection">
+      <description summary="copy data to the primary selection">
+        This request asks the compositor to set the primary selection to the
+        data from the source on behalf of the client.
+
+        To unset the primary selection, set the source to NULL.
+      </description>
+      <arg name="source" type="object" interface="ext_data_control_source_v1"
+        allow-null="true" summary="the data source"/>
+    </request>
+  </interface>
+
+  <interface name="ext_data_control_source_v1" version="1">
+    <description summary="offer to transfer data">
+      The ext_data_control_source_v1 object is the source side of a
+      ext_data_control_offer.
+    </description>
+
+    <request name="offer">
+      <description summary="add an offered MIME type">
+        This request adds a MIME type to the set of MIME types advertised to
+        targets.
+      </description>
+      <arg name="mime_type" type="string" summary="MIME type offered by the data source"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy this source">
+        Destroys the data source object.
+      </description>
+    </request>
+
+    <event name="send">
+      <description summary="send the data">
+        Request for data from the client. Send the data as the specified MIME
+        type over the passed file descriptor, then close it.
+      </description>
+      <arg name="mime_type" type="string" summary="MIME type for the data"/>
+      <arg name="fd" type="fd" summary="file descriptor for the data"/>
+    </event>
+
+    <event name="cancelled">
+      <description summary="selection was cancelled">
+        This data source is no longer valid. The client should clean up and
+        destroy this data source.
+      </description>
+    </event>
+  </interface>
+
+  <interface name="ext_data_control_offer_v1" version="1">
+    <description summary="offer to transfer data">
+      An ext_data_control_offer_v1 represents a piece of data offered for
+      transfer by another client (the source client).
+    </description>
+
+    <request name="receive">
+      <description summary="request that the data is transferred">
+        To transfer the offered data, the client issues this request and
+        indicates the MIME type it wants to receive. The transfer happens
+        through the passed file descriptor.
+      </description>
+      <arg name="mime_type" type="string" summary="MIME type desired by receiver"/>
+      <arg name="fd" type="fd" summary="file descriptor for data transfer"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy this offer">
+        Destroys the data offer object.
+      </description>
+    </request>
+
+    <event name="offer">
+      <description summary="advertise offered MIME type">
+        Sent immediately after creating the ext_data_control_offer object.
+        One event per offered MIME type.
+      </description>
+      <arg name="mime_type" type="string" summary="offered MIME type"/>
+    </event>
+  </interface>
+</protocol>

@@ -19,9 +19,10 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QFileDialog>
-#include <QTimer>
 #include <QJsonArray>
 #include <QMenu>
+
+#include "src/controllers/clipboardcontroller.h"
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupCoreConnections();
     loadApplicationConfig();
     initSubsystems();
+    initClipboardController();
     setupSettingsConnections();
 
     connect(m_translationController, &TranslationController::translationReady,
@@ -75,6 +77,7 @@ MainWindow::~MainWindow()
     if (m_captureController) {
         m_captureController->stop();
     }
+
     if (m_hookController) {
         m_hookController->stop();
     }
@@ -134,6 +137,7 @@ void MainWindow::setupBaseUI()
         ui->textProcessingOCREngineTesseractRadio,
         ui->textProcessingOCREngineOllamaVisionRadio,
         ui->textProcessingHookCheckBox,
+        ui->textProcessingClipboardCheckBox,
         ui->textProcessingTableWidget,
         ui->proxyEnabledCheckBox,
         ui->proxyAddressEdit,
@@ -151,7 +155,7 @@ void MainWindow::initPlugins()
     m_pluginManager->loadPlugins();
     m_hookController->setRegistry(m_registry);
 
-    ui->groupBox_hook->setVisible(false);
+    ui->textProcessingHookRow->setVisible(false);
 
     QMap<QString, QStringList> dependencyErrors = m_pluginManager->validateDependencies(m_registry);
 
@@ -187,7 +191,7 @@ void MainWindow::initPlugins()
 
         if (p.name == "libat-injector" && !hasErrors) {
             ui->textProcessingHookCheckBox->setEnabled(true);
-            ui->groupBox_hook->setVisible(true);
+            ui->textProcessingHookRow->setVisible(true);
 
             if (!m_hookController->isPluginLoaded()) {
                 QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
@@ -328,6 +332,34 @@ void MainWindow::initSubsystems()
     m_outputWindow->sethookState(m_hookController->isRunning());
 }
 
+void MainWindow::initClipboardController()
+{
+    m_clipboardController = ClipboardController::create(this);
+
+    if (!m_clipboardController) {
+        Log(Logger::Level::Warning, "[Clipboard] No supported clipboard backend found"
+                                    "Clipboard input mode is unavailable on this compositor");
+        return;
+    }
+
+    connect(m_clipboardController, &ClipboardController::textChanged, this, [this](const QString &text) {
+        setCurrentOutput(tr("Clipboard"), text);
+    });
+
+    connect(m_clipboardController, &ClipboardController::failed, this, [this]() {
+        m_clipboardController->stop();
+        ui->textProcessingClipboardCheckBox->blockSignals(true);
+        ui->textProcessingClipboardCheckBox->setChecked(false);
+        ui->textProcessingClipboardCheckBox->blockSignals(false);
+    });
+
+    connect(m_outputWindow, &TextOutputWindow::internalClipboardWrite,
+            m_clipboardController, &ClipboardController::suppress);
+
+    if (ui->textProcessingClipboardCheckBox->isChecked())
+        m_clipboardController->start();
+}
+
 void MainWindow::setupSettingsConnections()
 {
     auto bind = [this](bool& flag, QWidget* w) {
@@ -373,6 +405,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->textProcessingOCREngineTesseractRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineTesseractRadio));
     connect(ui->textProcessingOCREngineOllamaVisionRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineOllamaVisionRadio));
     connect(ui->textProcessingHookCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingHookCheckBox));
+    connect(ui->textProcessingClipboardCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingClipboardCheckBox));
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
 
     // Proxy
@@ -626,6 +659,7 @@ void MainWindow::on_textProcessingHookSettingsButton_clicked()
     m_hookSettingsDialog->show();
 }
 
+
 void MainWindow::on_textProcessingAddRowButton_clicked()
 {
     int row = ui->textProcessingTableWidget->rowCount();
@@ -674,7 +708,11 @@ void MainWindow::on_logsNewLogMessage(const QString& message)
 
 void MainWindow::on_logsCopyAllButton_clicked()
 {
-    QApplication::clipboard()->setText(ui->logsPlainText->toPlainText());
+    const QString text = ui->logsPlainText->toPlainText();
+    if (m_clipboardController)
+        m_clipboardController->suppress(text);
+
+    QApplication::clipboard()->setText(text);
 }
 
 void MainWindow::on_logsOpenDirectoryButton_clicked()
@@ -1155,6 +1193,23 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         m_currentEnginePlugin = hook["current_engine_plugin"].toString();
         m_currentEngineProcess = hook["current_engine_process"].toString();
 
+        // Clipboard
+        if (widgetChanged(ui->textProcessingClipboardCheckBox)) {
+            bool isClipboard = textProcessing["is_clipboard"].toBool();
+            ui->textProcessingClipboardCheckBox->blockSignals(true);
+            ui->textProcessingClipboardCheckBox->setChecked(isClipboard);
+            ui->textProcessingClipboardCheckBox->blockSignals(false);
+
+            if (m_clipboardController) {
+                if (isClipboard) {
+                    m_clipboardController->start();
+                } else {
+                    m_clipboardController->stop();
+                    m_outputWindow->clearResultsBySource(tr("Clipboard"));
+                }
+            }
+        }
+
         // Text Replacement
         QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
         if (widgetChanged(ui->textProcessingTableWidget)) {
@@ -1486,6 +1541,9 @@ void MainWindow::saveConfig()
         textProcessing.insert("tesseract", tesseract);
         textProcessing.insert("ollama_vision", ollama_vision);
         textProcessing.insert("hook", hook);
+
+        if (widgetChanged(ui->textProcessingClipboardCheckBox))
+            textProcessing["is_clipboard"] = ui->textProcessingClipboardCheckBox->isChecked();
 
         if (widgetChanged(ui->textProcessingTableWidget)) {
             QJsonArray jsonArray;

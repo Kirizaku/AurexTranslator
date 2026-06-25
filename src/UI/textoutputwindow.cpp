@@ -271,7 +271,9 @@ void TextOutputWindow::on_createIgnoreZoneButton_clicked()
 
 void TextOutputWindow::on_copyButton_clicked()
 {
-    QApplication::clipboard()->setText(ui->label->text());
+    const QString text = ui->label->text();
+    emit internalClipboardWrite(text);
+    QApplication::clipboard()->setText(text);
 }
 
 void TextOutputWindow::on_clearTranslationsButton_clicked()

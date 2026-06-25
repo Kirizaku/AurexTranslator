@@ -35,6 +35,7 @@ class HotkeyController;
 class CaptureController;
 class OcrController;
 class HookController;
+class ClipboardController;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -101,7 +102,6 @@ private slots:
     void selectNewRegion();
     void selectNewInnerRegion();
 
-
 private:
     Ui::MainWindow *ui;
     QNetworkAccessManager *m_manager;
@@ -110,11 +110,16 @@ private:
     PluginManager *m_pluginManager;
     TranslationController *m_translationController = nullptr;
 
+    // Clipboard
+    ClipboardController *m_clipboardController = nullptr;
+    bool m_clipboardEnabled = false;
+
     void setupBaseUI();
     void initPlugins();
     void setupCoreConnections();
     void loadApplicationConfig();
     void initSubsystems();
+    void initClipboardController();
     void setupSettingsConnections();
     void loadLogMessages();
     void setupFinalUI();

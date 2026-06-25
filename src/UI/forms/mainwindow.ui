@@ -984,72 +984,32 @@ font-weight: 700;
 }</string>
            </property>
            <property name="title">
-            <string>OCR Engine</string>
+            <string>Input source</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="textProcessingOCREngineToggled">
-              <property name="styleSheet">
-               <string notr="true">QCheckBox {
-font-weight: 700;
-}</string>
-              </property>
-              <property name="text">
-               <string>Enable OCR</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="2">
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QVBoxLayout" name="vboxInputSource">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QRadioButton" name="textProcessingOCREngineOllamaVisionRadio">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
+               <widget class="QCheckBox" name="textProcessingOCREngineToggled">
                 <property name="minimumSize">
                  <size>
-                  <width>150</width>
-                  <height>0</height>
+                  <width>120</width>
+                  <height>26</height>
                  </size>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">QCheckBox {
+font-weight: 700;
+}</string>
+                </property>
                 <property name="text">
-                 <string notr="true">Ollama Vision</string>
+                 <string>OCR</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QPushButton" name="textProcessingOCREngineOllamaSettingsButton">
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string notr="true">...</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_11">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </item>
-            <item row="2" column="0" colspan="2">
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
                <widget class="QRadioButton" name="textProcessingOCREngineTesseractRadio">
                 <property name="enabled">
@@ -1057,7 +1017,7 @@ font-weight: 700;
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>150</width>
+                  <width>100</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1071,6 +1031,35 @@ font-weight: 700;
               </item>
               <item>
                <widget class="QPushButton" name="textProcessingOCREngineTesseractSettingsButton">
+                <property name="maximumSize">
+                 <size>
+                  <width>30</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string notr="true">...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="textProcessingOCREngineOllamaVisionRadio">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string notr="true">Ollama Vision</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="textProcessingOCREngineOllamaSettingsButton">
                 <property name="maximumSize">
                  <size>
                   <width>30</width>
@@ -1097,31 +1086,79 @@ font-weight: 700;
               </item>
              </layout>
             </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupBox_hook">
-           <property name="styleSheet">
-            <string notr="true">QGroupBox {
+            <item>
+             <widget class="QWidget" name="textProcessingHookRow">
+              <layout class="QHBoxLayout" name="horizontalLayout_8">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QCheckBox" name="textProcessingHookCheckBox">
+                 <property name="minimumSize">
+                  <size>
+                   <width>120</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QCheckBox {
 font-weight: 700;
 }</string>
-           </property>
-           <property name="title">
-            <string notr="true">Hook</string>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 </property>
+                 <property name="text">
+                  <string notr="true">Hook</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="textProcessingHookSettingsButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string notr="true">...</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_12">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <layout class="QHBoxLayout" name="horizontalLayout_clipboard">
               <item>
-               <widget class="QCheckBox" name="textProcessingHookCheckBox">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
+               <widget class="QCheckBox" name="textProcessingClipboardCheckBox">
                 <property name="minimumSize">
                  <size>
-                  <width>150</width>
-                  <height>0</height>
+                  <width>120</width>
+                  <height>26</height>
                  </size>
                 </property>
                 <property name="styleSheet">
@@ -1130,25 +1167,12 @@ font-weight: 700;
 }</string>
                 </property>
                 <property name="text">
-                 <string notr="true">Hook</string>
+                 <string>Clipboard</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="textProcessingHookSettingsButton">
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string notr="true">...</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_12">
+               <spacer name="horizontalSpacer_11">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -1173,7 +1197,7 @@ font-weight: 700;
 }</string>
            </property>
            <property name="title">
-            <string>String replacement</string>
+            <string>Text filters</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="1" column="1">
@@ -1191,32 +1215,46 @@ font-weight: 700;
              </widget>
             </item>
             <item row="0" column="0" colspan="2">
-             <widget class="QTableWidget" name="textProcessingTableWidget">
-              <attribute name="horizontalHeaderVisible">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="horizontalHeaderCascadingSectionResizes">
-               <bool>false</bool>
-              </attribute>
-              <attribute name="horizontalHeaderMinimumSectionSize">
-               <number>100</number>
-              </attribute>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>200</number>
-              </attribute>
-              <attribute name="horizontalHeaderStretchLastSection">
-               <bool>true</bool>
-              </attribute>
-              <column>
-               <property name="text">
-                <string>Original content</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Replace with</string>
-               </property>
-              </column>
+             <widget class="QTabWidget" name="tabWidget_4">
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <widget class="QWidget" name="tabStringReplacement">
+               <attribute name="title">
+                <string>String replacement</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="verticalLayout_12">
+                <item>
+                 <widget class="QTableWidget" name="textProcessingTableWidget">
+                  <attribute name="horizontalHeaderVisible">
+                   <bool>false</bool>
+                  </attribute>
+                  <attribute name="horizontalHeaderCascadingSectionResizes">
+                   <bool>false</bool>
+                  </attribute>
+                  <attribute name="horizontalHeaderMinimumSectionSize">
+                   <number>100</number>
+                  </attribute>
+                  <attribute name="horizontalHeaderDefaultSectionSize">
+                   <number>200</number>
+                  </attribute>
+                  <attribute name="horizontalHeaderStretchLastSection">
+                   <bool>true</bool>
+                  </attribute>
+                  <column>
+                   <property name="text">
+                    <string>Original content</string>
+                   </property>
+                  </column>
+                  <column>
+                   <property name="text">
+                    <string>Replace with</string>
+                   </property>
+                  </column>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -1480,8 +1518,15 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt; font-weight:704;&quot;&gt;Freedesktop Portal DBus API (Code generated from XML specs)&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.GlobalShortcuts.xml - Copyright (c) 2017 Red Hat, Inc. - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.ScreenCast.xml - Copyright (c) 2022 Aleix Pol Gonzalez - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.GlobalShortcuts.xml - Copyright (c) the xdg-desktop-portal contributors - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.ScreenCast.xml - Copyright (c) the xdg-desktop-portal contributors - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.RemoteDesktop.xml - Copyright (c) the xdg-desktop-portal contributors - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;org.freedesktop.portal.Clipboard.xml - Copyright (c) the xdg-desktop-portal contributors - LGPL-2.1-or-later&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt; font-weight:704;&quot;&gt;Wayland Protocols (Code generated from XML specs)&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;ext-data-control-v1 - Copyright (c) 2018 Simon Ser, 2019 Ivan Molodetskikh, 2024 Neal Gompa - MIT License&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Adwaita Sans'; font-size:10pt;&quot;&gt;wlr-data-control-unstable-v1 - Copyright (c) 2018 Simon Ser, 2019 Ivan Molodetskikh - MIT License&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="placeholderText">
                 <string notr="true"/>
@@ -1505,7 +1550,7 @@ p, li { white-space: pre-wrap; }
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
+                  <width>88</width>
                   <height>88</height>
                  </rect>
                 </property>
