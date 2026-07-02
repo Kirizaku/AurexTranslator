@@ -92,7 +92,7 @@
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
         <source>General</source>
         <translation>Общие</translation>
     </message>
@@ -123,7 +123,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1461"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1471"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
@@ -144,7 +144,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1384"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1394"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
@@ -290,8 +290,6 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1170"/>
-        <location filename="../src/UI/mainwindow.cpp" line="346"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1208"/>
         <source>Clipboard</source>
         <translation>Буфер обмена</translation>
     </message>
@@ -316,87 +314,97 @@
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1246"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1256"/>
         <source>Original content</source>
         <translation>Исходное содержание</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1251"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1261"/>
         <source>Replace with</source>
         <translation>Заменить на</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1280"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1290"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1290"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1300"/>
         <source>Architecture</source>
         <translation>Архитектура</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1300"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1310"/>
         <source>Description</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1308"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1318"/>
         <source>Open plugins directory</source>
         <translation>Открыть папку с плагинами</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1315"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1325"/>
         <source>Reload</source>
         <translation>Обновить</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1285"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1295"/>
         <source>Version</source>
         <translation>Версия</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1295"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1246"/>
+        <source>Regex</source>
+        <translation>Регулярное выражение</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1251"/>
+        <source>Source</source>
+        <translation>Источник</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1305"/>
         <source>Dependencies</source>
         <translation>Зависимости</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1337"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1347"/>
         <source>Use proxy</source>
         <translation>Использовать прокси</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1354"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1364"/>
         <source>Port</source>
         <translation>Порт</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1364"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1374"/>
         <source>User</source>
         <translation>Пользователь</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1374"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1384"/>
         <source>Password</source>
         <translation>Пароль</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1432"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1442"/>
         <source>Copy all</source>
         <translation>Скопировать все</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1439"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1449"/>
         <source>Open logs directory</source>
         <translation>Показать файлы с логами</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1481"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1491"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation>Свободный и открытый инструмент для перевода текста на экране</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1540"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1550"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
@@ -421,67 +429,67 @@
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="439"/>
+        <location filename="../src/UI/mainwindow.cpp" line="443"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="442"/>
+        <location filename="../src/UI/mainwindow.cpp" line="446"/>
         <source>Open Processed Screencast in New Window</source>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="504"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="509"/>
+        <location filename="../src/UI/mainwindow.cpp" line="535"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="605"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="605"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="885"/>
+        <location filename="../src/UI/mainwindow.cpp" line="922"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="885"/>
+        <location filename="../src/UI/mainwindow.cpp" line="922"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="202"/>
+        <location filename="../src/UI/mainwindow.cpp" line="203"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1412"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1463"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1413"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1464"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1415"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1466"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1416"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1467"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>

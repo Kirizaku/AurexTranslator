@@ -34,6 +34,7 @@ pkg_check_modules(TESSERACT REQUIRED tesseract)
 set(PROJECT_SOURCES
     src/main.cpp
     src/UI/mainwindow.cpp src/UI/mainwindow.h src/UI/forms/mainwindow.ui
+    src/UI/textprocessingdelegates.h
     src/UI/screencastwindow.h src/UI/screencastwindow.cpp src/UI/forms/screencastwindow.ui
     src/UI/textoutputwindow.h src/UI/textoutputwindow.cpp src/UI/forms/textoutputwindow.ui
     src/UI/overlaywindow.h src/UI/overlaywindow.cpp

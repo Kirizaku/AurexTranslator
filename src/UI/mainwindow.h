@@ -20,6 +20,7 @@
 
 #include <QWidget>
 #include <QNetworkProxy>
+#include <QTableWidgetItem>
 
 #include "src/utils/pluginloader.h"
 #include "src/engines/opencv.h"
@@ -123,6 +124,7 @@ private:
     void setupSettingsConnections();
     void loadLogMessages();
     void setupFinalUI();
+    void setupTextProcessingTable();
 
     QList<QObject*> m_changedWidgets;
     bool m_generalChanged = false;
@@ -210,7 +212,14 @@ private:
     QString m_currentHookText;
 
     // Replace Text
-    QString replaceText(QString output);
+    enum TextProcessingColumn {
+        ColRegex = 0,  // checkbox: treat the search string as a regular expression
+        ColSource,     // which source the rule applies to (empty = all)
+        ColFrom,       // string to search for
+        ColTo          // string to replace with
+    };
+    QString replaceText(const QString &source, QString output);
+    QTableWidgetItem *makeRegexFlagItem(bool checked);
 
     // Proxy
     QNetworkProxy::ProxyType m_proxyType = QNetworkProxy::HttpProxy;

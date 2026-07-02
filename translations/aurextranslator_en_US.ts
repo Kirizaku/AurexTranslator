@@ -92,7 +92,7 @@
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="99"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="411"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
@@ -128,7 +128,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="79"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1461"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1471"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
@@ -149,7 +149,7 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="171"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1384"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1394"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -320,8 +320,6 @@
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1170"/>
-        <location filename="../src/UI/mainwindow.cpp" line="346"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1208"/>
         <source>Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -336,152 +334,162 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1246"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1256"/>
         <source>Original content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1251"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1261"/>
         <source>Replace with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1280"/>
-        <source>Name</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1246"/>
+        <source>Regex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1285"/>
-        <source>Version</source>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1251"/>
+        <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1290"/>
-        <source>Architecture</source>
+        <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1295"/>
-        <source>Dependencies</source>
+        <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1300"/>
+        <source>Architecture</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1305"/>
+        <source>Dependencies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1310"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1308"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1318"/>
         <source>Open plugins directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1315"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1325"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1337"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1347"/>
         <source>Use proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1354"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1364"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1364"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1374"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1374"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1384"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1432"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1442"/>
         <source>Copy all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1439"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1449"/>
         <source>Open logs directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1481"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1491"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1540"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1550"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="202"/>
+        <location filename="../src/UI/mainwindow.cpp" line="203"/>
         <source>[Hook] Failed to load plugin &apos;libat-injector</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="439"/>
+        <location filename="../src/UI/mainwindow.cpp" line="443"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="442"/>
+        <location filename="../src/UI/mainwindow.cpp" line="446"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="504"/>
+        <location filename="../src/UI/mainwindow.cpp" line="530"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="509"/>
+        <location filename="../src/UI/mainwindow.cpp" line="535"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="605"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="605"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="885"/>
+        <location filename="../src/UI/mainwindow.cpp" line="922"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="885"/>
+        <location filename="../src/UI/mainwindow.cpp" line="922"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1412"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1463"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1413"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1464"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1415"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1466"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1416"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1467"/>
         <source>Later</source>
         <translation type="unfinished"></translation>
     </message>

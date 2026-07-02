@@ -25,6 +25,7 @@
 #include "src/controllers/clipboardcontroller.h"
 
 #include "mainwindow.h"
+#include "textprocessingdelegates.h"
 #include "ui_mainwindow.h"
 #include "googlesettingsdialog.h"
 #include "screencastwindow.h"
@@ -343,7 +344,7 @@ void MainWindow::initClipboardController()
     }
 
     connect(m_clipboardController, &ClipboardController::textChanged, this, [this](const QString &text) {
-        setCurrentOutput(tr("Clipboard"), text);
+        setCurrentOutput(QStringLiteral("Clipboard"), text);
     });
 
     connect(m_clipboardController, &ClipboardController::failed, this, [this]() {
@@ -407,6 +408,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->textProcessingHookCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingHookCheckBox));
     connect(ui->textProcessingClipboardCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingClipboardCheckBox));
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
+    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
 
     // Proxy
     connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, bind(m_proxyChanged, ui->proxyEnabledCheckBox));
@@ -435,6 +437,8 @@ void MainWindow::loadLogMessages()
 
 void MainWindow::setupFinalUI()
 {
+    setupTextProcessingTable();
+
     contextMenus[ui->outputOriginalScreencast] =
         createMenu(tr("Open Original Screencast in New Window"), &MainWindow::openOriginalPreview);
 
@@ -446,6 +450,28 @@ void MainWindow::setupFinalUI()
         connect(label, &QLabel::customContextMenuRequested,
                 this, &MainWindow::showContextMenu);
     }
+}
+
+void MainWindow::setupTextProcessingTable()
+{
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    QHeaderView *header = table->horizontalHeader();
+    header->setSectionResizeMode(ColRegex, QHeaderView::Interactive);
+    header->setSectionResizeMode(ColSource, QHeaderView::Interactive);
+    header->resizeSection(ColSource, 100);
+    header->setSectionResizeMode(ColFrom, QHeaderView::Stretch);
+    header->setSectionResizeMode(ColTo, QHeaderView::Stretch);
+
+    table->setItemDelegateForColumn(ColRegex, new CheckBoxDelegate(table));
+    table->setItemDelegateForColumn(ColSource, new SourceComboDelegate([] {
+        return QStringList{
+            QStringLiteral("Hook"),
+            QStringLiteral("Clipboard"),
+            QStringLiteral("Tesseract"),
+            QStringLiteral("Ollama Vision")
+        };
+    }, table));
 }
 
 bool MainWindow::widgetChanged(QWidget *widget)
@@ -660,10 +686,21 @@ void MainWindow::on_textProcessingHookSettingsButton_clicked()
 }
 
 
+QTableWidgetItem *MainWindow::makeRegexFlagItem(bool checked)
+{
+    QTableWidgetItem *item = new QTableWidgetItem();
+    item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+    item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    item->setTextAlignment(Qt::AlignCenter);
+    return item;
+}
+
 void MainWindow::on_textProcessingAddRowButton_clicked()
 {
     int row = ui->textProcessingTableWidget->rowCount();
     ui->textProcessingTableWidget->insertRow(row);
+    ui->textProcessingTableWidget->setItem(row, ColRegex, makeRegexFlagItem(false));
+    ui->textProcessingTableWidget->setItem(row, ColSource, new QTableWidgetItem(QString()));
 }
 
 void MainWindow::on_textProcessingRemoveRowButton_clicked()
@@ -798,7 +835,7 @@ void MainWindow::stopScreenCapture()
 
 void MainWindow::setCurrentOutput(const QString &source, const QString &output)
 {
-    QString outputFilt = replaceText(output);
+    QString outputFilt = replaceText(source, output);
 
     m_translationController->translate(source, outputFilt);
 
@@ -908,15 +945,30 @@ void MainWindow::showOverlayWindow()
     m_overlayWindow->showFullScreen();
 }
 
-QString MainWindow::replaceText(QString output)
+QString MainWindow::replaceText(const QString &source, QString output)
 {
     for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); ++i) {
-        QTableWidgetItem* fromItem = ui->textProcessingTableWidget->item(i, 0);
-        QTableWidgetItem* toItem = ui->textProcessingTableWidget->item(i, 1);
+        QTableWidgetItem* regexItem = ui->textProcessingTableWidget->item(i, ColRegex);
+        QTableWidgetItem* srcItem = ui->textProcessingTableWidget->item(i, ColSource);
+        QTableWidgetItem* fromItem = ui->textProcessingTableWidget->item(i, ColFrom);
+        QTableWidgetItem* toItem = ui->textProcessingTableWidget->item(i, ColTo);
 
-        if (fromItem && toItem) {
-            QString from = fromItem->text();
-            QString to = toItem->text();
+        if (!fromItem || fromItem->text().isEmpty())
+            continue;
+
+        const QString ruleSource = srcItem ? srcItem->text().trimmed() : QString();
+        if (!ruleSource.isEmpty() && ruleSource.compare(source, Qt::CaseInsensitive) != 0)
+            continue;
+
+        const QString from = fromItem->text();
+        const QString to = toItem ? toItem->text() : QString();
+        const bool isRegex = regexItem && regexItem->checkState() == Qt::Checked;
+
+        if (isRegex) {
+            QRegularExpression re(from);
+            if (re.isValid())
+                output.replace(re, to);
+        } else {
             output.replace(from, to);
         }
     }
@@ -1205,7 +1257,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
                     m_clipboardController->start();
                 } else {
                     m_clipboardController->stop();
-                    m_outputWindow->clearResultsBySource(tr("Clipboard"));
+                    m_outputWindow->clearResultsBySource(QStringLiteral("Clipboard"));
                 }
             }
         }
@@ -1216,11 +1268,10 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
             ui->textProcessingTableWidget->setRowCount(jsonArray.size());
             for (int i = 0; i < jsonArray.size(); i++) {
                 QJsonObject rowObject = jsonArray[i].toObject();
-                for (int j = 0; j < rowObject.size(); j++) {
-                    QString value = rowObject[QString::number(j)].toString();
-                    QTableWidgetItem *newItem = new QTableWidgetItem(value);
-                    ui->textProcessingTableWidget->setItem(i, j, newItem);
-                }
+                ui->textProcessingTableWidget->setItem(i, ColFrom, new QTableWidgetItem(rowObject["from"].toString()));
+                ui->textProcessingTableWidget->setItem(i, ColTo, new QTableWidgetItem(rowObject["to"].toString()));
+                ui->textProcessingTableWidget->setItem(i, ColRegex, makeRegexFlagItem(rowObject["regex"].toBool()));
+                ui->textProcessingTableWidget->setItem(i, ColSource, new QTableWidgetItem(rowObject["source"].toString()));
             }
         }
     }
@@ -1548,13 +1599,16 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->textProcessingTableWidget)) {
             QJsonArray jsonArray;
             for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); i++) {
+                QTableWidgetItem *regexItem = ui->textProcessingTableWidget->item(i, ColRegex);
+                QTableWidgetItem *srcItem = ui->textProcessingTableWidget->item(i, ColSource);
+                QTableWidgetItem *fromItem = ui->textProcessingTableWidget->item(i, ColFrom);
+                QTableWidgetItem *toItem = ui->textProcessingTableWidget->item(i, ColTo);
+
                 QJsonObject rowObject;
-                for (int j = 0; j < ui->textProcessingTableWidget->columnCount(); j++) {
-                    QTableWidgetItem *item = ui->textProcessingTableWidget->item(i, j);
-                    if (item != nullptr) {
-                        rowObject[QString::number(j)] = item->text();
-                    }
-                }
+                rowObject["regex"] = regexItem && regexItem->checkState() == Qt::Checked;
+                rowObject["source"] = srcItem ? srcItem->text().trimmed() : QString();
+                rowObject["from"] = fromItem ? fromItem->text() : QString();
+                rowObject["to"] = toItem ? toItem->text() : QString();
                 jsonArray.append(rowObject);
             }
             textProcessing["text_replacement_table"] = jsonArray;
