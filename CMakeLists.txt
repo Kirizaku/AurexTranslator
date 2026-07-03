@@ -2,8 +2,25 @@ cmake_minimum_required(VERSION 3.10)
 
 project(aurextranslator VERSION 0.0.6 LANGUAGES C CXX)
 
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        RESULT_VARIABLE GIT_HASH_RESULT
+    )
+endif()
+
+if(NOT GIT_HASH_RESULT EQUAL 0 OR NOT GIT_COMMIT_HASH)
+    set(GIT_COMMIT_HASH "unknown")
+endif()
+
 set(APP_NAME "AurexTranslator")
-set(APP_VERSION "${PROJECT_VERSION} (alpha)")
+set(APP_VERSION "${PROJECT_VERSION} (alpha, ${GIT_COMMIT_HASH})")
 set(CMAKE_AUTOUIC_SEARCH_PATHS "src/UI/forms")
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
