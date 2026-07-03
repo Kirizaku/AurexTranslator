@@ -17,12 +17,12 @@
 
 #include "ollamasettingsdialog.h"
 #include "src/utils/logger.h"
+#include "src/utils/dialogutils.h"
 
 #include <QPushButton>
 #include <QLineEdit>
 #include <QFormLayout>
 #include <QDialogButtonBox>
-#include <QMessageBox>
 #include <QButtonGroup>
 
 OllamaSettingsDialog::OllamaSettingsDialog(Ollama *ollama, QString &currentModel, QJsonArray &models, QWidget *parent) : QDialog(parent)
@@ -141,7 +141,7 @@ void OllamaSettingsDialog::updateList()
     m_ollama->checkServerAvailable(QUrl(m_lineEdit->text()), [this](bool isAvailable) {
         if (!isAvailable) {
             Log(Logger::Level::Warning, "[ollama] Server is unavailable");
-            QMessageBox::warning(this, tr("Server Unavailable"),
+            DialogUtils::warning(this, tr("Server Unavailable"),
                                  tr("Ollama server is unavailable. Please check if the server is running and the URL is correct."));
             updateButton->setEnabled(true);
             return;
@@ -150,7 +150,7 @@ void OllamaSettingsDialog::updateList()
         m_ollama->checkModelsAvailable(QUrl(m_lineEdit->text()), [this](const QStringList& models) {
             if (models.isEmpty()) {
                 Log(Logger::Level::Warning, "[ollama] Failed to load models or list is empty");
-                QMessageBox::warning(this, tr("No Models Found"),
+                DialogUtils::warning(this, tr("No Models Found"),
                                      tr("Failed to load models or the model list is empty. Please check if models are installed on the server."));
             } else {
                 m_comboBox->clear();

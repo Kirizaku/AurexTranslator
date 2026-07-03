@@ -15,7 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#include <QMessageBox>
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -37,6 +36,7 @@
 #include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
+#include "src/utils/dialogutils.h"
 #include "src/data.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -919,7 +919,7 @@ void MainWindow::captureRegion()
         m_isShortcuts = true;
 
         if (m_overlayImage.isNull()) {
-            QMessageBox::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
+            DialogUtils::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
             return;
         }
         m_overlayWindow->setInnerBrushActive(false);
@@ -1460,6 +1460,7 @@ void MainWindow::saveConfig()
         if (!lang.isEmpty() && m_initLanguage != lang) {
 #endif
             QMessageBox msgBox;
+            msgBox.setWindowFlag(Qt::WindowStaysOnTopHint, true);
             msgBox.setWindowTitle(tr("Restart Required"));
             msgBox.setText(tr("Your changes will take effect the next time you start AurexTranslator."));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);

@@ -17,6 +17,7 @@
 
 #include "tesseractsettingsdialog.h"
 #include "src/utils/logger.h"
+#include "src/utils/dialogutils.h"
 
 #include <QLabel>
 #include <QPushButton>
@@ -30,7 +31,6 @@
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
 #include <QFileDialog>
-#include <QMessageBox>
 
 TesseractSettingsDialog::TesseractSettingsDialog(const QString &status,
                                                 const QString &currentLanguage,
@@ -213,7 +213,7 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
         QString tessdataPath = m_pathLineEdit->text();
         if (!QDir(tessdataPath).exists()) {
             Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
-            QMessageBox::warning(nullptr, tr("Invalid Tesseract Data Directory"),
+            DialogUtils::warning(nullptr, tr("Invalid Tesseract Data Directory"),
                                  tr("The specified Tesseract data directory does not exist or is invalid.\n"
                                     "Please provide a valid path or try using the system default directory."));
             restoreState();
@@ -226,7 +226,7 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
 
     if (languages.empty()) {
         Log(Logger::Level::Warning, "[tesseract] Tesseract could not find any language data in system locations");
-        QMessageBox::information(nullptr, tr("No Tesseract available languages found"),
+        DialogUtils::information(nullptr, tr("No Tesseract available languages found"),
                                  tr("Tesseract could not find any language data in system locations.\n"
                                     "Please install Tesseract language packs or specify a custom 'tessdata' directory."));
         restoreState();

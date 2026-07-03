@@ -100,6 +100,7 @@ void ScreenCastWindow::closeEvent(QCloseEvent *event)
 {
     if (ui->buttonBox->button(QDialogButtonBox::Apply)->isEnabled()) {
         QMessageBox msgBox;
+        msgBox.setWindowFlag(Qt::WindowStaysOnTopHint, true);
         msgBox.setWindowTitle(tr("Settings changed"));
         msgBox.setText(tr("There are unsaved changes. Do you want to save them?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
