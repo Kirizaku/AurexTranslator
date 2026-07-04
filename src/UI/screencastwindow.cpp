@@ -223,5 +223,5 @@ void ScreenCastWindow::saveConfig()
     screencast["is_capture_desktop"]                  = isCaptureDesktop;
 
     Config::setValue("screencast", screencast);
-    Config::saveConfig("settings.json");
+    Config::save();
 }

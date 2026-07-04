@@ -330,6 +330,18 @@ void MainWindow::initSubsystems()
     connect(m_hookController, &HookController::shouldClearInfoMessage,
             m_outputWindow, &TextOutputWindow::clearInfoMessage);
 
+    // Configs page: keep button states in sync with the selection
+    connect(ui->configsListWidget, &QListWidget::itemSelectionChanged, this, [this] {
+        QListWidgetItem *sel = ui->configsListWidget->currentItem();
+        const QString name = sel ? sel->data(Qt::UserRole).toString() : QString();
+        const bool hasSel = sel != nullptr;
+        const bool isActive = hasSel && name == Config::activeProfile();
+        ui->configsLoadButton->setEnabled(hasSel && !isActive);
+        ui->configsRenameButton->setEnabled(hasSel);
+        ui->configsDeleteButton->setEnabled(hasSel && !isActive);
+    });
+    refreshConfigsPage();
+
     m_outputWindow->sethookState(m_hookController->isRunning());
 }
 
@@ -987,7 +999,7 @@ void MainWindow::initScreenCast()
                 QJsonObject screencast;
                 screencast["restore_token"] = token;
                 Config::setValue("screencast_portal", screencast);
-                Config::saveConfig("settings.json");
+                Config::save();
             });
 
     // When the controller is about to tear down its backend, stop OpenCV first
@@ -1414,13 +1426,147 @@ void MainWindow::loadHookPluginSettings()
         return;
     }
 
+    syncHookControllerTargets();
+
+    m_hookController->apply(ui->textProcessingHookCheckBox->isChecked(),
+                            ui->textProcessingHookCheckBox->isEnabled());
+}
+
+void MainWindow::syncHookControllerTargets()
+{
     m_hookController->setMode(m_hookMode);
     m_hookController->setCurrentGameAppPlugin(m_currentGameAppPlugin);
     m_hookController->setCurrentEnginePlugin(m_currentEnginePlugin);
     m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
+}
 
-    m_hookController->apply(ui->textProcessingHookCheckBox->isChecked(),
-                            ui->textProcessingHookCheckBox->isEnabled());
+void MainWindow::reapplyProfileSections()
+{
+    setPropertyChanged(true);
+
+    loadOutputSettings(Config::getValue("output").toJsonObject());
+    loadTranslatorSettings(Config::getValue("translator").toJsonObject());
+    loadTextProcessingSettings(Config::getValue("text_processing").toJsonObject());
+    loadScreencastSettings();
+    loadOcrSettings();
+
+    syncHookControllerTargets();
+    m_hookController->retarget(ui->textProcessingHookCheckBox->isChecked());
+
+    m_outputWindow->loadConfig();
+
+    setPropertyChanged(false);
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
+}
+
+void MainWindow::refreshConfigsPage()
+{
+    const QString active = Config::activeProfile();
+    ui->configsActiveLabel->setText(tr("Active profile: %1").arg(active));
+
+    ui->configsListWidget->clear();
+    const QStringList profiles = Config::availableProfiles();
+    for (const QString &name : profiles) {
+        auto *item = new QListWidgetItem(name == active ? tr("%1 (active)").arg(name) : name, ui->configsListWidget);
+        item->setData(Qt::UserRole, name);
+    }
+
+    QListWidgetItem *sel = ui->configsListWidget->currentItem();
+    const QString selName = sel ? sel->data(Qt::UserRole).toString() : QString();
+    const bool hasSel = sel != nullptr;
+    ui->configsLoadButton->setEnabled(hasSel && selName != active);
+    ui->configsRenameButton->setEnabled(hasSel);
+    ui->configsDeleteButton->setEnabled(hasSel && selName != active);
+}
+
+void MainWindow::on_configsNewButton_clicked()
+{
+    bool ok = false;
+    const QString name = DialogUtils::getText(this,
+                                              tr("New profile"),
+                                              tr("Profile name (snapshots the current settings):"),
+                                              QLineEdit::Normal, QString(), &ok).trimmed();
+    if (!ok || name.isEmpty()) return;
+
+    if (Config::availableProfiles().contains(name)) {
+        DialogUtils::warning(this,
+                             tr("New profile"),
+                             tr("A profile named '%1' already exists.").arg(name));
+        return;
+    }
+
+    Config::saveCurrentAsProfile(name); // writes configs/<name>.json + switches active
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsLoadButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString name = item->data(Qt::UserRole).toString();
+    if (name == Config::activeProfile()) return;
+
+    if (!Config::loadProfile(name)) {
+        DialogUtils::warning(this,
+                             tr("Load profile"),
+                             tr("Could not load profile '%1'.").arg(name));
+        return;
+    }
+    reapplyProfileSections();
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsRenameButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString oldName = item->data(Qt::UserRole).toString();
+
+    bool ok = false;
+
+    const QString newName = DialogUtils::getText(this,
+                                                 tr("Rename profile"),
+                                                 tr("New name:"), QLineEdit::Normal, oldName, &ok).trimmed();
+
+    if (!ok || newName.isEmpty() || newName == oldName)
+        return;
+
+    if (Config::availableProfiles().contains(newName)) {
+        DialogUtils::warning(this,
+                             tr("Rename profile"),
+                             tr("A profile named '%1' already exists.").arg(newName));
+        return;
+    }
+
+    if (!Config::renameProfile(oldName, newName))
+        DialogUtils::warning(this, tr("Rename profile"), tr("Rename failed."));
+
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsDeleteButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString name = item->data(Qt::UserRole).toString();
+    if (name == Config::activeProfile()) {
+        DialogUtils::information(this,
+                                 tr("Delete profile"),
+                                 tr("The active profile can't be deleted. Load another profile first."));
+        return;
+    }
+
+    if (DialogUtils::question(this,
+                              tr("Delete profile"),
+                              tr("Delete profile '%1'? This cannot be undone.").arg(name)) != QMessageBox::Yes) {
+        return;
+    }
+
+    Config::deleteProfile(name);
+    refreshConfigsPage();
 }
 
 void MainWindow::saveConfig()
@@ -1643,5 +1789,5 @@ void MainWindow::saveConfig()
 
     // Save Config
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
-    Config::saveConfig("settings.json");
+    Config::save();
 }

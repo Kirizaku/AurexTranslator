@@ -44,6 +44,7 @@ public:
     void clearResultsBySource(const QString &source);
     void clearResultsByTranslator(const QString &translatorName);
     void clearAllResultsByTranslator();
+    void loadConfig();
 
 signals:
     void selectNewRegionRequested();
@@ -109,7 +110,7 @@ private:
     QPoint m_dragStartPosition;
 
     bool isOutOfBounds(const QJsonObject& overlay);
-    void loadConfig();
+    void loadGeometry();
     void saveConfig();
 
     QList<QString> m_translationHistory;

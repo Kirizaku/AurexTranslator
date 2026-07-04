@@ -19,10 +19,11 @@
 #define DIALOGUTILS_H
 
 #include <QMessageBox>
+#include <QInputDialog>
 
 // The TextOutputWindow overlay is Qt::WindowStaysOnTopHint, so a plain modal
 // dialog opened while it is visible gets hidden behind it. These helpers mirror
-// the QMessageBox convenience functions but tag the dialog with the
+// the QMessageBox/QInputDialog convenience functions but tag the dialog with the
 // same stays-on-top hint, keeping it in the top layer above the overlay
 
 namespace DialogUtils {
@@ -57,6 +58,24 @@ inline QMessageBox::StandardButton question(QWidget *parent,
                                             QMessageBox::StandardButtons buttons = QMessageBox::Yes | QMessageBox::No)
 {
     return showMessage(parent, QMessageBox::Question, title, text, buttons);
+}
+
+inline QString getText(QWidget *parent,
+                       const QString &title,
+                       const QString &label,
+                       QLineEdit::EchoMode mode = QLineEdit::Normal,
+                       const QString &text = QString(), bool *ok = nullptr)
+{
+    QInputDialog dialog(parent);
+    dialog.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    dialog.setWindowTitle(title);
+    dialog.setLabelText(label);
+    dialog.setTextEchoMode(mode);
+    dialog.setTextValue(text);
+
+    const bool accepted = dialog.exec() == QDialog::Accepted;
+    if (ok) *ok = accepted;
+    return dialog.textValue();
 }
 
 } // namespace DialogUtils

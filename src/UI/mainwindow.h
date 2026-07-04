@@ -77,6 +77,12 @@ private slots:
     void on_textProcessingHookSettingsButton_clicked();
     void on_textProcessingAddRowButton_clicked();
     void on_textProcessingRemoveRowButton_clicked();
+
+    // Configs (profiles)
+    void on_configsNewButton_clicked();
+    void on_configsLoadButton_clicked();
+    void on_configsRenameButton_clicked();
+    void on_configsDeleteButton_clicked();
     void on_pluginsReloadButton_clicked();
     void on_pluginsOpenDirectoryButton_clicked();
     void on_logsNewLogMessage(const QString& message);
@@ -249,7 +255,10 @@ private:
 
     void loadOcrSettings();
     void loadHookPluginSettings();
+    void syncHookControllerTargets();
 
+    void reapplyProfileSections();
+    void refreshConfigsPage();
     void saveConfig();
 };
 #endif // MAINWINDOW_H

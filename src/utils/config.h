@@ -19,6 +19,7 @@
 #define CONFIG_H
 
 #include <QJsonObject>
+#include <QStringList>
 
 class Config
 {
@@ -36,11 +37,32 @@ public:
     static void loadConfig(const QString& filename);
     static void saveConfig(const QString& filename);
 
+    static const QStringList &baseSections();
+
+    static void load();
+    static void save();
+
+    // Named profile management (files in configs/)
+    static QStringList availableProfiles();
+    static QString activeProfile();
+    static bool loadProfile(const QString& name);
+    static void saveCurrentAsProfile(const QString& name);
+    static bool deleteProfile(const QString& name);
+    static bool renameProfile(const QString& oldName, const QString& newName);
+
 private:
     Config();
     ~Config();
 
     static Config *m_instance;
+
+    static QString profilesDirPath();
+    static QString profilePath(const QString& name);
+    static QJsonObject readJsonFile(const QString& path);
+    static void writeJsonFile(const QString& path, const QJsonObject& obj);
+    static bool isProfileSection(const QString& key);
+    static QJsonObject metaObject();
+    static void setMetaObject(const QJsonObject& meta);
 
     QString m_configFilePath;
     QJsonObject m_settings;

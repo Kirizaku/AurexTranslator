@@ -50,6 +50,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
 
     createMenus();
+    loadGeometry();
     loadConfig();
 
     ui->label->setText(m_initText);
@@ -493,19 +494,24 @@ bool TextOutputWindow::isOutOfBounds(const QJsonObject& output_window)
     return true;
 }
 
+void TextOutputWindow::loadGeometry()
+{
+    const QJsonObject geometry = Config::getValue("output_window_geometry").toJsonObject();
+    if (!geometry.isEmpty() && !isOutOfBounds(geometry)) {
+        setGeometry(geometry["x"].toInt(), geometry["y"].toInt(), geometry["width"].toInt(), geometry["height"].toInt());
+    } else {
+        QScreen *screen = QApplication::primaryScreen();
+        move(screen->geometry().x() + 50, screen->geometry().y() + 50);
+    }
+}
+
 void TextOutputWindow::loadConfig()
 {
     QJsonObject output_window = Config::getValue("output_window").toJsonObject();
 
     if (output_window.isEmpty()) {
         m_opacitySlider->setValue(255);
-        QScreen *screen = QApplication::primaryScreen();
-        move(screen->geometry().x() + 50, screen->geometry().y() + 50);
         return;
-    }
-
-    if (!isOutOfBounds(output_window)) {
-        setGeometry(output_window["x"].toInt(), output_window["y"].toInt(), output_window["width"].toInt(), output_window["height"].toInt());
     }
 
     m_opacitySlider->setValue(output_window["opacity"].toInt());
@@ -530,11 +536,14 @@ void TextOutputWindow::loadConfig()
 
 void TextOutputWindow::saveConfig()
 {
+    QJsonObject geometry;
+    geometry["x"] = x();
+    geometry["y"] = y();
+    geometry["width"] = width();
+    geometry["height"] = height();
+    Config::setValue("output_window_geometry", geometry);
+
     QJsonObject output_window;
-    output_window["x"] = x();
-    output_window["y"] = y();
-    output_window["width"] = width();
-    output_window["height"] = height();
     output_window["opacity"] = m_opacitySlider->value();
     QFont font = ui->label->font();
     output_window["font"] = m_fontComboBox->currentText();
@@ -550,5 +559,5 @@ void TextOutputWindow::saveConfig()
     output_window["is_show_translator_name"] = m_showTranslatorName->isChecked();
 
     Config::setValue("output_window", output_window);
-    Config::saveConfig("settings.json");
+    Config::save();
 }

@@ -51,6 +51,7 @@ public:
     // State
     QString currentRunningPlugin() const { return m_currentRunningPlugin; }
     bool isRunning() const { return !m_currentRunningPlugin.isEmpty(); }
+    void retarget(bool enabled);
 
 public slots:
     void apply(bool enabled, bool widgetReady);
@@ -84,6 +85,7 @@ private:
     QList<PluginManager::PluginInfo> m_registry;
 
     QString m_currentRunningPlugin;
+    QString m_runningEngineProcess;
 
     void startPlugin(const PluginManager::PluginInfo& info);
 };

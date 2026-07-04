@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
     Logger::instance()->initInstance(configPath);
     Config::instance()->initInstance(configPath);
-    Config::loadConfig("settings.json");
+    Config::load();
 
     logSystemInfo();
 

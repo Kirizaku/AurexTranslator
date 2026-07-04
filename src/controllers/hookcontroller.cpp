@@ -132,6 +132,30 @@ void HookController::stop()
     emit shouldClearInfoMessage();
 
     m_currentRunningPlugin.clear();
+    m_runningEngineProcess.clear();
+}
+
+void HookController::retarget(bool enabled)
+{
+    if (!enabled) {
+        stop();
+        return;
+    }
+
+    const QString desiredPlugin = (m_hookMode == GameAppMode)
+                                      ? m_currentGameAppPlugin
+                                      : m_currentEnginePlugin;
+
+    const bool sameTarget = !m_currentRunningPlugin.isEmpty()
+                            && desiredPlugin == m_currentRunningPlugin
+                            && (m_hookMode != EngineMode
+                            || m_currentEngineProcess == m_runningEngineProcess);
+
+    if (sameTarget)
+        return;
+
+    stop();
+    apply(true, true);
 }
 
 void HookController::startPlugin(const PluginManager::PluginInfo& info)
@@ -154,4 +178,5 @@ void HookController::startPlugin(const PluginManager::PluginInfo& info)
     emit shouldClearInfoMessage();
 
     m_currentRunningPlugin = info.name;
+    m_runningEngineProcess = (m_hookMode == EngineMode) ? m_currentEngineProcess : QString();
 }
