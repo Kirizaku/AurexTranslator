@@ -64,6 +64,25 @@ void HookController::setRegistry(const QList<PluginManager::PluginInfo> &registr
     m_registry = registry;
 }
 
+void HookController::setPluginConfig(const QString &pluginName, const QString &json)
+{
+    m_pluginConfig[pluginName] = json;
+
+    // If this plugin is the one currently running, apply the change live
+    if (pluginName == m_currentRunningPlugin)
+        pushPluginConfig(pluginName);
+}
+
+void HookController::pushPluginConfig(const QString &pluginName)
+{
+    if (!m_hookPlugin) return;
+
+    const QString json = m_pluginConfig.value(pluginName);
+    if (json.isEmpty()) return;
+
+    m_hookPlugin->execute(QStringLiteral("config"), { pluginName, json });
+}
+
 void HookController::apply(bool enabled, bool widgetReady)
 {
     if (!m_hookPlugin) return;
@@ -71,6 +90,7 @@ void HookController::apply(bool enabled, bool widgetReady)
     if (enabled && widgetReady) {
         // Engine mode requires a target process name
         if (m_hookMode == EngineMode && m_currentEngineProcess.isEmpty()) {
+            if (!m_currentRunningPlugin.isEmpty()) stop();
             const QString msg = tr("[Hook] No process selected. Please choose a process in the settings");
             Log(Logger::Level::Warning, msg);
             emit infoMessage(msg);
@@ -86,6 +106,7 @@ void HookController::apply(bool enabled, bool widgetReady)
                                      });
 
         if (pluginIt == m_registry.cend()) {
+            if (!m_currentRunningPlugin.isEmpty()) stop();
             const QString msg = tr("[Hook] No game selected. Please choose a game in the settings");
             Log(Logger::Level::Warning, msg);
             emit infoMessage(msg);
@@ -172,11 +193,13 @@ void HookController::startPlugin(const PluginManager::PluginInfo& info)
         archList << (it.key() + QStringLiteral(":") + it.value());
     }
 
-    m_hookPlugin->execute(QStringLiteral("start"), { exe, info.name, archList.join(QStringLiteral(";")) });
+    m_hookPlugin->execute(QStringLiteral("start"), { exe, info.name, archList.join(QStringLiteral(";")), info.textMode });
 
-    emit hookStateChanged(true);
-    emit shouldClearInfoMessage();
+    pushPluginConfig(info.name);
 
     m_currentRunningPlugin = info.name;
     m_runningEngineProcess = (m_hookMode == EngineMode) ? m_currentEngineProcess : QString();
+
+    emit hookStateChanged(true);
+    emit shouldClearInfoMessage();
 }

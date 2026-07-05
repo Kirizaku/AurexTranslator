@@ -202,12 +202,8 @@ bool PluginManager::unloadPlugin(const QString &name)
     return true;
 }
 
-PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
+void PluginManager::parseCommonMeta(const QJsonObject &obj, PluginInfo &info)
 {
-    PluginInfo info;
-    QPluginLoader loader(path);
-    QJsonObject meta    = loader.metaData();
-    QJsonObject obj     = meta["MetaData"].toObject();
     info.name           = obj["name"].toString();
     info.version        = obj["version"].toString();
     info.minAppVersion  = obj["minAppVersion"].toString();
@@ -221,34 +217,26 @@ PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
     }
 
     QJsonObject target = obj["target"].toObject();
-    info.targetTitle  = target["title"].toString();
-    info.targetExecutable  = target["executable"].toString();
+    info.targetTitle      = target["title"].toString();
+    info.targetExecutable = target["executable"].toString();
 
+    info.textMode = obj["textMode"].toString(QStringLiteral("whole"));
+}
+
+PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
+{
+    PluginInfo info;
+    QPluginLoader loader(path);
+    const QJsonObject obj = loader.metaData()["MetaData"].toObject();
+    parseCommonMeta(obj, info);
     return info;
 }
 
 PluginManager::PluginInfo PluginManager::getCppPluginMeta(const QString &path)
 {
     MetaDataReader loader(path);
-    QJsonObject obj = loader.metaData();
-
     PluginInfo info;
-    info.name           = obj["name"].toString();
-    info.version        = obj["version"].toString();
-    info.minAppVersion  = obj["minAppVersion"].toString();
-    info.description    = obj["description"].toString();
-    info.type           = obj["type"].toString();
-    info.category       = obj["category"].toString();
-
-    const QJsonArray arr = obj["dependencies"].toArray();
-    for (const QJsonValue& val : arr) {
-        info.dependencies << val.toString();
-    }
-
-    QJsonObject target = obj["target"].toObject();
-    info.targetTitle  = target["title"].toString();
-    info.targetExecutable  = target["executable"].toString();
-
+    parseCommonMeta(loader.metaData(), info);
     return info;
 }
 

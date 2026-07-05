@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>534</width>
+    <width>592</width>
     <height>180</height>
    </rect>
   </property>
@@ -287,6 +287,40 @@ QPushButton:flat:pressed {
         <property name="icon">
          <iconset resource="../../../resources.qrc">
           <normaloff>:/icons/3rdparty/icons/vaccine.svg</normaloff>:/icons/3rdparty/icons/vaccine.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="speedButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Text output speed</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/3rdparty/icons/gauge.svg</normaloff>:/icons/3rdparty/icons/gauge.svg</iconset>
         </property>
         <property name="flat">
          <bool>true</bool>

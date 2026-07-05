@@ -17,12 +17,12 @@
 <context>
     <name>HookController</name>
     <message>
-        <location filename="../src/controllers/hookcontroller.cpp" line="74"/>
+        <location filename="../src/controllers/hookcontroller.cpp" line="94"/>
         <source>[Hook] No process selected. Please choose a process in the settings</source>
         <translation>[Hook] Процесс не выбран. Пожалуйста, выберите процесс в настройках</translation>
     </message>
     <message>
-        <location filename="../src/controllers/hookcontroller.cpp" line="89"/>
+        <location filename="../src/controllers/hookcontroller.cpp" line="110"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation>[Hook] Не выбрана игра. Пожалуйста, выберите игру в настройках</translation>
     </message>
@@ -469,42 +469,42 @@
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="455"/>
+        <location filename="../src/UI/mainwindow.cpp" line="464"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="458"/>
+        <location filename="../src/UI/mainwindow.cpp" line="467"/>
         <source>Open Processed Screencast in New Window</source>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="542"/>
+        <location filename="../src/UI/mainwindow.cpp" line="551"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="547"/>
+        <location filename="../src/UI/mainwindow.cpp" line="556"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="652"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="652"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="934"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="934"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
@@ -514,92 +514,92 @@
         <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1528"/>
         <source>Active profile: %1</source>
         <translation>Активный профиль: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1470"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1533"/>
         <source>%1 (active)</source>
         <translation>%1 (активный)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1486"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1493"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1549"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1556"/>
         <source>New profile</source>
         <translation>Новый профиль</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1487"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1550"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation>Имя профиля (сохранит текущие настройки):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1494"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1539"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1557"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1602"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation>Профиль с именем «%1» уже существует.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1512"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1575"/>
         <source>Load profile</source>
         <translation>Загрузка профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1513"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1576"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation>Не удалось загрузить профиль «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1538"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1544"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1593"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1601"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
         <source>Rename profile</source>
         <translation>Переименование профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1531"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1594"/>
         <source>New name:</source>
         <translation>Новое имя:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1544"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
         <source>Rename failed.</source>
         <translation>Не удалось переименовать.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1557"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1563"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1620"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1626"/>
         <source>Delete profile</source>
         <translation>Удаление профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1558"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1621"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation>Активный профиль нельзя удалить. Сначала загрузите другой профиль.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1564"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1627"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation>Удалить профиль «%1»? Это действие необратимо.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1610"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1673"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1611"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1674"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1613"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1676"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1614"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1677"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -841,57 +841,62 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
 <context>
     <name>TextOutputWindow</name>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="80"/>
+        <location filename="../src/UI/textoutputwindow.h" line="88"/>
         <source>Welcome!</source>
         <translation>Добро пожаловать!</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="46"/>
         <source>Translation history</source>
         <translation>История перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="388"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="315"/>
+        <source>Wait time before showing accumulated text</source>
+        <translation>Задержка перед выводом текста</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="434"/>
         <source>Left</source>
         <translation>По левому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="389"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="435"/>
         <source>Right</source>
         <translation>По правому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="390"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="436"/>
         <source>Center</source>
         <translation>По центру</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="454"/>
         <source>Show/Hide original text</source>
         <translation>Показать/Скрыть исходный текст</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="411"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="457"/>
         <source>Show/Hide translator name</source>
         <translation>Показать/Скрыть имя переводчика</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="461"/>
         <source>Transparency</source>
         <translation>Прозрачность</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="463"/>
         <source>Font size</source>
         <translation>Размер шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="462"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="97"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="106"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -906,37 +911,42 @@ Result:
  %4</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="312"/>
+        <source>Text Output Speed</source>
+        <translation>Скорость вывода текста</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="451"/>
         <source>Show/Hide source</source>
         <translation>Показать/Скрыть источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="464"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="465"/>
         <source>Text alignment</source>
         <translation>Выравнивание текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="466"/>
         <source>Margin top</source>
         <translation>Верхний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="421"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="467"/>
         <source>Margin bottom</source>
         <translation>Нижний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="422"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="468"/>
         <source>Margin left</source>
         <translation>Левый отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="423"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="469"/>
         <source>Margin right</source>
         <translation>Правый отступ</translation>
     </message>
@@ -979,11 +989,16 @@ Use if automatic injection failed</source>
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="302"/>
+        <source>Text output speed</source>
+        <translation>Скорость вывода текста</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="336"/>
         <source>Open settings</source>
         <translation>Открыть настройки</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="349"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="383"/>
         <source>Exit</source>
         <translation>Закрыть</translation>
     </message>

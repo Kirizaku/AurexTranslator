@@ -47,6 +47,7 @@ public:
     void setCurrentEnginePlugin(const QString &name);
     void setCurrentEngineProcess(const QString &processName);
     void setRegistry(const QList<PluginManager::PluginInfo> &registry);
+    void setPluginConfig(const QString &pluginName, const QString &json);
 
     // State
     QString currentRunningPlugin() const { return m_currentRunningPlugin; }
@@ -83,11 +84,13 @@ private:
     QString m_currentEnginePlugin;
     QString m_currentEngineProcess;
     QList<PluginManager::PluginInfo> m_registry;
+    QMap<QString, QString> m_pluginConfig;
 
     QString m_currentRunningPlugin;
     QString m_runningEngineProcess;
 
     void startPlugin(const PluginManager::PluginInfo& info);
+    void pushPluginConfig(const QString &pluginName);
 };
 
 #endif // HOOKCONTROLLER_H

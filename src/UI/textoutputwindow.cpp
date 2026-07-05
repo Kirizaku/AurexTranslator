@@ -41,6 +41,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     ui->setupUi(this);
     ui->toolBar->hide();
     ui->injectHookButton->setVisible(false);
+    ui->speedButton->setVisible(false);
 
     m_historyTextEdit->setWindowTitle(tr("Translation history"));
     m_historyTextEdit->setReadOnly(true);
@@ -69,7 +70,15 @@ TextOutputWindow::~TextOutputWindow()
 
 void TextOutputWindow::sethookState(bool isActive)
 {
+    m_hookActive = isActive;
     ui->injectHookButton->setVisible(isActive);
+    ui->speedButton->setVisible(isActive && m_speedButtonEligible);
+}
+
+void TextOutputWindow::setSpeedAvailable(bool available)
+{
+    m_speedButtonEligible = available;
+    ui->speedButton->setVisible(m_hookActive && available);
 }
 
 void TextOutputWindow::setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result)
@@ -290,6 +299,43 @@ void TextOutputWindow::on_retranslateButton_clicked()
 void TextOutputWindow::on_injectHookButton_clicked()
 {
     emit manualInjectHookRequested();
+}
+
+void TextOutputWindow::on_speedButton_clicked()
+{
+    emit speedSettingsRequested();
+}
+
+int TextOutputWindow::promptSpeed(int current)
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Text Output Speed"));
+
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(tr("Wait time before showing accumulated text"), &dialog));
+
+    auto *row = new QHBoxLayout;
+    auto *slider = new QSlider(Qt::Horizontal, &dialog);
+    slider->setRange(m_minFlushMs, m_maxFlushMs);
+    slider->setValue(current);
+    auto *spin = new QSpinBox(&dialog);
+    spin->setRange(m_minFlushMs, m_maxFlushMs);
+    spin->setSuffix(QStringLiteral(" ms"));
+    spin->setValue(current);
+    row->addWidget(slider);
+    row->addWidget(spin);
+    layout->addLayout(row);
+
+    connect(slider, &QSlider::valueChanged, spin, &QSpinBox::setValue);
+    connect(spin, QOverload<int>::of(&QSpinBox::valueChanged), slider, &QSlider::setValue);
+
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (dialog.exec() != QDialog::Accepted) return -1;
+    return spin->value();
 }
 
 void TextOutputWindow::on_settingsButton_clicked()

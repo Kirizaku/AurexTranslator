@@ -257,6 +257,13 @@ private:
     void loadHookPluginSettings();
     void syncHookControllerTargets();
 
+    void syncPluginConfigs();
+    QString buildPluginConfigJson(int flushMs) const;
+
+    void openSpeedSettings();
+    void updateSpeedButtonAvailability();
+    int storedFlushMs(const QString &pluginName) const;
+
     void reapplyProfileSections();
     void refreshConfigsPage();
     void saveConfig();

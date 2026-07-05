@@ -17,12 +17,12 @@
 <context>
     <name>HookController</name>
     <message>
-        <location filename="../src/controllers/hookcontroller.cpp" line="74"/>
+        <location filename="../src/controllers/hookcontroller.cpp" line="94"/>
         <source>[Hook] No process selected. Please choose a process in the settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/controllers/hookcontroller.cpp" line="89"/>
+        <location filename="../src/controllers/hookcontroller.cpp" line="110"/>
         <source>[Hook] No game selected. Please choose a game in the settings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -304,6 +304,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1211"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="992"/>
         <source>Input source</source>
         <translation type="unfinished"></translation>
@@ -324,28 +329,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1211"/>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1218"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1229"/>
-        <source>String replacement</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1245"/>
-        <source>Regex</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1250"/>
-        <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -356,6 +341,21 @@
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1260"/>
         <source>Replace with</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1245"/>
+        <source>Regex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1229"/>
+        <source>String replacement</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1250"/>
+        <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -474,132 +474,132 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="455"/>
+        <location filename="../src/UI/mainwindow.cpp" line="464"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="458"/>
+        <location filename="../src/UI/mainwindow.cpp" line="467"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="542"/>
+        <location filename="../src/UI/mainwindow.cpp" line="551"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="547"/>
+        <location filename="../src/UI/mainwindow.cpp" line="556"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="652"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="652"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="934"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="934"/>
+        <location filename="../src/UI/mainwindow.cpp" line="943"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1465"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1528"/>
         <source>Active profile: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1470"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1533"/>
         <source>%1 (active)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1486"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1493"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1549"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1556"/>
         <source>New profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1487"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1550"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1494"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1539"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1557"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1602"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1512"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1575"/>
         <source>Load profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1513"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1576"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1530"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1538"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1544"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1593"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1601"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
         <source>Rename profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1531"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1594"/>
         <source>New name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1544"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
         <source>Rename failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1557"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1563"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1620"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1626"/>
         <source>Delete profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1558"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1621"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1564"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1627"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1610"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1673"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1611"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1674"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1613"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1676"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1614"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1677"/>
         <source>Later</source>
         <translation type="unfinished"></translation>
     </message>
@@ -876,26 +876,31 @@ Use if automatic injection failed</source>
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="302"/>
+        <source>Text output speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="336"/>
         <source>Open settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="349"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="383"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="80"/>
+        <location filename="../src/UI/textoutputwindow.h" line="88"/>
         <source>Welcome!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="45"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="46"/>
         <source>Translation history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="97"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="106"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -905,77 +910,87 @@ Result:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="388"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="312"/>
+        <source>Text Output Speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="315"/>
+        <source>Wait time before showing accumulated text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="434"/>
         <source>Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="389"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="435"/>
         <source>Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="390"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="436"/>
         <source>Center</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="405"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="451"/>
         <source>Show/Hide source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="408"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="454"/>
         <source>Show/Hide original text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="411"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="457"/>
         <source>Show/Hide translator name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="415"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="461"/>
         <source>Transparency</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="416"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="462"/>
         <source>Font</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="417"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="463"/>
         <source>Font size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="418"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="464"/>
         <source>Text color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="419"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="465"/>
         <source>Text alignment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="420"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="466"/>
         <source>Margin top</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="421"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="467"/>
         <source>Margin bottom</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="422"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="468"/>
         <source>Margin left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="423"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="469"/>
         <source>Margin right</source>
         <translation type="unfinished"></translation>
     </message>

@@ -39,6 +39,12 @@ public:
     ~TextOutputWindow();
 
     void sethookState(bool isActive);
+    void setSpeedAvailable(bool available);
+
+    static constexpr int kDefaultFlushMs = 350;
+
+    int promptSpeed(int current);
+
     void setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
     void clearInfoMessage();
     void clearResultsBySource(const QString &source);
@@ -52,6 +58,7 @@ signals:
     void retranslateRequested();
     void manualInjectHookRequested();
     void internalClipboardWrite(const QString &text);
+    void speedSettingsRequested();
 
 public slots:
     void setInfoMessage(const QString &message);
@@ -70,6 +77,7 @@ private slots:
     void on_clearTranslationsButton_clicked();
     void on_retranslateButton_clicked();
     void on_injectHookButton_clicked();
+    void on_speedButton_clicked();
     void on_settingsButton_clicked();
     void on_exitButton_clicked();
     void updateMargin();
@@ -126,6 +134,13 @@ private:
 
     bool m_hasInfoMessage = false;
     QString m_currentInfoMessage;
+
+    bool m_hookActive = false;
+    bool m_speedButtonEligible = false;
+
+    // promptSpeed
+    const int m_minFlushMs = 50;
+    const int m_maxFlushMs = 2000;
 };
 
 #endif // TEXTOUTPUTWINDOW_H

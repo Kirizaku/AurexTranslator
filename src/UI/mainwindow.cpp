@@ -216,6 +216,10 @@ void MainWindow::initPlugins()
             ui->textProcessingHookCheckBox->setEnabled(false);
         }
     }
+
+    // Seed HookController with each plugin's effective config so it is available
+    // the moment a plugin is started
+    syncPluginConfigs();
 }
 
 void MainWindow::setupCoreConnections()
@@ -324,6 +328,10 @@ void MainWindow::initSubsystems()
             m_outputWindow, &TextOutputWindow::setInfoMessage);
     connect(m_hookController, &HookController::hookStateChanged,
             m_outputWindow, &TextOutputWindow::sethookState);
+    connect(m_hookController, &HookController::hookStateChanged,
+            this, &MainWindow::updateSpeedButtonAvailability);
+    connect(m_outputWindow, &TextOutputWindow::speedSettingsRequested,
+            this, &MainWindow::openSpeedSettings);
     connect(m_hookController, &HookController::shouldClearResults, m_outputWindow, [this] {
         m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
     });
@@ -343,6 +351,7 @@ void MainWindow::initSubsystems()
     refreshConfigsPage();
 
     m_outputWindow->sethookState(m_hookController->isRunning());
+    updateSpeedButtonAvailability();
 }
 
 void MainWindow::initClipboardController()
@@ -1440,6 +1449,59 @@ void MainWindow::syncHookControllerTargets()
     m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
 }
 
+int MainWindow::storedFlushMs(const QString &pluginName) const
+{
+    const QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
+    return all.value(pluginName).toInt(TextOutputWindow::kDefaultFlushMs);
+}
+
+QString MainWindow::buildPluginConfigJson(int flushMs) const
+{
+    QJsonObject root;
+    root[QStringLiteral("flush_interval_ms")] = flushMs;
+    return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
+}
+
+void MainWindow::syncPluginConfigs()
+{
+    for (const auto &info : m_registry) {
+        if (info.textMode != QLatin1String("per_char")) continue;
+        m_hookController->setPluginConfig(info.name, buildPluginConfigJson(storedFlushMs(info.name)));
+    }
+}
+
+void MainWindow::updateSpeedButtonAvailability()
+{
+    const QString pluginName = m_hookController->currentRunningPlugin();
+    bool eligible = false;
+    if (!pluginName.isEmpty()) {
+        auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                               [&](const PluginManager::PluginInfo &i) { return i.name == pluginName; });
+        eligible = it != m_registry.cend() && it->textMode == QLatin1String("per_char");
+    }
+    m_outputWindow->setSpeedAvailable(eligible);
+}
+
+void MainWindow::openSpeedSettings()
+{
+    const QString pluginName = m_hookController->currentRunningPlugin();
+    if (pluginName.isEmpty()) return;
+
+    auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                           [&](const PluginManager::PluginInfo &i) { return i.name == pluginName; });
+    if (it == m_registry.cend()) return;
+
+    const int chosen = m_outputWindow->promptSpeed(storedFlushMs(pluginName));
+    if (chosen < 0) return; // cancelled
+
+    QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
+    all[pluginName] = chosen;
+    Config::setValue("plugin_flush_ms", all);
+    Config::save();
+
+    m_hookController->setPluginConfig(pluginName, buildPluginConfigJson(chosen));
+}
+
 void MainWindow::reapplyProfileSections()
 {
     setPropertyChanged(true);
@@ -1451,6 +1513,7 @@ void MainWindow::reapplyProfileSections()
     loadOcrSettings();
 
     syncHookControllerTargets();
+    syncPluginConfigs();
     m_hookController->retarget(ui->textProcessingHookCheckBox->isChecked());
 
     m_outputWindow->loadConfig();

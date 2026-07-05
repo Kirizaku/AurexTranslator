@@ -43,6 +43,7 @@ public:
         QString targetTitle;
         QString targetExecutable;
         QMap<QString, QString> archPaths;
+        QString textMode = QStringLiteral("whole");
     };
 
     QList<PluginInfo> scanPlugins();
@@ -64,6 +65,7 @@ private:
 
     PluginInfo getQtPluginMeta(const QString &path);
     PluginInfo getCppPluginMeta(const QString &path);
+    static void parseCommonMeta(const QJsonObject &obj, PluginInfo &info);
     QString getFileArch(const QString &path);
 };
 
