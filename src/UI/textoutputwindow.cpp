@@ -17,13 +17,14 @@
 
 #include "textoutputwindow.h"
 #include "ui_textoutputwindow.h"
+#include "hooktextmodel.h"
+#include "hookselectordialog.h"
 
 #include <QMenu>
 #include <QWindow>
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QProcessEnvironment>
-#include <QJsonObject>
 #include <QMessageBox>
 #include <QScreen>
 #include <QMouseEvent>
@@ -42,6 +43,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     ui->toolBar->hide();
     ui->injectHookButton->setVisible(false);
     ui->speedButton->setVisible(false);
+    ui->hookSelectButton->setVisible(false);
 
     m_historyTextEdit->setWindowTitle(tr("Translation history"));
     m_historyTextEdit->setReadOnly(true);
@@ -51,6 +53,32 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
 
     createMenus();
+
+    m_hookModel = new HookTextModel(this);
+    connect(m_hookModel, &HookTextModel::changed, this, &TextOutputWindow::updateText);
+    connect(m_hookModel, &HookTextModel::persistRequested, this, &TextOutputWindow::saveConfig);
+    connect(m_hookModel, &HookTextModel::sourcesUnapplied, this, [this](const QStringList &sources) {
+        for (const QString &src : sources)
+            removeHookEntries(src);
+    });
+    connect(m_hookModel, &HookTextModel::outputReapplyRequested,
+            this, &TextOutputWindow::hookOutputReapplyRequested);
+    connect(m_hookModel, &HookTextModel::clearRequested,
+            this, &TextOutputWindow::hookClearRequested);
+    connect(m_hookModel, &HookTextModel::staleOutputShouldClear, this, [this] {
+        for (int i = m_translationEntries.size() - 1; i >= 0; --i)
+            if (m_hookModel->isStale(m_translationEntries[i].source))
+                m_translationEntries.removeAt(i);
+    });
+
+    m_hookBatchTimer = new QTimer(this);
+    m_hookBatchTimer->setSingleShot(true);
+    m_hookBatchTimer->setInterval(3000);
+    connect(m_hookBatchTimer, &QTimer::timeout, this, [this] {
+        m_pendingHookBatch.clear();
+        updateText();
+    });
+
     loadGeometry();
     loadConfig();
 
@@ -73,6 +101,72 @@ void TextOutputWindow::sethookState(bool isActive)
     m_hookActive = isActive;
     ui->injectHookButton->setVisible(isActive);
     ui->speedButton->setVisible(isActive && m_speedButtonEligible);
+    ui->hookSelectButton->setVisible(isActive);
+    if (!isActive && m_hookSelectorDialog)
+        m_hookSelectorDialog->hide();
+}
+
+void TextOutputWindow::setHookTarget(const QString &targetKey)
+{
+    m_hookModel->setTarget(targetKey);
+}
+
+void TextOutputWindow::noteHookSource(const QString &source, const QString &original)
+{
+    m_hookModel->noteSource(source, original);
+}
+
+QStringList TextOutputWindow::hookSourcesToOutput(const QStringList &pending) const
+{
+    return m_hookModel->sourcesToOutput(pending);
+}
+
+int TextOutputWindow::hookBurstMs() const
+{
+    return m_hookModel->burstMs();
+}
+
+bool TextOutputWindow::hasHookTranslation(const QString &source, const QString &original) const
+{
+    for (const auto &entry : m_translationEntries)
+        if (entry.source == source && entry.original == original && !entry.result.isEmpty())
+            return true;
+    return false;
+}
+
+QString TextOutputWindow::hookEffectiveSource(const QString &source) const
+{
+    return m_hookModel->effectiveSource(source);
+}
+
+QString TextOutputWindow::hookCombinedOriginal(const QString &groupId) const
+{
+    return m_hookModel->combinedOriginal(groupId);
+}
+
+QStringList TextOutputWindow::hookDisplayOrder() const
+{
+    return m_hookModel->displayOrder();
+}
+
+QString TextOutputWindow::hookLatestOriginal(const QString &source) const
+{
+    return m_hookModel->latestOriginal(source);
+}
+
+void TextOutputWindow::beginHookBatch(const QStringList &expected)
+{
+    m_hookBatchTimer->stop();
+    m_pendingHookBatch = QSet<QString>(expected.cbegin(), expected.cend());
+    if (!m_pendingHookBatch.isEmpty())
+        m_hookBatchTimer->start();
+}
+
+void TextOutputWindow::openHookSelector()
+{
+    if (!m_hookSelectorDialog)
+        m_hookSelectorDialog = new HookSelectorDialog(m_hookModel, this);
+    m_hookSelectorDialog->openFresh();
 }
 
 void TextOutputWindow::setSpeedAvailable(bool available)
@@ -83,6 +177,10 @@ void TextOutputWindow::setSpeedAvailable(bool available)
 
 void TextOutputWindow::setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result)
 {
+    if (source.startsWith(QStringLiteral("Hook"))) {
+        m_hookModel->ensureRegistered(source, original);
+    }
+
     TranslationEntry entry;
     entry.source = source;
     entry.translatorName = translatorName;
@@ -102,20 +200,36 @@ void TextOutputWindow::setTranslationResult(const QString &source, const QString
         m_translationEntries.append(entry);
     }
 
-    int scrollValue = m_historyTextEdit->verticalScrollBar()->value();
-    QString historyItem = QString(tr("Source: %1\nTranslator: %2\nOriginal:\n %3\nResult:\n %4"))
-                              .arg(source)
-                              .arg(translatorName)
-                              .arg(original)
-                              .arg(result);
-    m_translationHistory.append(historyItem);
+    if (source.startsWith(QStringLiteral("Hook")) && !result.isEmpty())
+        m_hookModel->markTranslated(source);
 
-    QString historyText;
-    for (const auto &item : m_translationHistory) {
-        historyText += item + "\n\n";
+    if (m_hookModel->isDisplayed(source)) {
+        if (m_hasInfoMessage && source.startsWith(QStringLiteral("Hook"))) {
+            m_hasInfoMessage = false;
+            m_currentInfoMessage.clear();
+        }
+
+        int scrollValue = m_historyTextEdit->verticalScrollBar()->value();
+        QString historyItem = QString(tr("Source: %1\nTranslator: %2\nOriginal:\n %3\nResult:\n %4"))
+                                  .arg(source)
+                                  .arg(translatorName)
+                                  .arg(original)
+                                  .arg(result);
+        m_translationHistory.append(historyItem);
+
+        QString historyText;
+        for (const auto &item : m_translationHistory) {
+            historyText += item + "\n\n";
+        }
+        m_historyTextEdit->setPlainText(historyText);
+        m_historyTextEdit->verticalScrollBar()->setValue(scrollValue);
     }
-    m_historyTextEdit->setPlainText(historyText);
-    m_historyTextEdit->verticalScrollBar()->setValue(scrollValue);
+
+    if (m_pendingHookBatch.remove(source)) {
+        if (!m_pendingHookBatch.isEmpty())
+            return;
+        m_hookBatchTimer->stop();
+    }
 
     updateText();
 }
@@ -129,11 +243,23 @@ void TextOutputWindow::clearInfoMessage()
 
 void TextOutputWindow::clearResultsBySource(const QString &source)
 {
+    const bool isHookGroup = (source == QStringLiteral("Hook"));
+
     for (int i = m_translationEntries.size() - 1; i >= 0; --i) {
-        if (m_translationEntries[i].source == source) {
+        const QString &entrySource = m_translationEntries[i].source;
+        const bool match = isHookGroup
+            ? entrySource.startsWith(QStringLiteral("Hook"))
+            : (entrySource == source);
+        if (match)
             m_translationEntries.removeAt(i);
-        }
     }
+
+    if (isHookGroup) {
+        m_pendingHookBatch.clear();
+        m_hookBatchTimer->stop();
+        m_hookModel->clear();
+    }
+
     updateText();
 }
 
@@ -348,6 +474,18 @@ void TextOutputWindow::on_exitButton_clicked()
     close();
 }
 
+void TextOutputWindow::on_hookSelectButton_clicked()
+{
+    openHookSelector();
+}
+
+void TextOutputWindow::removeHookEntries(const QString &source)
+{
+    for (int i = m_translationEntries.size() - 1; i >= 0; --i)
+        if (m_translationEntries[i].source == source)
+            m_translationEntries.removeAt(i);
+}
+
 void TextOutputWindow::updateMargin()
 {
     int top = m_marginTop->value();
@@ -366,9 +504,7 @@ void TextOutputWindow::updateText()
         allTexts.append(m_currentInfoMessage);
     }
 
-    for (const auto &entry : m_translationEntries) {
-        if (entry.result.isEmpty()) continue;
-
+    const auto renderEntry = [this](const TranslationEntry &entry) {
         QStringList parts;
 
         if (m_showSource && m_showSource->isChecked() && !entry.source.isEmpty()) {
@@ -386,7 +522,34 @@ void TextOutputWindow::updateText()
             originalText = entry.original + "\n\n";
         }
 
-        allTexts.append(header + originalText + entry.result);
+        return header + originalText + entry.result;
+    };
+
+    QList<const TranslationEntry *> hookEntries;
+    for (const auto &entry : m_translationEntries) {
+        if (entry.result.isEmpty()) continue;
+
+        if (!m_hookModel->isDisplayed(entry.source))
+            continue;
+
+        if (entry.source.startsWith(QStringLiteral("Hook")))
+            hookEntries.append(&entry);
+        else
+            allTexts.append(renderEntry(entry));
+    }
+
+    if (!hookEntries.isEmpty()) {
+        const QStringList order = m_hookModel->displayOrder();
+        QHash<QString, int> rank;
+        rank.reserve(order.size());
+        for (int i = 0; i < order.size(); ++i)
+            rank.insert(order.at(i), i);
+        std::stable_sort(hookEntries.begin(), hookEntries.end(),
+                         [&rank](const TranslationEntry *a, const TranslationEntry *b) {
+                             return rank.value(a->source, INT_MAX) < rank.value(b->source, INT_MAX);
+                         });
+        for (const TranslationEntry *entry : hookEntries)
+            allTexts.append(renderEntry(*entry));
     }
 
     ui->label->setText(allTexts.isEmpty() ? m_initText : allTexts.join("\n\n"));
@@ -578,6 +741,9 @@ void TextOutputWindow::loadConfig()
     m_showSource->setChecked(output_window["is_show_source_name"].toBool());
     m_showOriginalText->setChecked(output_window["is_show_original_text"].toBool());
     m_showTranslatorName->setChecked(output_window["is_show_translator_name"].toBool());
+
+    // Hook multi-text settings
+    m_hookModel->loadConfig(output_window);
 }
 
 void TextOutputWindow::saveConfig()
@@ -603,6 +769,9 @@ void TextOutputWindow::saveConfig()
     output_window["is_show_source_name"] = m_showSource->isChecked();
     output_window["is_show_original_text"] = m_showOriginalText->isChecked();
     output_window["is_show_translator_name"] = m_showTranslatorName->isChecked();
+
+    // Hook multi-text settings
+    m_hookModel->saveConfig(output_window);
 
     Config::setValue("output_window", output_window);
     Config::save();

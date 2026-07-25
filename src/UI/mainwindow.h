@@ -104,6 +104,7 @@ private slots:
     void openOllamaSettings();
     void retranslateText();
     void manualInjectHook();
+    void reapplyHookOutput();
 
     // Output Window
     void selectNewRegion();
@@ -215,7 +216,10 @@ private:
     QString m_currentEngineProcess;
     HookController *m_hookController = nullptr;
     QList<PluginManager::PluginInfo> m_registry;
-    QString m_currentHookText;
+    QMap<QString, QString> m_currentHookTexts;
+    QTimer *m_hookBurstTimer = nullptr;
+    QMap<QString, QString> m_hookBurstBuffer;
+    void flushHookBurst();
 
     // Replace Text
     enum TextProcessingColumn {
@@ -257,12 +261,15 @@ private:
     void loadHookPluginSettings();
     void syncHookControllerTargets();
 
+    QString currentHookTargetKey() const;
+    void clearHookState();
     void syncPluginConfigs();
     QString buildPluginConfigJson(int flushMs) const;
+    void pushCurrentPluginConfig();
 
     void openSpeedSettings();
     void updateSpeedButtonAvailability();
-    int storedFlushMs(const QString &pluginName) const;
+    int storedFlushMs(const QString &targetKey) const;
 
     void reapplyProfileSections();
     void refreshConfigsPage();

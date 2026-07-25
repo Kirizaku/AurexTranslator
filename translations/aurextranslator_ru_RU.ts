@@ -28,6 +28,193 @@
     </message>
 </context>
 <context>
+    <name>HookSelectorDialog</name>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="107"/>
+        <source>Hook text selection</source>
+        <translation>Выбор текста хука</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="155"/>
+        <source>Show only the block that changed last</source>
+        <translation>Показывать только блок, изменившийся последним</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="156"/>
+        <source>Show all ticked blocks together</source>
+        <translation>Показывать все отмеченные блоки вместе</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="165"/>
+        <source>Wait for other blocks:</source>
+        <translation>Ждать другие блоки:</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="169"/>
+        <source> ms</source>
+        <translation> мс</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="171"/>
+        <source>When two blocks change at almost the same time, wait this long after the first one before deciding which to show, then show the higher-priority block (set the order with the ▲ ▼ arrows). Increase it if a lower block still flashes before your preferred one; 0 shows whatever changes first.</source>
+        <translation>Если два блока меняются почти одновременно, подождать указанное время после первого, прежде чем решить, какой показать, а затем показать блок с более высоким приоритетом (порядок задается стрелками ▲ ▼). Увеличьте значение, если блок с более низким приоритетом все еще мелькает перед нужным; 0 - показывать тот, что изменился первым.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="259"/>
+        <source>Apply</source>
+        <translation>Применить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="273"/>
+        <source>Select at least one specific block to save - an address (Hook:0x...), a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) or a group. The plain &quot;Hook&quot; stream cannot be saved.</source>
+        <translation>Выберите хотя бы один конкретный блок для сохранения - адрес (Hook:0x...), вариант (Hook:v1, Hook:v2, ...), именованный источник (Hook:Textbox, ...) или группу. Обычный поток «Hook» сохранить нельзя.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="293"/>
+        <source>Hook addresses are runtime memory pointers. In some games they are stable and will be restored on the next launch; in others they change every run and won&apos;t match.
+
+Save anyway?</source>
+        <translation>Адреса хуков - это указатели в памяти времени выполнения. В одних играх они стабильны и восстанавливаются при следующем запуске; в других меняются при каждом запуске и не совпадут.
+
+Все равно сохранить?</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="207"/>
+        <source>Saved addresses (auto-applied when they reappear):</source>
+        <translation>Сохраненные адреса (применяются автоматически при повторном появлении):</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="87"/>
+        <source>  [variant %1]</source>
+        <translation>  [вариант %1]</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="135"/>
+        <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
+        <translation>Некоторые игры показывают сразу несколько текстовых блоков (например, меню выбора). Отметьте флажок блока, чтобы показать его в оверлее. Щелкните по строке, чтобы выбрать ее для группировки (подсветится), затем нажмите «Группировать», чтобы перевести выбранные блоки как один.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="146"/>
+        <source>Search blocks by address or text…</source>
+        <translation>Поиск блоков по адресу или тексту…</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="236"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="344"/>
+        <source>Group</source>
+        <translation>Группировать</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="237"/>
+        <source>Combine the selected blocks into one: their texts are joined and translated together, shown as a single block. Select at least two first.</source>
+        <translation>Объединить выбранные блоки в один: их тексты соединяются и переводятся вместе, отображаясь как единый блок. Сначала выберите хотя бы два.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="248"/>
+        <source>Group blocks</source>
+        <translation>Сгруппировать блоки</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="260"/>
+        <source>Show the current text for the selected blocks now. Without this a block you just selected appears only on its next update.</source>
+        <translation>Показать текущий текст выбранных блоков сейчас. Без этого только что выбранный блок появится только при следующем обновлении.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="266"/>
+        <source>Save</source>
+        <translation>Сохранить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="305"/>
+        <source>Clear</source>
+        <translation>Очистить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="307"/>
+        <source>Forget all hook text seen so far and empty the overlay. Saved addresses are kept. Useful after a per-character variant flooded the list.</source>
+        <translation>Забыть весь показанный до сих пор текст хука и очистить оверлей. Сохраненные адреса сохраняются. Полезно, если список переполнил вариант, создаваемый для каждого символа.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="344"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="396"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="521"/>
+        <source>Group (%1)</source>
+        <translation>Группа (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="448"/>
+        <source>v%1</source>
+        <translation>v%1</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="546"/>
+        <source>Forget this saved group.</source>
+        <translation>Забыть эту сохраненную группу.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="249"/>
+        <source>Click at least two blocks or groups to highlight and combine them.</source>
+        <translation>Щелкните хотя бы по двум блокам или группам, чтобы подсветить и объединить их.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
+        <source>Remember the selected blocks so they re-apply next launch.</source>
+        <translation>Запомнить выбранные блоки, чтобы применить их снова при следующем запуске.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="272"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="292"/>
+        <source>Save selection</source>
+        <translation>Сохранить выбор</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="374"/>
+        <source>(no hook text yet)</source>
+        <translation>(текста хука пока нет)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="379"/>
+        <source>Order blocks with ▲ ▼ - the higher one wins when several change at once, and sets the output order when all are shown. Only saved addresses keep their order next time.</source>
+        <translation>Упорядочивайте блоки стрелками ▲ ▼ - верхний побеждает, когда несколько меняются одновременно, и задает порядок вывода, когда показаны все. Порядок до следующего раза сохраняется только у сохраненных адресов.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="418"/>
+        <source>Show this block in the overlay (press Apply to take effect).</source>
+        <translation>Показывать этот блок в оверлее (нажмите «Применить», чтобы изменения вступили в силу).</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="466"/>
+        <source>Higher priority</source>
+        <translation>Повысить приоритет</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="467"/>
+        <source>Lower priority</source>
+        <translation>Понизить приоритет</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="438"/>
+        <source>Ungroup: split this group back into separate blocks.</source>
+        <translation>Разгруппировать: разбить эту группу обратно на отдельные блоки.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="497"/>
+        <source>(nothing saved)</source>
+        <translation>(ничего не сохранено)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="545"/>
+        <source>Delete</source>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="508"/>
+        <source>Forget this saved address.</source>
+        <translation>Забыть этот сохраненный адрес.</translation>
+    </message>
+</context>
+<context>
     <name>HookSettingsDialog</name>
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="48"/>
@@ -469,137 +656,132 @@
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="464"/>
+        <location filename="../src/UI/mainwindow.cpp" line="483"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="467"/>
+        <location filename="../src/UI/mainwindow.cpp" line="486"/>
         <source>Open Processed Screencast in New Window</source>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="551"/>
+        <location filename="../src/UI/mainwindow.cpp" line="577"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="556"/>
+        <location filename="../src/UI/mainwindow.cpp" line="582"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="652"/>
+        <location filename="../src/UI/mainwindow.cpp" line="678"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="652"/>
+        <location filename="../src/UI/mainwindow.cpp" line="678"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1032"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1032"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="203"/>
-        <source>[Hook] Failed to load plugin &apos;libat-injector</source>
-        <translation>[Hook] Не удалось загрузить плагин libat-injector</translation>
-    </message>
-    <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1528"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1666"/>
         <source>Active profile: %1</source>
         <translation>Активный профиль: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1533"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1671"/>
         <source>%1 (active)</source>
         <translation>%1 (активный)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1549"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1556"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1687"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1694"/>
         <source>New profile</source>
         <translation>Новый профиль</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1550"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1688"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation>Имя профиля (сохранит текущие настройки):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1557"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1602"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1695"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1740"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation>Профиль с именем «%1» уже существует.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1575"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1713"/>
         <source>Load profile</source>
         <translation>Загрузка профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1576"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1714"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation>Не удалось загрузить профиль «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1593"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1601"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1731"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1739"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1745"/>
         <source>Rename profile</source>
         <translation>Переименование профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1594"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1732"/>
         <source>New name:</source>
         <translation>Новое имя:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1607"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1745"/>
         <source>Rename failed.</source>
         <translation>Не удалось переименовать.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1620"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1626"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1758"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1764"/>
         <source>Delete profile</source>
         <translation>Удаление профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1621"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1759"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation>Активный профиль нельзя удалить. Сначала загрузите другой профиль.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1627"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1765"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation>Удалить профиль «%1»? Это действие необратимо.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1673"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1811"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1674"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1812"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1676"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1814"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1677"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1815"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -841,62 +1023,62 @@ Please install Tesseract language packs or specify a custom &apos;tessdata&apos;
 <context>
     <name>TextOutputWindow</name>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="88"/>
+        <location filename="../src/UI/textoutputwindow.h" line="107"/>
         <source>Welcome!</source>
         <translation>Добро пожаловать!</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="46"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="48"/>
         <source>Translation history</source>
         <translation>История перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="315"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="441"/>
         <source>Wait time before showing accumulated text</source>
         <translation>Задержка перед выводом текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="434"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="597"/>
         <source>Left</source>
         <translation>По левому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="435"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="598"/>
         <source>Right</source>
         <translation>По правому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="436"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="599"/>
         <source>Center</source>
         <translation>По центру</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="454"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="617"/>
         <source>Show/Hide original text</source>
         <translation>Показать/Скрыть исходный текст</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="457"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="620"/>
         <source>Show/Hide translator name</source>
         <translation>Показать/Скрыть имя переводчика</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="461"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="624"/>
         <source>Transparency</source>
         <translation>Прозрачность</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="463"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="626"/>
         <source>Font size</source>
         <translation>Размер шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="462"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="625"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="106"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="213"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -911,42 +1093,46 @@ Result:
  %4</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="312"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="438"/>
         <source>Text Output Speed</source>
         <translation>Скорость вывода текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="451"/>
+        <source>Delete</source>
+        <translation type="obsolete">Удалить</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="614"/>
         <source>Show/Hide source</source>
         <translation>Показать/Скрыть источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="464"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="627"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="465"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="628"/>
         <source>Text alignment</source>
         <translation>Выравнивание текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="466"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="629"/>
         <source>Margin top</source>
         <translation>Верхний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="467"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="630"/>
         <source>Margin bottom</source>
         <translation>Нижний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="468"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="631"/>
         <source>Margin left</source>
         <translation>Левый отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="469"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="632"/>
         <source>Margin right</source>
         <translation>Правый отступ</translation>
     </message>
@@ -994,11 +1180,16 @@ Use if automatic injection failed</source>
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="336"/>
+        <source>Select which hook text to show</source>
+        <translation>Выбрать, какой текст хука показывать</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="370"/>
         <source>Open settings</source>
         <translation>Открыть настройки</translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/textoutputwindow.ui" line="383"/>
+        <location filename="../src/UI/forms/textoutputwindow.ui" line="417"/>
         <source>Exit</source>
         <translation>Закрыть</translation>
     </message>

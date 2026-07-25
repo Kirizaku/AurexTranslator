@@ -26,9 +26,13 @@
 #include <QPlainTextEdit>
 #include <QPushButton>
 
+
 namespace Ui {
 class TextOutputWindow;
 }
+
+class HookTextModel;
+class HookSelectorDialog;
 
 class TextOutputWindow : public QWidget
 {
@@ -52,6 +56,18 @@ public:
     void clearAllResultsByTranslator();
     void loadConfig();
 
+    // Hook
+    void setHookTarget(const QString &targetKey);
+    void noteHookSource(const QString &source, const QString &original);
+    QStringList hookSourcesToOutput(const QStringList &pending) const;
+    int hookBurstMs() const;
+    bool hasHookTranslation(const QString &source, const QString &original) const;
+    QString hookEffectiveSource(const QString &source) const;
+    QString hookCombinedOriginal(const QString &groupId) const;
+    QStringList hookDisplayOrder() const;
+    QString hookLatestOriginal(const QString &source) const;
+    void beginHookBatch(const QStringList &expected);
+
 signals:
     void selectNewRegionRequested();
     void selectNewInnerRegionRequested();
@@ -59,6 +75,8 @@ signals:
     void manualInjectHookRequested();
     void internalClipboardWrite(const QString &text);
     void speedSettingsRequested();
+    void hookOutputReapplyRequested();
+    void hookClearRequested();
 
 public slots:
     void setInfoMessage(const QString &message);
@@ -78,6 +96,7 @@ private slots:
     void on_retranslateButton_clicked();
     void on_injectHookButton_clicked();
     void on_speedButton_clicked();
+    void on_hookSelectButton_clicked();
     void on_settingsButton_clicked();
     void on_exitButton_clicked();
     void updateMargin();
@@ -137,6 +156,16 @@ private:
 
     bool m_hookActive = false;
     bool m_speedButtonEligible = false;
+
+    // Multi-text hook
+    HookTextModel *m_hookModel = nullptr;
+    HookSelectorDialog *m_hookSelectorDialog = nullptr;
+
+    QSet<QString> m_pendingHookBatch;
+    QTimer *m_hookBatchTimer = nullptr;
+
+    void removeHookEntries(const QString &source);
+    void openHookSelector();
 
     // promptSpeed
     const int m_minFlushMs = 50;

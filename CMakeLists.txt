@@ -54,6 +54,8 @@ set(PROJECT_SOURCES
     src/UI/textprocessingdelegates.h
     src/UI/screencastwindow.h src/UI/screencastwindow.cpp src/UI/forms/screencastwindow.ui
     src/UI/textoutputwindow.h src/UI/textoutputwindow.cpp src/UI/forms/textoutputwindow.ui
+    src/UI/hooktextmodel.h src/UI/hooktextmodel.cpp
+    src/UI/hookselectordialog.h src/UI/hookselectordialog.cpp
     src/UI/overlaywindow.h src/UI/overlaywindow.cpp
     src/UI/previewwindow.h src/UI/previewwindow.cpp
     src/UI/hoverlabel.h src/UI/hoverlabel.cpp

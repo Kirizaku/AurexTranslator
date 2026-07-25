@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QJsonArray>
 #include <QMenu>
+#include <QTimer>
 
 #include "src/controllers/clipboardcontroller.h"
 
@@ -64,6 +65,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_translationController, &TranslationController::translationReady,
             m_outputWindow, &TextOutputWindow::setTranslationResult);
+
+    m_hookBurstTimer = new QTimer(this);
+    m_hookBurstTimer->setSingleShot(true);
+    connect(m_hookBurstTimer, &QTimer::timeout, this, [this] { flushHookBurst(); });
 
     loadLogMessages();
     setupFinalUI();
@@ -219,15 +224,15 @@ void MainWindow::initPlugins()
 
         if (hasErrors) {
             Log(Logger::Level::Warning, QString("[plugin-loader] Plugin '%1' is invalid. Missing dependencies: %2")
-                    .arg(p.name, missingList.join(", ")));
+                                            .arg(p.name, missingList.join(", ")));
         }
     }
 
     ui->textProcessingHookRow->setVisible(hookPluginReady);
-    ui->textProcessingHookCheckBox->setEnabled(hookPluginReady);
+    ui->textProcessingHookCheckBox->setEnabled(hookPluginReady && dependencyErrors.isEmpty());
 
-    // Seed HookController with each plugin's effective config so it is available
-    // the moment a plugin is started
+    // Push the current target's plugin config again: a reload dropped whatever
+    // the plugin had been told before
     syncPluginConfigs();
 }
 
@@ -279,6 +284,7 @@ void MainWindow::initSubsystems()
     connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
     connect(m_outputWindow, &TextOutputWindow::selectNewInnerRegionRequested, this, &MainWindow::selectNewInnerRegion);
     connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
+    connect(m_outputWindow, &TextOutputWindow::hookOutputReapplyRequested, this, &MainWindow::reapplyHookOutput);
 
     // Ollama Settings
     m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
@@ -339,15 +345,19 @@ void MainWindow::initSubsystems()
             m_outputWindow, &TextOutputWindow::sethookState);
     connect(m_hookController, &HookController::hookStateChanged,
             this, &MainWindow::updateSpeedButtonAvailability);
+    connect(m_hookController, &HookController::hookStateChanged, this, [this](bool active) {
+        if (active)
+            pushCurrentPluginConfig();
+    });
     connect(m_outputWindow, &TextOutputWindow::speedSettingsRequested,
             this, &MainWindow::openSpeedSettings);
-    connect(m_hookController, &HookController::shouldClearResults, m_outputWindow, [this] {
-        m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
-    });
+    connect(m_hookController, &HookController::shouldClearResults,
+            this, &MainWindow::clearHookState);
+    connect(m_outputWindow, &TextOutputWindow::hookClearRequested,
+            this, &MainWindow::clearHookState);
     connect(m_hookController, &HookController::shouldClearInfoMessage,
             m_outputWindow, &TextOutputWindow::clearInfoMessage);
 
-    // Configs page: keep button states in sync with the selection
     connect(ui->configsListWidget, &QListWidget::itemSelectionChanged, this, [this] {
         QListWidgetItem *sel = ui->configsListWidget->currentItem();
         const QString name = sel ? sel->data(Qt::UserRole).toString() : QString();
@@ -494,14 +504,21 @@ void MainWindow::setupTextProcessingTable()
     header->setSectionResizeMode(ColTo, QHeaderView::Stretch);
 
     table->setItemDelegateForColumn(ColRegex, new CheckBoxDelegate(table));
-    table->setItemDelegateForColumn(ColSource, new SourceComboDelegate([] {
-        return QStringList{
+    table->setItemDelegateForColumn(ColSource, new SourceComboDelegate([this] {
+        QStringList sources{
             QStringLiteral("Hook"),
             QStringLiteral("Clipboard"),
             QStringLiteral("Tesseract"),
             QStringLiteral("Ollama Vision")
         };
+        const QStringList hookSources = m_outputWindow->hookDisplayOrder();
+        for (const QString &src : hookSources) {
+            if (!sources.contains(src))
+                sources << src;
+        }
+        return sources;
     }, table));
+
 }
 
 bool MainWindow::widgetChanged(QWidget *widget)
@@ -867,13 +884,42 @@ void MainWindow::setCurrentOutput(const QString &source, const QString &output)
 {
     QString outputFilt = replaceText(source, output);
 
-    m_translationController->translate(source, outputFilt);
+    if (source.startsWith(QStringLiteral("Hook"))) {
+        m_currentHookTexts.insert(source, output);
+        m_outputWindow->noteHookSource(source, output);
 
-    // Hook
-    if (source == "Hook") {
-        m_outputWindow->clearInfoMessage();
-        m_currentHookText = output;
+        const QString effSource = m_outputWindow->hookEffectiveSource(source);
+        const QString effText = (effSource == source)
+            ? outputFilt
+            : replaceText(effSource, m_outputWindow->hookCombinedOriginal(effSource));
+
+        m_hookBurstBuffer.insert(effSource, effText);
+
+        if (!m_hookBurstTimer->isActive())
+            m_hookBurstTimer->start(m_outputWindow->hookBurstMs());
+        return;
     }
+
+    m_translationController->translate(source, outputFilt);
+}
+
+void MainWindow::flushHookBurst()
+{
+    if (m_hookBurstBuffer.isEmpty())
+        return;
+
+    const QStringList winners = m_outputWindow->hookSourcesToOutput(m_hookBurstBuffer.keys());
+    QStringList sent;
+    for (const QString &src : winners)
+        if (m_hookBurstBuffer.contains(src))
+            sent << src;
+
+    m_outputWindow->beginHookBatch(sent);
+
+    for (const QString &src : sent)
+        m_translationController->translate(src, m_hookBurstBuffer.value(src));
+
+    m_hookBurstBuffer.clear();
 }
 
 void MainWindow::openOllamaSettings()
@@ -918,14 +964,48 @@ void MainWindow::retranslateText()
         m_ocrController->triggerManual();
     }
 
-    if (ui->textProcessingHookCheckBox->isChecked() && !m_currentHookText.isEmpty()) {
-        setCurrentOutput("Hook", m_currentHookText);
+    if (ui->textProcessingHookCheckBox->isChecked()) {
+        for (auto it = m_currentHookTexts.cbegin(); it != m_currentHookTexts.cend(); ++it) {
+            if (!it.value().isEmpty())
+                setCurrentOutput(it.key(), it.value());
+        }
     }
 }
 
 void MainWindow::manualInjectHook()
 {
     m_hookController->manualInject();
+}
+
+void MainWindow::reapplyHookOutput()
+{
+    QHash<QString, QString> effTexts;
+    const QStringList displayed = m_outputWindow->hookDisplayOrder();
+    for (const QString &src : displayed) {
+        const QString orig = m_outputWindow->hookLatestOriginal(src);
+        if (!orig.isEmpty())
+            effTexts.insert(src, orig);
+    }
+    if (effTexts.isEmpty())
+        return;
+
+    const QStringList winners = m_outputWindow->hookSourcesToOutput(effTexts.keys());
+    QHash<QString, QString> toSend;
+    QStringList sendOrder;
+    for (const QString &src : winners) {
+        auto it = effTexts.constFind(src);
+        if (it == effTexts.constEnd() || it.value().isEmpty())
+            continue;
+        const QString filtered = replaceText(src, it.value());
+        if (m_outputWindow->hasHookTranslation(src, filtered))
+            continue;
+        toSend.insert(src, filtered);
+        sendOrder << src;
+    }
+
+    m_outputWindow->beginHookBatch(sendOrder);
+    for (const QString &src : sendOrder)
+        m_translationController->translate(src, toSend.value(src));
 }
 
 void MainWindow::selectNewRegion()
@@ -1456,12 +1536,35 @@ void MainWindow::syncHookControllerTargets()
     m_hookController->setCurrentGameAppPlugin(m_currentGameAppPlugin);
     m_hookController->setCurrentEnginePlugin(m_currentEnginePlugin);
     m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
+    m_outputWindow->setHookTarget(currentHookTargetKey());
+
+    syncPluginConfigs();
 }
 
-int MainWindow::storedFlushMs(const QString &pluginName) const
+QString MainWindow::currentHookTargetKey() const
+{
+    QString plugin, process;
+    if (m_hookMode == HookSettingsDialog::HookMode::EngineMode) {
+        plugin = m_currentEnginePlugin;
+        process = m_currentEngineProcess;
+    } else {
+        plugin = m_currentGameAppPlugin;
+        for (const auto &p : m_registry) {
+            if (p.name == m_currentGameAppPlugin) {
+                process = p.targetExecutable;
+                break;
+            }
+        }
+    }
+    if (plugin.isEmpty() && process.isEmpty())
+        return QString();
+    return plugin + QStringLiteral("|") + process;
+}
+
+int MainWindow::storedFlushMs(const QString &targetKey) const
 {
     const QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
-    return all.value(pluginName).toInt(TextOutputWindow::kDefaultFlushMs);
+    return all.value(targetKey).toInt(TextOutputWindow::kDefaultFlushMs);
 }
 
 QString MainWindow::buildPluginConfigJson(int flushMs) const
@@ -1473,10 +1576,34 @@ QString MainWindow::buildPluginConfigJson(int flushMs) const
 
 void MainWindow::syncPluginConfigs()
 {
-    for (const auto &info : m_registry) {
-        if (info.textMode != QLatin1String("per_char")) continue;
-        m_hookController->setPluginConfig(info.name, buildPluginConfigJson(storedFlushMs(info.name)));
-    }
+    const QString target = currentHookTargetKey();
+    const QString plugin = target.section(QLatin1Char('|'), 0, 0);
+    if (plugin.isEmpty())
+        return;
+
+    // Only per-character plugins do anything with the flush interval
+    const auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                                 [&](const PluginManager::PluginInfo &i) { return i.name == plugin; });
+    if (it == m_registry.cend() || it->textMode != QLatin1String("per_char"))
+        return;
+
+    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(target)));
+}
+
+void MainWindow::clearHookState()
+{
+    m_hookBurstTimer->stop();
+    m_hookBurstBuffer.clear();
+    m_currentHookTexts.clear();
+    m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
+}
+
+void MainWindow::pushCurrentPluginConfig()
+{
+    const QString plugin = m_hookController->currentRunningPlugin();
+    if (plugin.isEmpty())
+        return;
+    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(currentHookTargetKey())));
 }
 
 void MainWindow::updateSpeedButtonAvailability()
@@ -1500,11 +1627,14 @@ void MainWindow::openSpeedSettings()
                            [&](const PluginManager::PluginInfo &i) { return i.name == pluginName; });
     if (it == m_registry.cend()) return;
 
-    const int chosen = m_outputWindow->promptSpeed(storedFlushMs(pluginName));
+    const QString target = currentHookTargetKey();
+    if (target.isEmpty()) return;
+
+    const int chosen = m_outputWindow->promptSpeed(storedFlushMs(target));
     if (chosen < 0) return; // cancelled
 
     QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
-    all[pluginName] = chosen;
+    all[target] = chosen;
     Config::setValue("plugin_flush_ms", all);
     Config::save();
 
@@ -1521,11 +1651,10 @@ void MainWindow::reapplyProfileSections()
     loadScreencastSettings();
     loadOcrSettings();
 
-    syncHookControllerTargets();
-    syncPluginConfigs();
-    m_hookController->retarget(ui->textProcessingHookCheckBox->isChecked());
-
     m_outputWindow->loadConfig();
+
+    syncHookControllerTargets();
+    m_hookController->retarget(ui->textProcessingHookCheckBox->isChecked());
 
     setPropertyChanged(false);
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
