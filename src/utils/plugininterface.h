@@ -16,6 +16,7 @@ public:
 signals:
     void pluginMessage(const QString &msg);
     void currentOutput(const QString &source, const QString &out);
+    void processLost();
 };
 
 #define PluginInterface_iid "com.aurextranslator.PluginInterface"

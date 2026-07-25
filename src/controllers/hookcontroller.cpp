@@ -37,6 +37,8 @@ void HookController::setPlugin(PluginInterface *plugin)
             this, &HookController::infoMessage, Qt::UniqueConnection);
     connect(m_hookPlugin, &PluginInterface::currentOutput,
             this, &HookController::textReceived, Qt::UniqueConnection);
+    connect(m_hookPlugin, &PluginInterface::processLost,
+            this, &HookController::shouldClearResults, Qt::UniqueConnection);
 }
 
 void HookController::setMode(int mode)
@@ -201,5 +203,4 @@ void HookController::startPlugin(const PluginManager::PluginInfo& info)
     m_runningEngineProcess = (m_hookMode == EngineMode) ? m_currentEngineProcess : QString();
 
     emit hookStateChanged(true);
-    emit shouldClearInfoMessage();
 }
