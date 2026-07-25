@@ -154,11 +154,38 @@ void MainWindow::initPlugins()
 {
     m_registry = m_pluginManager->scanPlugins();
     m_pluginManager->loadPlugins();
-    m_hookController->setRegistry(m_registry);
 
     ui->textProcessingHookRow->setVisible(false);
+    ui->textProcessingHookCheckBox->setEnabled(false);
+
+    m_hookGameAppPluginList.clear();
+    m_hookEnginePluginList.clear();
 
     QMap<QString, QStringList> dependencyErrors = m_pluginManager->validateDependencies(m_registry);
+
+    bool hookPluginReady = false;
+    const auto injectorIt = std::find_if(m_registry.begin(), m_registry.end(),
+                                         [](const PluginManager::PluginInfo &i) { return i.name == "libat-injector"; });
+
+    if (injectorIt != m_registry.end() && !dependencyErrors.contains("libat-injector")) {
+        if (m_hookController->isPluginLoaded()) {
+            hookPluginReady = true;
+        } else {
+            QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
+            PluginInterface *hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
+
+            if (hookPlugin) {
+                m_hookController->setPlugin(hookPlugin);
+                hookPluginReady = true;
+            } else {
+                Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
+                m_registry.erase(injectorIt);
+                dependencyErrors = m_pluginManager->validateDependencies(m_registry);
+            }
+        }
+    }
+
+    m_hookController->setRegistry(m_registry);
 
     ui->pluginsTableWidget->setRowCount(m_registry.size());
     int row = 0;
@@ -190,32 +217,14 @@ void MainWindow::initPlugins()
             m_hookEnginePluginList.insert(p.name, p.targetTitle);
         }
 
-        if (p.name == "libat-injector" && !hasErrors) {
-            ui->textProcessingHookCheckBox->setEnabled(true);
-            ui->textProcessingHookRow->setVisible(true);
-
-            if (!m_hookController->isPluginLoaded()) {
-                QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
-                PluginInterface *hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
-
-                if (!hookPlugin) {
-                    Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
-                    m_outputWindow->setInfoMessage(tr("[Hook] Failed to load plugin 'libat-injector"));
-                    ui->textProcessingHookCheckBox->setChecked(false);
-                    saveConfig();
-                    return;
-                }
-
-                m_hookController->setPlugin(hookPlugin);
-            }
-        }
-
         if (hasErrors) {
             Log(Logger::Level::Warning, QString("[plugin-loader] Plugin '%1' is invalid. Missing dependencies: %2")
-                                            .arg(p.name, missingList.join(", ")));
-            ui->textProcessingHookCheckBox->setEnabled(false);
+                    .arg(p.name, missingList.join(", ")));
         }
     }
+
+    ui->textProcessingHookRow->setVisible(hookPluginReady);
+    ui->textProcessingHookCheckBox->setEnabled(hookPluginReady);
 
     // Seed HookController with each plugin's effective config so it is available
     // the moment a plugin is started
