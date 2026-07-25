@@ -10,5 +10,6 @@
         <file>3rdparty/icons/eraser.svg</file>
         <file>3rdparty/icons/vaccine.svg</file>
         <file>3rdparty/icons/gauge.svg</file>
+        <file>3rdparty/icons/text-recognition.svg</file>
     </qresource>
 </RCC>
