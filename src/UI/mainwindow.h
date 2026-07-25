@@ -53,8 +53,6 @@ public:
     ~MainWindow();
 
 signals:
-    void currentTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
-    void clearResultsByTranslator(const QString &translatorName);
     void showHistoryRequested();
     void screenCastFinished();
     void restartRequested();
@@ -120,7 +118,6 @@ private:
 
     // Clipboard
     ClipboardController *m_clipboardController = nullptr;
-    bool m_clipboardEnabled = false;
 
     void setupBaseUI();
     void initPlugins();
