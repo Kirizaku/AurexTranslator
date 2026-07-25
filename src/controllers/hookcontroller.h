@@ -51,6 +51,7 @@ public:
 
     // State
     QString currentRunningPlugin() const { return m_currentRunningPlugin; }
+    QString runningEngineProcess() const { return m_runningEngineProcess; }
     bool isRunning() const { return !m_currentRunningPlugin.isEmpty(); }
     void retarget(bool enabled);
 

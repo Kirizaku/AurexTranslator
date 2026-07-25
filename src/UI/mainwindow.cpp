@@ -345,6 +345,8 @@ void MainWindow::initSubsystems()
             m_outputWindow, &TextOutputWindow::sethookState);
     connect(m_hookController, &HookController::hookStateChanged,
             this, &MainWindow::updateSpeedButtonAvailability);
+    connect(m_hookController, &HookController::hookStateChanged,
+            this, [this] { refreshRuleScopeBox(); });
     connect(m_hookController, &HookController::hookStateChanged, this, [this](bool active) {
         if (active)
             pushCurrentPluginConfig();
@@ -449,6 +451,18 @@ void MainWindow::setupSettingsConnections()
     connect(ui->textProcessingClipboardCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingClipboardCheckBox));
     connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
     connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
+    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, [this] { commitReplacementTable(); });
+    connect(ui->textProcessingScopeBox, &QComboBox::currentIndexChanged, this, [this](int) {
+        const QString target = activeHookTargetKey();
+        if (!target.isEmpty()) {
+            if (currentRuleScope().isEmpty())
+                m_gameScopedTargets.remove(target);
+            else
+                m_gameScopedTargets.insert(target);
+            saveRuleScope();
+        }
+        populateReplacementTable();
+    });
 
     // Proxy
     connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, bind(m_proxyChanged, ui->proxyEnabledCheckBox));
@@ -519,6 +533,7 @@ void MainWindow::setupTextProcessingTable()
         return sources;
     }, table));
 
+    refreshRuleScopeBox();
 }
 
 bool MainWindow::widgetChanged(QWidget *widget)
@@ -748,6 +763,8 @@ void MainWindow::on_textProcessingAddRowButton_clicked()
     ui->textProcessingTableWidget->insertRow(row);
     ui->textProcessingTableWidget->setItem(row, ColRegex, makeRegexFlagItem(false));
     ui->textProcessingTableWidget->setItem(row, ColSource, new QTableWidgetItem(QString()));
+    commitReplacementTable();
+    markRulesChanged();
 }
 
 void MainWindow::on_textProcessingRemoveRowButton_clicked()
@@ -756,6 +773,8 @@ void MainWindow::on_textProcessingRemoveRowButton_clicked()
 
     if (row >= 0) {
         ui->textProcessingTableWidget->removeRow(row);
+        commitReplacementTable();
+        markRulesChanged();
     }
 }
 
@@ -1057,33 +1076,183 @@ void MainWindow::showOverlayWindow()
 
 QString MainWindow::replaceText(const QString &source, QString output)
 {
-    for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); ++i) {
-        QTableWidgetItem* regexItem = ui->textProcessingTableWidget->item(i, ColRegex);
-        QTableWidgetItem* srcItem = ui->textProcessingTableWidget->item(i, ColSource);
-        QTableWidgetItem* fromItem = ui->textProcessingTableWidget->item(i, ColFrom);
-        QTableWidgetItem* toItem = ui->textProcessingTableWidget->item(i, ColTo);
+    const QString target = activeHookTargetKey();
 
-        if (!fromItem || fromItem->text().isEmpty())
-            continue;
+    const auto applyPass = [&](bool globalPass) {
+        for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+            if (rule.target.isEmpty() != globalPass)
+                continue;
+            if (!globalPass && rule.target != target)
+                continue;
+            if (rule.from.isEmpty())
+                continue;
+            if (!rule.source.isEmpty() && rule.source.compare(source, Qt::CaseInsensitive) != 0)
+                continue;
 
-        const QString ruleSource = srcItem ? srcItem->text().trimmed() : QString();
-        if (!ruleSource.isEmpty() && ruleSource.compare(source, Qt::CaseInsensitive) != 0)
-            continue;
-
-        const QString from = fromItem->text();
-        const QString to = toItem ? toItem->text() : QString();
-        const bool isRegex = regexItem && regexItem->checkState() == Qt::Checked;
-
-        if (isRegex) {
-            QRegularExpression re(from);
-            if (re.isValid())
-                output.replace(re, to);
-        } else {
-            output.replace(from, to);
+            if (rule.regex) {
+                QRegularExpression re(rule.from);
+                if (re.isValid())
+                    output.replace(re, rule.to);
+            } else {
+                output.replace(rule.from, rule.to);
+            }
         }
-    }
+    };
+
+    applyPass(true);
+    applyPass(false);
 
     return output;
+}
+
+void MainWindow::markRulesChanged()
+{
+    m_textProcessingChanged = true;
+    ui->textProcessingTableWidget->setProperty("changed", true);
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+}
+
+QString MainWindow::currentRuleScope() const
+{
+    return ui->textProcessingScopeBox->currentData().toString();
+}
+
+void MainWindow::saveRuleScope()
+{
+    // Only the games told to show their own rules are listed; for the rest the
+    // table shows the shared ones
+    QStringList targets = m_gameScopedTargets.values();
+    targets.sort();
+
+    QJsonArray value;
+    for (const QString &target : targets)
+        value.append(target);
+
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+    if (textProcessing["rules_scope"].toArray() == value)
+        return;
+
+    // Which subset the table shows is a view preference, not something worth
+    // queueing behind Apply, so it goes straight to the config
+    textProcessing["rules_scope"] = value;
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+}
+
+QString MainWindow::activeHookTargetKey() const
+{
+    // What is hooked right now, as opposed to what is merely selected in the
+    // settings - a rule can only be tied to a game that is actually running
+    const QString plugin = m_hookController->currentRunningPlugin();
+    if (plugin.isEmpty())
+        return QString();
+
+    QString process = m_hookController->runningEngineProcess();
+    if (process.isEmpty()) {
+        for (const auto &p : m_registry) {
+            if (p.name == plugin) {
+                process = p.targetExecutable;
+                break;
+            }
+        }
+    }
+    return plugin + QStringLiteral("|") + process;
+}
+
+QString MainWindow::currentGameLabel() const
+{
+    const QString plugin = m_hookController->currentRunningPlugin();
+    if (plugin.isEmpty())
+        return QString();
+
+    // An engine plugin covers many games, so the process is the game. A
+    // game/application plugin is written for one game and names it
+    const QString process = m_hookController->runningEngineProcess();
+    if (!process.isEmpty())
+        return process;
+
+    for (const auto &p : m_registry)
+        if (p.name == plugin)
+            return p.targetTitle.isEmpty() ? p.name : p.targetTitle;
+
+    return plugin;
+}
+
+void MainWindow::refreshRuleScopeBox()
+{
+    // Only the hooked game is ever offered: rules of the other games stay in the
+    // config and come back with them, which beats a list that grows forever
+    const QString target = activeHookTargetKey();
+    const QString name = currentGameLabel();
+
+    QComboBox *box = ui->textProcessingScopeBox;
+    const QSignalBlocker blocker(box);
+
+    box->clear();
+    box->addItem(tr("Everywhere"), QString());
+    if (!name.isEmpty())
+        box->addItem(tr("Only in %1").arg(name), target);
+
+    // Every game remembers on its own whether the table shows its rules or the
+    // shared ones
+    const int idx = m_gameScopedTargets.contains(target) ? box->findData(target) : 0;
+    box->setCurrentIndex(idx >= 0 ? idx : 0);
+
+    // Until a game is hooked there is nothing to choose between, so the whole
+    // idea of a scope stays out of the way
+    ui->textProcessingScopeRow->setVisible(!target.isEmpty() && !name.isEmpty());
+
+    populateReplacementTable();
+}
+
+void MainWindow::populateReplacementTable()
+{
+    const QString scope = currentRuleScope();
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    // Refilling the table is not a user edit: no commit, no Apply button
+    const QSignalBlocker blocker(table);
+    table->setRowCount(0);
+
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+        if (rule.target != scope)
+            continue;
+
+        const int row = table->rowCount();
+        table->insertRow(row);
+        table->setItem(row, ColRegex, makeRegexFlagItem(rule.regex));
+        table->setItem(row, ColSource, new QTableWidgetItem(rule.source));
+        table->setItem(row, ColFrom, new QTableWidgetItem(rule.from));
+        table->setItem(row, ColTo, new QTableWidgetItem(rule.to));
+    }
+}
+
+void MainWindow::commitReplacementTable()
+{
+    const QString scope = currentRuleScope();
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    QList<ReplacementRule> kept;
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules))
+        if (rule.target != scope)
+            kept << rule;
+
+    for (int i = 0; i < table->rowCount(); ++i) {
+        QTableWidgetItem *regexItem = table->item(i, ColRegex);
+        QTableWidgetItem *srcItem = table->item(i, ColSource);
+        QTableWidgetItem *fromItem = table->item(i, ColFrom);
+        QTableWidgetItem *toItem = table->item(i, ColTo);
+
+        ReplacementRule rule;
+        rule.regex = regexItem && regexItem->checkState() == Qt::Checked;
+        rule.source = srcItem ? srcItem->text().trimmed() : QString();
+        rule.from = fromItem ? fromItem->text() : QString();
+        rule.to = toItem ? toItem->text() : QString();
+        rule.target = scope;
+        kept << rule;
+    }
+
+    m_replacementRules = kept;
 }
 
 void MainWindow::initScreenCast()
@@ -1373,16 +1542,30 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         }
 
         // Text Replacement
-        QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
+        const QJsonValue scopeValue = textProcessing["rules_scope"];
+        m_gameScopedTargets.clear();
+        for (const QJsonValue &value : scopeValue.toArray())
+            m_gameScopedTargets.insert(value.toString());
+
+        // Briefly this held a single target key instead of a list
+        if (scopeValue.isString() && !scopeValue.toString().isEmpty())
+            m_gameScopedTargets.insert(scopeValue.toString());
+
+        const QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
         if (widgetChanged(ui->textProcessingTableWidget)) {
-            ui->textProcessingTableWidget->setRowCount(jsonArray.size());
-            for (int i = 0; i < jsonArray.size(); i++) {
-                QJsonObject rowObject = jsonArray[i].toObject();
-                ui->textProcessingTableWidget->setItem(i, ColFrom, new QTableWidgetItem(rowObject["from"].toString()));
-                ui->textProcessingTableWidget->setItem(i, ColTo, new QTableWidgetItem(rowObject["to"].toString()));
-                ui->textProcessingTableWidget->setItem(i, ColRegex, makeRegexFlagItem(rowObject["regex"].toBool()));
-                ui->textProcessingTableWidget->setItem(i, ColSource, new QTableWidgetItem(rowObject["source"].toString()));
+            m_replacementRules.clear();
+            for (const QJsonValue &value : jsonArray) {
+                const QJsonObject rowObject = value.toObject();
+                ReplacementRule rule;
+                rule.regex = rowObject["regex"].toBool();
+                rule.source = rowObject["source"].toString();
+                rule.from = rowObject["from"].toString();
+                rule.to = rowObject["to"].toString();
+                rule.target = rowObject["target"].toString();   // absent = every game
+                m_replacementRules << rule;
             }
+
+            refreshRuleScopeBox();
         }
     }
 }
@@ -1537,6 +1720,7 @@ void MainWindow::syncHookControllerTargets()
     m_hookController->setCurrentEnginePlugin(m_currentEnginePlugin);
     m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
     m_outputWindow->setHookTarget(currentHookTargetKey());
+    refreshRuleScopeBox();
 
     syncPluginConfigs();
 }
@@ -1945,18 +2129,17 @@ void MainWindow::saveConfig()
             textProcessing["is_clipboard"] = ui->textProcessingClipboardCheckBox->isChecked();
 
         if (widgetChanged(ui->textProcessingTableWidget)) {
-            QJsonArray jsonArray;
-            for (int i = 0; i < ui->textProcessingTableWidget->rowCount(); i++) {
-                QTableWidgetItem *regexItem = ui->textProcessingTableWidget->item(i, ColRegex);
-                QTableWidgetItem *srcItem = ui->textProcessingTableWidget->item(i, ColSource);
-                QTableWidgetItem *fromItem = ui->textProcessingTableWidget->item(i, ColFrom);
-                QTableWidgetItem *toItem = ui->textProcessingTableWidget->item(i, ColTo);
+            commitReplacementTable();
 
+            QJsonArray jsonArray;
+            for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
                 QJsonObject rowObject;
-                rowObject["regex"] = regexItem && regexItem->checkState() == Qt::Checked;
-                rowObject["source"] = srcItem ? srcItem->text().trimmed() : QString();
-                rowObject["from"] = fromItem ? fromItem->text() : QString();
-                rowObject["to"] = toItem ? toItem->text() : QString();
+                rowObject["regex"] = rule.regex;
+                rowObject["source"] = rule.source;
+                rowObject["from"] = rule.from;
+                rowObject["to"] = rule.to;
+                if (!rule.target.isEmpty())
+                    rowObject["target"] = rule.target;
                 jsonArray.append(rowObject);
             }
             textProcessing["text_replacement_table"] = jsonArray;

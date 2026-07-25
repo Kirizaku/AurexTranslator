@@ -30,8 +30,23 @@
 <context>
     <name>HookSelectorDialog</name>
     <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="87"/>
+        <source>  [variant %1]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="107"/>
         <source>Hook text selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="135"/>
+        <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="146"/>
+        <source>Search blocks by address or text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -60,62 +75,8 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="259"/>
-        <source>Apply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
-        <source>Remember the selected blocks so they re-apply next launch.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="272"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="292"/>
-        <source>Save selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="273"/>
-        <source>Select at least one specific block to save - an address (Hook:0x...), a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) or a group. The plain &quot;Hook&quot; stream cannot be saved.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="379"/>
-        <source>Order blocks with ▲ ▼ - the higher one wins when several change at once, and sets the output order when all are shown. Only saved addresses keep their order next time.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="545"/>
-        <source>Delete</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="293"/>
-        <source>Hook addresses are runtime memory pointers. In some games they are stable and will be restored on the next launch; in others they change every run and won&apos;t match.
-
-Save anyway?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="207"/>
         <source>Saved addresses (auto-applied when they reappear):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="87"/>
-        <source>  [variant %1]</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="135"/>
-        <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="146"/>
-        <source>Search blocks by address or text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -135,6 +96,16 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="249"/>
+        <source>Click at least two blocks or groups to highlight and combine them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="259"/>
+        <source>Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="260"/>
         <source>Show the current text for the selected blocks now. Without this a block you just selected appears only on its next update.</source>
         <translation type="unfinished"></translation>
@@ -142,6 +113,29 @@ Save anyway?</source>
     <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="266"/>
         <source>Save</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
+        <source>Remember the selected blocks so they re-apply next launch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="272"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="292"/>
+        <source>Save selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="273"/>
+        <source>Select at least one specific block to save - an address (Hook:0x...), a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) or a group. The plain &quot;Hook&quot; stream cannot be saved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="293"/>
+        <source>Hook addresses are runtime memory pointers. In some games they are stable and will be restored on the next launch; in others they change every run and won&apos;t match.
+
+Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -162,28 +156,28 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="448"/>
-        <source>v%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="546"/>
-        <source>Forget this saved group.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="249"/>
-        <source>Click at least two blocks or groups to highlight and combine them.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="374"/>
         <source>(no hook text yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="379"/>
+        <source>Order blocks with ▲ ▼ - the higher one wins when several change at once, and sets the output order when all are shown. Only saved addresses keep their order next time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="418"/>
         <source>Show this block in the overlay (press Apply to take effect).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="438"/>
+        <source>Ungroup: split this group back into separate blocks.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="448"/>
+        <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -197,13 +191,14 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="438"/>
-        <source>Ungroup: split this group back into separate blocks.</source>
+        <location filename="../src/UI/hookselectordialog.cpp" line="497"/>
+        <source>(nothing saved)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="497"/>
-        <source>(nothing saved)</source>
+        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="545"/>
+        <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -211,25 +206,14 @@ Save anyway?</source>
         <source>Forget this saved address.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="546"/>
+        <source>Forget this saved group.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>HookSettingsDialog</name>
-    <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="63"/>
-        <source>— Select game/app —</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="197"/>
-        <source>— Select engine —</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="107"/>
-        <source>Process name</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="48"/>
         <source>Game / Application</source>
@@ -241,8 +225,19 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="63"/>
+        <source>— Select game/app —</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="74"/>
         <source>Target:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="197"/>
+        <source>— Select engine —</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -263,6 +258,11 @@ Save anyway?</source>
     <message>
         <location filename="../src/UI/hooksettingsdialog.cpp" line="100"/>
         <source>Refresh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hooksettingsdialog.cpp" line="107"/>
+        <source>Process name</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -489,11 +489,6 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1211"/>
-        <source>Remove</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="992"/>
         <source>Input source</source>
         <translation type="unfinished"></translation>
@@ -514,23 +509,13 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1211"/>
+        <source>Remove</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1218"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1296"/>
-        <source>Original content</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1301"/>
-        <source>Replace with</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1286"/>
-        <source>Regex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -544,8 +529,23 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1286"/>
+        <source>Regex</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1291"/>
         <source>Source</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1296"/>
+        <source>Original content</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1301"/>
+        <source>Replace with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

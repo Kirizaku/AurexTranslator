@@ -228,8 +228,28 @@ private:
         ColFrom,       // string to search for
         ColTo          // string to replace with
     };
+
+    struct ReplacementRule {
+        bool regex = false;
+        QString source;
+        QString from;
+        QString to;
+        QString target;
+    };
+
+    QList<ReplacementRule> m_replacementRules;
+    QSet<QString> m_gameScopedTargets;
+
     QString replaceText(const QString &source, QString output);
     QTableWidgetItem *makeRegexFlagItem(bool checked);
+    QString currentRuleScope() const;
+    void saveRuleScope();
+    QString activeHookTargetKey() const;
+    QString currentGameLabel() const;
+    void markRulesChanged();
+    void refreshRuleScopeBox();
+    void populateReplacementTable();
+    void commitReplacementTable();
 
     // Proxy
     QNetworkProxy::ProxyType m_proxyType = QNetworkProxy::HttpProxy;
