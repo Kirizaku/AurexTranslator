@@ -150,12 +150,12 @@ void HookController::stop()
 
     m_hookPlugin->execute(QStringLiteral("stop"), { QString(), QString() });
 
+    m_currentRunningPlugin.clear();
+    m_runningEngineProcess.clear();
+
     emit shouldClearResults();
     emit hookStateChanged(false);
     emit shouldClearInfoMessage();
-
-    m_currentRunningPlugin.clear();
-    m_runningEngineProcess.clear();
 }
 
 void HookController::retarget(bool enabled)
