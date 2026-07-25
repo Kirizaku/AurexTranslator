@@ -19,6 +19,7 @@
 #define HOOKSELECTORDIALOG_H
 
 #include <QDialog>
+#include <QSet>
 
 class HookTextModel;
 class QComboBox;

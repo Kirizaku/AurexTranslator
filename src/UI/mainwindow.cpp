@@ -19,6 +19,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QMenu>
 #include <QTimer>
 

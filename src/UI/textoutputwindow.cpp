@@ -31,6 +31,7 @@
 #include <QTimer>
 #include <QScrollBar>
 #include <QColorDialog>
+#include <QDialogButtonBox>
 
 #include "src/utils/config.h"
 
