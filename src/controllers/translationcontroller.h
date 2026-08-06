@@ -49,6 +49,10 @@ public slots:
     void translate(const QString &source, const QString &text);
 
 signals:
+    void originalReady(const QString &source,
+                       const QString &original,
+                       bool translationPending);
+
     void translationReady(const QString &source,
                           const QString &translatorName,
                           const QString &original,

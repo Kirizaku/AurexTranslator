@@ -66,6 +66,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_translationController, &TranslationController::translationReady,
             m_outputWindow, &TextOutputWindow::setTranslationResult);
+    connect(m_translationController, &TranslationController::originalReady,
+            m_outputWindow, &TextOutputWindow::setOriginalText);
 
     m_hookBurstTimer = new QTimer(this);
     m_hookBurstTimer->setSingleShot(true);

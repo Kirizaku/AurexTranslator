@@ -189,15 +189,20 @@ void TextOutputWindow::setTranslationResult(const QString &source, const QString
     entry.result = result;
 
     bool updated = false;
-    for (auto &existing : m_translationEntries) {
+    for (int i = 0; i < m_translationEntries.size(); ++i) {
+        TranslationEntry &existing = m_translationEntries[i];
         if (existing.translatorName == translatorName && existing.source == source) {
-            existing = entry;
+            // an empty result has nothing to show - drop it so the bare original takes over
+            if (result.isEmpty())
+                m_translationEntries.removeAt(i);
+            else
+                existing = entry;
             updated = true;
             break;
         }
     }
 
-    if (!updated) {
+    if (!updated && !result.isEmpty()) {
         m_translationEntries.append(entry);
     }
 
@@ -230,6 +235,62 @@ void TextOutputWindow::setTranslationResult(const QString &source, const QString
         if (!m_pendingHookBatch.isEmpty())
             return;
         m_hookBatchTimer->stop();
+    }
+
+    updateText();
+}
+
+bool TextOutputWindow::showOriginalText() const
+{
+    return m_showOriginalText && m_showOriginalText->isChecked();
+}
+
+QString TextOutputWindow::entryKey(const TranslationEntry &entry)
+{
+    return entry.source + QChar(0x1f) + entry.original;
+}
+
+void TextOutputWindow::setOriginalText(const QString &source, const QString &original, bool translationPending)
+{
+    if (original.isEmpty()) return;
+
+    if (source.startsWith(QStringLiteral("Hook"))) {
+        m_hookModel->ensureRegistered(source, original);
+    }
+
+    const bool showNow = !translationPending || showOriginalText();
+
+    bool refreshed = false;
+    for (int i = m_translationEntries.size() - 1; i >= 0; --i) {
+        TranslationEntry &existing = m_translationEntries[i];
+        if (existing.source != source)
+            continue;
+
+        if (existing.translatorName.isEmpty()) {
+            if (refreshed) {
+                m_translationEntries.removeAt(i);
+                continue;
+            }
+            existing.original = original;
+            refreshed = true;
+        } else if (showNow && (!translationPending || existing.original != original)) {
+            m_translationEntries.removeAt(i);
+        }
+    }
+
+    if (!refreshed) {
+        TranslationEntry entry;
+        entry.source = source;
+        entry.original = original;
+        m_translationEntries.append(entry);
+    }
+
+    if (!translationPending && source.startsWith(QStringLiteral("Hook")))
+        m_hookModel->markTranslated(source);
+
+    if (showNow && m_hasInfoMessage && source.startsWith(QStringLiteral("Hook"))) {
+        m_hasInfoMessage = false;
+        m_currentInfoMessage.clear();
     }
 
     updateText();
@@ -511,7 +572,7 @@ void TextOutputWindow::updateText()
         if (m_showSource && m_showSource->isChecked() && !entry.source.isEmpty()) {
             parts.append(QString("[%1]").arg(entry.source));
         }
-        if (m_showTranslatorName && m_showTranslatorName->isChecked()) {
+        if (m_showTranslatorName && m_showTranslatorName->isChecked() && !entry.translatorName.isEmpty()) {
             parts.append(QString("[%1]").arg(entry.translatorName));
         }
 
@@ -519,16 +580,25 @@ void TextOutputWindow::updateText()
         if (!header.isEmpty()) header += "\n";
 
         QString originalText;
-        if (m_showOriginalText && m_showOriginalText->isChecked() && !entry.original.isEmpty()) {
-            originalText = entry.original + "\n\n";
+        if (showOriginalText() && !entry.original.isEmpty()) {
+            originalText = entry.original;
+            if (!entry.result.isEmpty()) originalText += "\n\n";
         }
 
         return header + originalText + entry.result;
     };
 
+    QSet<QString> translated;
+    for (const auto &entry : m_translationEntries)
+        if (!entry.result.isEmpty())
+            translated.insert(entryKey(entry));
+
     QList<const TranslationEntry *> hookEntries;
     for (const auto &entry : m_translationEntries) {
-        if (entry.result.isEmpty()) continue;
+        if (entry.result.isEmpty()) {
+            if (entry.original.isEmpty() || !showOriginalText()) continue;
+            if (translated.contains(entryKey(entry))) continue;
+        }
 
         if (!m_hookModel->isDisplayed(entry.source))
             continue;
@@ -613,12 +683,15 @@ void TextOutputWindow::createMenus()
 
     m_showSource = new QCheckBox();
     m_showSource->setText(tr("Show/Hide source"));
+    m_showSource->setChecked(true);
 
     m_showOriginalText = new QCheckBox();
     m_showOriginalText->setText(tr("Show/Hide original text"));
+    m_showOriginalText->setChecked(true);
 
     m_showTranslatorName = new QCheckBox();
     m_showTranslatorName->setText(tr("Show/Hide translator name"));
+    m_showTranslatorName->setChecked(true);
 
     QFormLayout *formLayout = new QFormLayout(widget);
     formLayout->setLabelAlignment(Qt::AlignLeft);

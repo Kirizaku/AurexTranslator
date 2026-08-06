@@ -50,6 +50,7 @@ public:
     int promptSpeed(int current);
 
     void setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
+    void setOriginalText(const QString &source, const QString &original, bool translationPending);
     void clearInfoMessage();
     void clearResultsBySource(const QString &source);
     void clearResultsByTranslator(const QString &translatorName);
@@ -150,6 +151,9 @@ private:
     };
 
     QList<TranslationEntry> m_translationEntries;
+
+    bool showOriginalText() const;
+    static QString entryKey(const TranslationEntry &entry);
 
     bool m_hasInfoMessage = false;
     QString m_currentInfoMessage;

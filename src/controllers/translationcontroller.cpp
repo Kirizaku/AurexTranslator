@@ -68,6 +68,8 @@ void TranslationController::translate(const QString &source, const QString &text
 {
     if (text.isEmpty()) return;
 
+    emit originalReady(source, text, m_googleEnabled || m_ollamaEnabled);
+
     if (m_googleEnabled) {
         m_google->translateText(text, [this, source, text](QString translated) {
             emit translationReady(source, QStringLiteral("Google"), text, translated);
