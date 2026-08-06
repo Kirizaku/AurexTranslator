@@ -1483,6 +1483,16 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
     if (!ui->translatorOfflineOllamaToggled->isChecked() && widgetChanged(ui->translatorOfflineOllamaToggled)) {
         m_outputWindow->clearResultsByTranslator("Ollama");
     }
+
+    // A translator just switched on has nothing to work with until the next text
+    // shows up, so hand it what is on screen right now
+    const bool googleTurnedOn = ui->translatorOnlineGoogleToggled->isChecked()
+                                && widgetChanged(ui->translatorOnlineGoogleToggled);
+    const bool ollamaTurnedOn = ui->translatorOfflineOllamaToggled->isChecked()
+                                && widgetChanged(ui->translatorOfflineOllamaToggled);
+
+    if (googleTurnedOn || ollamaTurnedOn)
+        retranslateText();
 }
 
 void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
