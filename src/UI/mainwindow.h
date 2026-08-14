@@ -22,6 +22,7 @@
 #include <QNetworkProxy>
 #include <QTableWidgetItem>
 
+#include "src/controllers/pythoncontroller.h"
 #include "src/utils/pluginloader.h"
 #include "src/engines/opencv.h"
 #include "tesseractsettingsdialog.h"
@@ -83,6 +84,19 @@ private slots:
     void on_configsDeleteButton_clicked();
     void on_pluginsReloadButton_clicked();
     void on_pluginsOpenDirectoryButton_clicked();
+
+    // Python
+    void on_pythonRecheckButton_clicked();
+    void on_pythonSetupButton_clicked();
+#ifdef Q_OS_WIN
+    void on_pythonInstallPythonButton_clicked();
+#endif
+    void on_pythonInterpreterBrowseButton_clicked();
+    void on_pythonOpenDirectoryButton_clicked();
+    void on_pythonShowLogButton_clicked();
+    void on_pythonComponentInstallButton_clicked();
+    void on_pythonComponentRemoveButton_clicked();
+
     void on_logsNewLogMessage(const QString& message);
     void on_logsCopyAllButton_clicked();
     void on_logsOpenDirectoryButton_clicked();
@@ -119,6 +133,15 @@ private:
     // Clipboard
     ClipboardController *m_clipboardController = nullptr;
 
+    // Python: shared by every optional feature that needs an interpreter
+    PythonController *m_pythonController = nullptr;
+    void initPythonController();
+    void refreshPythonPage();
+    void updatePythonButtons();
+    QTableWidgetItem *selectedPythonRow() const;
+    QString selectedPythonComponent() const;
+    bool confirmPythonDownload(const PythonController::Component &component);
+
     void setupBaseUI();
     void initPlugins();
     void setupCoreConnections();
@@ -137,6 +160,7 @@ private:
     bool m_translatorChanged = false;
     bool m_pluginChanged = false;
     bool m_proxyChanged = false;
+    bool m_pythonChanged = false;
 
     bool widgetChanged(QWidget *widget);
     void setPropertyChanged(const bool &value);
@@ -272,6 +296,7 @@ private:
     void loadTranslatorSettings(const QJsonObject& translator);
     void loadTextProcessingSettings(const QJsonObject& textProcessing);
     void loadProxySettings(const QJsonObject& proxy);
+    void loadPythonSettings(const QJsonObject& python);
     void loadScreencastSettings();
 
     void loadOcrSettings();

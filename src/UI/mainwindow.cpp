@@ -35,6 +35,7 @@
 #include "src/controllers/capturecontroller.h"
 #include "src/controllers/ocrcontroller.h"
 #include "src/controllers/hookcontroller.h"
+#include "src/controllers/pythoncontroller.h"
 #include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
@@ -58,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupBaseUI();
     initPlugins();
+    initPythonController();
     setupCoreConnections();
     loadApplicationConfig();
     initSubsystems();
@@ -154,7 +156,8 @@ void MainWindow::setupBaseUI()
         ui->proxyUserEdit,
         ui->proxyPasswordEdit,
         ui->proxyTypeHttp,
-        ui->proxyTypeSocks
+        ui->proxyTypeSocks,
+        ui->pythonInterpreterEdit
     };
 }
 
@@ -237,6 +240,237 @@ void MainWindow::initPlugins()
     // Push the current target's plugin config again: a reload dropped whatever
     // the plugin had been told before
     syncPluginConfigs();
+}
+
+void MainWindow::initPythonController()
+{
+    m_pythonController = new PythonController(this);
+
+    connect(m_pythonController, &PythonController::statusChanged,
+            this, &MainWindow::refreshPythonPage);
+    connect(m_pythonController, &PythonController::jobFinished, this,
+            [this](const QString &, bool ok, const QString &error) {
+                if (!ok && !error.isEmpty())
+                    DialogUtils::warning(this, "Python", error);
+            });
+
+    connect(ui->pythonComponentsTable, &QTableWidget::itemSelectionChanged,
+            this, &MainWindow::updatePythonButtons);
+
+    m_pythonController->setConfirmHandler([this](const PythonController::Component &component) {
+        return confirmPythonDownload(component);
+    });
+
+#ifndef Q_OS_WIN
+    ui->pythonInstallPythonButton->hide();
+#endif
+
+    m_pythonController->setPreferredInterpreter(
+        Config::getValue("python").toJsonObject()["interpreter"].toString());
+
+    connect(ui->settingsPages, &QStackedWidget::currentChanged, this, [this](int) {
+        if (ui->settingsPages->currentWidget() == ui->pythonPage)
+            m_pythonController->ensureDetected();
+    });
+
+    refreshPythonPage();
+}
+
+void MainWindow::refreshPythonPage()
+{
+    const QString interpreter = m_pythonController->interpreterDescription();
+
+    ui->pythonInterpreterLabel->setText(interpreter.isEmpty() ? tr("Not found") : interpreter);
+    ui->pythonEnvironmentLabel->setText(PythonController::environmentReady()
+                                            ? tr("Ready")
+                                            : tr("Not created yet"));
+
+    ui->pythonInterpreterLabel->setToolTip(interpreter);
+    ui->pythonEnvironmentLabel->setToolTip(QDir::toNativeSeparators(PythonEnv::venvDir()));
+
+    const QList<PythonController::Component> components = m_pythonController->components();
+    const QSignalBlocker blocker(ui->pythonComponentsTable);
+    ui->pythonComponentsTable->setRowCount(components.size());
+
+    for (int row = 0; row < components.size(); ++row) {
+        const PythonController::Component &component = components.at(row);
+        const bool ready = m_pythonController->componentReady(component.id);
+
+        QTableWidgetItem *name = new QTableWidgetItem(component.name);
+        name->setData(Qt::UserRole, component.id);
+        name->setData(Qt::UserRole + 1, ready);
+
+        ui->pythonComponentsTable->setItem(row, 0, name);
+        ui->pythonComponentsTable->setItem(row, 1,
+            new QTableWidgetItem(ready ? tr("Installed") : tr("Not installed")));
+        ui->pythonComponentsTable->setItem(row, 2,
+            new QTableWidgetItem(component.packages.join(", ")));
+    }
+
+    updatePythonButtons();
+}
+
+void MainWindow::updatePythonButtons()
+{
+    const bool interpreterFound = m_pythonController->interpreterReady();
+    const bool busy = m_pythonController->busy();
+
+    ui->pythonSetupButton->setText(PythonController::environmentReady()
+                                       ? tr("Update environment")
+                                       : tr("Create environment"));
+
+    ui->pythonSetupButton->setEnabled(!busy && interpreterFound);
+    ui->pythonRecheckButton->setEnabled(!busy);
+    ui->pythonInstallPythonButton->setEnabled(!busy);
+
+    const QTableWidgetItem *row = selectedPythonRow();
+    const bool installed = row && row->data(Qt::UserRole + 1).toBool();
+
+    ui->pythonComponentInstallButton->setText(installed ? tr("Reinstall") : tr("Install"));
+    ui->pythonComponentInstallButton->setEnabled(!busy && interpreterFound && row);
+    ui->pythonComponentRemoveButton->setEnabled(!busy && installed);
+}
+
+void MainWindow::on_pythonRecheckButton_clicked()
+{
+    m_pythonController->setPreferredInterpreter(ui->pythonInterpreterEdit->text());
+    m_pythonController->detect();
+}
+
+void MainWindow::on_pythonSetupButton_clicked()
+{
+    m_pythonController->setupEnvironment();
+    updatePythonButtons();
+}
+
+#ifdef Q_OS_WIN
+void MainWindow::on_pythonInstallPythonButton_clicked()
+{
+    QMessageBox box(QMessageBox::Question,
+                    tr("Install Python"),
+                    tr("Python %1 will be downloaded from python.org (about 30 MB).").arg(PythonEnv::windowsPythonVersion()),
+                    QMessageBox::NoButton,
+                    this);
+    box.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    box.setInformativeText(
+        tr("For this program only — installed into its own folder, adds nothing to PATH "
+           "and leaves the rest of the system alone.\n\n"
+           "System-wide — an ordinary installation, available to other programs as well."));
+
+    QPushButton *privateButton = box.addButton(tr("For this program only"), QMessageBox::AcceptRole);
+    QPushButton *systemButton = box.addButton(tr("System-wide"), QMessageBox::AcceptRole);
+    box.addButton(QMessageBox::Cancel);
+    box.setDefaultButton(privateButton);
+    box.exec();
+
+    QAbstractButton *chosen = box.clickedButton();
+    if (chosen != privateButton && chosen != systemButton)
+        return;
+
+    m_pythonController->installPython(chosen == systemButton);
+    updatePythonButtons();
+}
+#endif
+
+bool MainWindow::confirmPythonDownload(const PythonController::Component &component)
+{
+    QMessageBox box(QMessageBox::Question,
+                    tr("Install %1").arg(component.name),
+                    tr("These packages will be installed from PyPI:\n\n%1").arg(component.packages.join(QStringLiteral("\n"))),
+                    QMessageBox::Ok | QMessageBox::Cancel,
+                    this);
+
+    box.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+
+    QString informative = tr("They are third-party code under their own licenses.\n"
+                             "Destination: %1").arg(QDir::toNativeSeparators(PythonEnv::venvDir()));
+
+    if (!component.note.isEmpty())
+        informative.prepend(component.note + QStringLiteral("\n\n"));
+
+    box.setInformativeText(informative);
+    box.button(QMessageBox::Ok)->setText(tr("Install"));
+    box.setDefaultButton(QMessageBox::Ok);
+
+    return box.exec() == QMessageBox::Ok;
+}
+
+void MainWindow::on_pythonInterpreterBrowseButton_clicked()
+{
+    const QString path = QFileDialog::getOpenFileName(this, tr("Select a Python interpreter"),
+                                                      ui->pythonInterpreterEdit->text());
+    if (path.isEmpty())
+        return;
+
+    ui->pythonInterpreterEdit->setText(path);
+}
+
+void MainWindow::on_pythonOpenDirectoryButton_clicked()
+{
+    QDir dir(PythonEnv::rootDir());
+    if (!dir.exists())
+        dir.mkpath(QStringLiteral("."));
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.path()));
+}
+
+void MainWindow::on_pythonShowLogButton_clicked()
+{
+    m_pythonController->showLog();
+}
+
+QTableWidgetItem *MainWindow::selectedPythonRow() const
+{
+    return ui->pythonComponentsTable->item(ui->pythonComponentsTable->currentRow(), 0);
+}
+
+QString MainWindow::selectedPythonComponent() const
+{
+    const QTableWidgetItem *row = selectedPythonRow();
+    return row ? row->data(Qt::UserRole).toString() : QString();
+}
+
+void MainWindow::on_pythonComponentInstallButton_clicked()
+{
+    const QTableWidgetItem *row = selectedPythonRow();
+
+    if (!row)
+        return;
+
+    m_pythonController->installComponent(row->data(Qt::UserRole).toString(), row->data(Qt::UserRole + 1).toBool());
+    updatePythonButtons();
+}
+
+void MainWindow::on_pythonComponentRemoveButton_clicked()
+{
+    const QString id = selectedPythonComponent();
+    if (id.isEmpty())
+        return;
+
+    const PythonController::Component *component = m_pythonController->component(id);
+    if (!component)
+        return;
+
+    const QStringList packages = m_pythonController->removablePackages(id);
+
+    if (packages.isEmpty()) {
+        DialogUtils::information(this, tr("Remove component"),
+                                 tr("Everything %1 installed is also being used by another "
+                                    "component, so there is nothing here to remove.")
+                                     .arg(component->name));
+        return;
+    }
+
+    if (DialogUtils::question(
+            this, tr("Remove component"),
+            tr("Remove %1?\n\nThese packages go: %2\n\nAnything they pulled in with them "
+               "stays, and so does anything downloaded separately - voices and language "
+               "packs live in the engine's own folder and are left alone.").arg(component->name, packages.join(QStringLiteral(", "))))
+        != QMessageBox::Yes)
+        return;
+
+    m_pythonController->uninstallComponent(id);
+    updatePythonButtons();
 }
 
 void MainWindow::setupCoreConnections()
@@ -475,6 +709,9 @@ void MainWindow::setupSettingsConnections()
     connect(ui->proxyPasswordEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyPasswordEdit));
     connect(ui->proxyTypeHttp, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeHttp));
     connect(ui->proxyTypeSocks, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeSocks));
+
+    // Python
+    connect(ui->pythonInterpreterEdit, &QLineEdit::textChanged, this, bind(m_pythonChanged, ui->pythonInterpreterEdit));
 }
 
 void MainWindow::loadLogMessages()
@@ -552,6 +789,7 @@ void MainWindow::setPropertyChanged(const bool &value)
     m_translatorChanged = value;
     m_pluginChanged = value;
     m_proxyChanged = value;
+    m_pythonChanged = value;
 
     for (QObject *w : m_changedWidgets) {
         if (w) w->setProperty("changed", QVariant(value));
@@ -1339,6 +1577,8 @@ void MainWindow::loadConfig()
         loadTextProcessingSettings(Config::getValue("text_processing").toJsonObject());
     if (m_proxyChanged)
         loadProxySettings(Config::getValue("proxy").toJsonObject());
+    if (m_pythonChanged)
+        loadPythonSettings(Config::getValue("python").toJsonObject());
 
     loadScreencastSettings();
     loadOcrSettings();
@@ -1626,6 +1866,16 @@ void MainWindow::loadProxySettings(const QJsonObject& proxy)
     } else {
         QNetworkProxy::setApplicationProxy(QNetworkProxy::NoProxy);
     }
+}
+
+void MainWindow::loadPythonSettings(const QJsonObject& python)
+{
+    if (widgetChanged(ui->pythonInterpreterEdit))
+        ui->pythonInterpreterEdit->setText(python["interpreter"].toString());
+
+    m_pythonController->setPreferredInterpreter(ui->pythonInterpreterEdit->text());
+    if (ui->settingsPages->currentWidget() == ui->pythonPage)
+        m_pythonController->ensureDetected();
 }
 
 void MainWindow::loadScreencastSettings()
@@ -2182,6 +2432,14 @@ void MainWindow::saveConfig()
             m_proxyType = QNetworkProxy::Socks5Proxy;
         }
         Config::setValue("proxy", proxy);
+    }
+
+    // Python
+    if (m_pythonChanged) {
+        QJsonObject python = Config::getValue("python").toJsonObject();
+        if (widgetChanged(ui->pythonInterpreterEdit))
+            python["interpreter"] = ui->pythonInterpreterEdit->text().trimmed();
+        Config::setValue("python", python);
     }
 
     // Save Config

@@ -141,6 +141,7 @@ const QStringList &Config::baseSections() // Global
         QStringLiteral("general"),
         QStringLiteral("proxy"),
         QStringLiteral("output_window_geometry"),
+        QStringLiteral("python"),
     };
     return base;
 }

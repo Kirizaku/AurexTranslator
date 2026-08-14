@@ -63,6 +63,7 @@ set(PROJECT_SOURCES
     src/UI/tesseractsettingsdialog.h src/UI/tesseractsettingsdialog.cpp
     src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
     src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
+    src/UI/processlogwindow.h src/UI/processlogwindow.cpp
 
     src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
     src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp
@@ -70,6 +71,7 @@ set(PROJECT_SOURCES
     src/controllers/ocrcontroller.h src/controllers/ocrcontroller.cpp
     src/controllers/hookcontroller.h src/controllers/hookcontroller.cpp
     src/controllers/clipboardcontroller.h src/controllers/clipboardcontroller.cpp
+    src/controllers/pythoncontroller.h src/controllers/pythoncontroller.cpp
 
     src/engines/opencv.cpp src/engines/opencv.h
     src/engines/tesseractocr.cpp src/engines/tesseractocr.h
@@ -79,6 +81,7 @@ set(PROJECT_SOURCES
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
     src/utils/hotkeys.cpp src/utils/hotkeys.h
+    src/utils/pythonenv.cpp src/utils/pythonenv.h
     src/utils/plugininterface.h
     src/utils/pluginloader.cpp src/utils/pluginloader.h
     src/utils/metadatareader.cpp src/utils/metadatareader.h
