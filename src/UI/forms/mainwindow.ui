@@ -70,6 +70,11 @@
         </property>
        </item>
        <item>
+         <property name="text">
+           <string>Speech</string>
+         </property>
+       </item>
+       <item>
         <property name="text">
          <string>Configs</string>
         </property>
@@ -246,6 +251,26 @@ font-weight: 700;
              <widget class="QKeySequenceEdit" name="generalHotkeyManualTranslateEdit"/>
             </item>
             <item row="4" column="0">
+             <widget class="QLabel" name="generalHotkeySpeakTextCaption">
+              <property name="text">
+               <string>Speak the last text</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QKeySequenceEdit" name="generalHotkeySpeakTextEdit"/>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="generalHotkeyStopSpeechCaption">
+              <property name="text">
+               <string>Stop speaking</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QKeySequenceEdit" name="generalHotkeyStopSpeechEdit"/>
+            </item>
+            <item row="6" column="0">
              <spacer name="horizontalSpacer_6">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -261,7 +286,7 @@ font-weight: 700;
               </property>
              </spacer>
             </item>
-            <item row="4" column="1">
+            <item row="6" column="1">
              <widget class="QPushButton" name="generalBindShortcut">
               <property name="enabled">
                <bool>false</bool>
@@ -271,7 +296,7 @@ font-weight: 700;
               </property>
              </widget>
             </item>
-            <item row="5" column="1">
+            <item row="7" column="1">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -1602,6 +1627,376 @@ font-weight: 700;
           </widget>
          </item>
         </layout>
+       </widget>
+       <widget class="QWidget" name="speechPage">
+         <layout class="QVBoxLayout" name="verticalLayout_speech" stretch="0,0,1">
+           <item>
+             <widget class="QGroupBox" name="speechBox">
+               <property name="styleSheet">
+                 <string notr="true">QGroupBox {
+                   font-weight: 700;
+                   }</string>
+               </property>
+               <property name="title">
+                 <string>Speech</string>
+               </property>
+               <layout class="QFormLayout" name="formLayout_speech">
+                 <item row="0" column="0" colspan="2">
+                   <widget class="QCheckBox" name="speechEnabled">
+                     <property name="text">
+                       <string>Speak text out loud</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="0">
+                   <widget class="QLabel" name="speechEngineCaption">
+                     <property name="text">
+                       <string>Engine</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechEngine">
+                     <item>
+                       <widget class="QComboBox" name="speechEngineCombo"/>
+                     </item>
+                     <item>
+                       <widget class="QPushButton" name="speechEngineSettingsButton">
+                         <property name="maximumSize">
+                           <size>
+                             <width>40</width>
+                             <height>16777215</height>
+                           </size>
+                         </property>
+                         <property name="text">
+                           <string>...</string>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechEngine">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="2" column="1">
+                   <widget class="QLabel" name="speechEngineNote">
+                     <property name="wordWrap">
+                       <bool>true</bool>
+                     </property>
+                     <property name="text">
+                       <string notr="true"/>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="0">
+                   <widget class="QLabel" name="speechVoiceCaption">
+                     <property name="text">
+                       <string>Voice</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechVoice">
+                     <item>
+                       <widget class="QComboBox" name="speechVoiceCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                         </property>
+                         <property name="minimumContentsLength">
+                           <number>40</number>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechVoice">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="4" column="0">
+                   <widget class="QLabel" name="speechSpeedCaption">
+                     <property name="text">
+                       <string>Speed</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechSpeed">
+                     <item>
+                       <widget class="QSpinBox" name="speechSpeedSpin">
+                         <property name="minimum">
+                           <number>50</number>
+                         </property>
+                         <property name="maximum">
+                           <number>200</number>
+                         </property>
+                         <property name="singleStep">
+                           <number>5</number>
+                         </property>
+                         <property name="value">
+                           <number>100</number>
+                         </property>
+                         <property name="suffix">
+                           <string notr="true"> %</string>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechSpeed">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+               </layout>
+             </widget>
+           </item>
+           <item>
+             <widget class="QGroupBox" name="speechTestBox">
+               <property name="styleSheet">
+                 <string notr="true">QGroupBox {
+                   font-weight: 700;
+                   }</string>
+               </property>
+               <property name="title">
+                 <string>Test</string>
+               </property>
+               <layout class="QFormLayout" name="formLayout_speechTest">
+                 <item row="0" column="0">
+                   <widget class="QLabel" name="speechStatusCaption">
+                     <property name="text">
+                       <string>Status:</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="0" column="1">
+                   <widget class="QLabel" name="speechStatusLabel">
+                     <property name="text">
+                       <string notr="true"/>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="0" colspan="2">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechTest">
+                     <item>
+                       <widget class="QLineEdit" name="speechTestEdit"/>
+                     </item>
+                     <item>
+                       <widget class="QPushButton" name="speechTestButton">
+                         <property name="text">
+                           <string>Speak</string>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <widget class="QPushButton" name="speechStopButton">
+                         <property name="text">
+                           <string>Stop</string>
+                         </property>
+                       </widget>
+                     </item>
+                   </layout>
+                 </item>
+               </layout>
+             </widget>
+           </item>
+           <item>
+             <widget class="QGroupBox" name="speechWhatBox">
+               <property name="styleSheet">
+                 <string notr="true">QGroupBox {
+                   font-weight: 700;
+                   }</string>
+               </property>
+               <property name="title">
+                 <string>What to speak</string>
+               </property>
+               <layout class="QFormLayout" name="formLayout_speechWhat">
+                 <item row="0" column="0">
+                   <widget class="QLabel" name="speechTextCaption">
+                     <property name="text">
+                       <string>Text</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="0" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechText">
+                     <item>
+                       <widget class="QComboBox" name="speechTextCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToContents</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechText">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="1" column="0">
+                   <widget class="QLabel" name="speechSourceCaption">
+                     <property name="text">
+                       <string>Source</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="1" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechSource">
+                     <item>
+                       <widget class="QComboBox" name="speechSourceCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToContents</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechSource">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="2" column="0">
+                   <widget class="QLabel" name="speechTranslatorCaption">
+                     <property name="text">
+                       <string>Translator</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="2" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechTranslator">
+                     <item>
+                       <widget class="QComboBox" name="speechTranslatorCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToContents</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechTranslator">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="3" column="0">
+                   <widget class="QLabel" name="speechModeCaption">
+                     <property name="text">
+                       <string>Mode</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="3" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechMode">
+                     <item>
+                       <widget class="QComboBox" name="speechModeCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToContents</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechMode">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="4" column="0">
+                   <widget class="QLabel" name="speechOnNewTranslationCaption">
+                     <property name="text">
+                       <string>On a new text</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="4" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechOnNewTranslation">
+                     <item>
+                       <widget class="QComboBox" name="speechOnNewTranslationCombo">
+                         <property name="sizeAdjustPolicy">
+                           <enum>QComboBox::AdjustToContents</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <spacer name="horizontalSpacer_speechOnNewTranslation">
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                           <size>
+                             <width>40</width>
+                             <height>20</height>
+                           </size>
+                         </property>
+                       </spacer>
+                     </item>
+                   </layout>
+                 </item>
+               </layout>
+             </widget>
+           </item>
+         </layout>
        </widget>
        <widget class="QWidget" name="configsPage">
         <layout class="QVBoxLayout" name="verticalLayout_configs">

@@ -44,6 +44,14 @@ void HotkeyController::initialize(Mode mode)
         m_retranslateHotKey = new HotKeys(this);
         connect(m_retranslateHotKey, &HotKeys::activated,
                 this, &HotkeyController::retranslateTriggered);
+
+        m_speakTextHotKey = new HotKeys(this);
+        connect(m_speakTextHotKey, &HotKeys::activated,
+                this, &HotkeyController::speakTextTriggered);
+
+        m_stopSpeechHotKey = new HotKeys(this);
+        connect(m_stopSpeechHotKey, &HotKeys::activated,
+                this, &HotkeyController::stopSpeechTriggered);
     }
 #ifdef Q_OS_LINUX
     else {
@@ -72,6 +80,16 @@ void HotkeyController::setRetranslateShortcut(const QKeySequence &seq)
     if (m_retranslateHotKey) m_retranslateHotKey->setShortcut(seq);
 }
 
+void HotkeyController::setSpeakTextShortcut(const QKeySequence &seq)
+{
+    if (m_speakTextHotKey) m_speakTextHotKey->setShortcut(seq);
+}
+
+void HotkeyController::setStopSpeechShortcut(const QKeySequence &seq)
+{
+    if (m_stopSpeechHotKey) m_stopSpeechHotKey->setShortcut(seq);
+}
+
 void HotkeyController::bindPortalShortcuts()
 {
 #ifdef Q_OS_LINUX
@@ -87,6 +105,10 @@ void HotkeyController::onPortalActivated(const QString &shortcutId)
         emit showHistoryTriggered();
     } else if (shortcutId == QStringLiteral("ManualTranslate")) {
         emit retranslateTriggered();
+    } else if (shortcutId == QStringLiteral("SpeakText")) {
+        emit speakTextTriggered();
+    } else if (shortcutId == QStringLiteral("StopSpeech")) {
+        emit stopSpeechTriggered();
     }
 }
 

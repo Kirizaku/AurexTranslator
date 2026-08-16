@@ -25,6 +25,7 @@
 #include "src/controllers/pythoncontroller.h"
 #include "src/utils/pluginloader.h"
 #include "src/engines/opencv.h"
+#include "src/engines/ttsengine.h"
 #include "tesseractsettingsdialog.h"
 #include "ollamasettingsdialog.h"
 #include "hooksettingsdialog.h"
@@ -38,6 +39,7 @@ class CaptureController;
 class OcrController;
 class HookController;
 class ClipboardController;
+class AudioPlayer;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -85,6 +87,12 @@ private slots:
     void on_pluginsReloadButton_clicked();
     void on_pluginsOpenDirectoryButton_clicked();
 
+    // Speech
+    void on_speechEngineCombo_currentIndexChanged(int arg1);
+    void on_speechEngineSettingsButton_clicked();
+    void on_speechTestButton_clicked();
+    void on_speechStopButton_clicked();
+
     // Python
     void on_pythonRecheckButton_clicked();
     void on_pythonSetupButton_clicked();
@@ -130,6 +138,18 @@ private:
     PluginManager *m_pluginManager;
     TranslationController *m_translationController = nullptr;
 
+    // Startup
+    void setupBaseUI();
+    void initPlugins();
+    void setupCoreConnections();
+    void loadApplicationConfig();
+    void initSubsystems();
+    void initClipboardController();
+    void setupSettingsConnections();
+    void loadLogMessages();
+    void setupFinalUI();
+    void setupTextProcessingTable();
+
     // Clipboard
     ClipboardController *m_clipboardController = nullptr;
 
@@ -142,17 +162,46 @@ private:
     QString selectedPythonComponent() const;
     bool confirmPythonDownload(const PythonController::Component &component);
 
-    void setupBaseUI();
-    void initPlugins();
-    void setupCoreConnections();
-    void loadApplicationConfig();
-    void initSubsystems();
-    void initClipboardController();
-    void setupSettingsConnections();
-    void loadLogMessages();
-    void setupFinalUI();
-    void setupTextProcessingTable();
+    // Speech
+    QList<TtsEngine *> m_ttsEngines;
+    TtsEngine *m_tts = nullptr;
+    TtsEngine *m_speaking = nullptr;
+    bool m_speechOn = false;
+    AudioPlayer *m_audioPlayer = nullptr;
 
+    TtsEngine *ttsEngine(const QString &id) const;
+    void setTtsEngine(TtsEngine *engine);
+    void registerTtsEngine(TtsEngine *engine, const PythonController::Component &component);
+    void populateSpeechEngines();
+    void addSpeechEngineHeading(const QString &text);
+
+    QString m_speechPending;
+    QString m_speechLastText;
+    QMap<QString, QString> m_speechSpokenOriginals;
+
+    enum class VoiceToShow {
+        Pending,
+        Applied
+    };
+
+    void initSpeech();
+    void refreshSpeechPage();
+    void refreshSpeechVoices(VoiceToShow show = VoiceToShow::Pending);
+    void refreshSpeechSpeed();
+    void markSpeechChanged();
+    void setSpeechVoice(const QString &key);
+    void storeSpeechVoice(const QString &key);
+    void startSpeech();
+    void stopSpeech();
+    void disableSpeech();
+    void speak(const QString &text);
+    void offerSpeech(const QString &text);
+    void speakLastText();
+    bool speechManual() const;
+    bool speechBusy() const;
+    bool speechAcceptsSource(const QString &source) const;
+
+    // Unsaved changes
     QList<QObject*> m_changedWidgets;
     bool m_generalChanged = false;
     bool m_outputChanged = false;
@@ -161,10 +210,12 @@ private:
     bool m_pluginChanged = false;
     bool m_proxyChanged = false;
     bool m_pythonChanged = false;
+    bool m_speechChanged = false;
 
     bool widgetChanged(QWidget *widget);
     void setPropertyChanged(const bool &value);
 
+    // Menus and previews
     QMenu* createMenu(const QString &title, void (MainWindow::*slot)());
     QMap<QLabel*, QMenu*> contextMenus;
     void showContextMenu(const QPoint &pos);
@@ -297,6 +348,7 @@ private:
     void loadTextProcessingSettings(const QJsonObject& textProcessing);
     void loadProxySettings(const QJsonObject& proxy);
     void loadPythonSettings(const QJsonObject& python);
+    void loadSpeechSettings(const QJsonObject& speech);
     void loadScreencastSettings();
 
     void loadOcrSettings();

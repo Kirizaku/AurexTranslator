@@ -55,6 +55,9 @@ public:
     static QString venvPip();    // pip inside the virtual environment
     static QString dataDir(const QString &name);
 
+    static void prepareChildEnvironment(QProcess *process);
+    static QString stripAnsiEscapes(const QString &text);
+
     void setPreferredInterpreter(const QString &path);
     QString preferredInterpreter() const { return m_preferred; }
 

@@ -36,6 +36,8 @@
 #include "src/controllers/ocrcontroller.h"
 #include "src/controllers/hookcontroller.h"
 #include "src/controllers/pythoncontroller.h"
+#include "src/engines/audioplayer.h"
+#include "src/engines/pipertts.h"
 #include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
@@ -60,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupBaseUI();
     initPlugins();
     initPythonController();
+    initSpeech();
     setupCoreConnections();
     loadApplicationConfig();
     initSubsystems();
@@ -93,6 +96,9 @@ MainWindow::~MainWindow()
         m_hookController->stop();
     }
 
+    if (m_audioPlayer) { m_audioPlayer->stop(); }
+    for (TtsEngine *engine : m_ttsEngines) { engine->stop(); }
+
     if (m_overlayWindow) { delete m_overlayWindow; }
     if (m_outputWindow) { delete m_outputWindow; }
 
@@ -125,6 +131,8 @@ void MainWindow::setupBaseUI()
         ui->generalHotkeySelectNewRegionEdit,
         ui->generalHotkeyHistoryTranslationEdit,
         ui->generalHotkeyManualTranslateEdit,
+        ui->generalHotkeySpeakTextEdit,
+        ui->generalHotkeyStopSpeechEdit,
         ui->generalRadioHotKey,
         ui->generalRadioHotKeyPortal,
         ui->outputToggledOriginalScreencast,
@@ -157,7 +165,13 @@ void MainWindow::setupBaseUI()
         ui->proxyPasswordEdit,
         ui->proxyTypeHttp,
         ui->proxyTypeSocks,
-        ui->pythonInterpreterEdit
+        ui->pythonInterpreterEdit,
+        ui->speechEnabled,
+        ui->speechTextCombo,
+        ui->speechSourceCombo,
+        ui->speechTranslatorCombo,
+        ui->speechModeCombo,
+        ui->speechOnNewTranslationCombo
     };
 }
 
@@ -473,6 +487,565 @@ void MainWindow::on_pythonComponentRemoveButton_clicked()
     updatePythonButtons();
 }
 
+TtsEngine *MainWindow::ttsEngine(const QString &id) const
+{
+    for (TtsEngine *engine : m_ttsEngines) {
+        if (engine->id() == id)
+            return engine;
+    }
+
+    return nullptr;
+}
+
+void MainWindow::setTtsEngine(TtsEngine *engine)
+{
+    if (m_tts == engine)
+        return;
+
+    m_tts = engine;
+
+    {
+        const QSignalBlocker blocker(ui->speechVoiceCombo);
+        ui->speechVoiceCombo->clear();
+    }
+
+    {
+        const QSignalBlocker blocker(ui->speechEngineCombo);
+        const int index = ui->speechEngineCombo->findData(engine->id());
+        if (index >= 0)
+            ui->speechEngineCombo->setCurrentIndex(index);
+    }
+
+    ui->speechTestEdit->setText(m_tts->sampleText());
+
+    refreshSpeechSpeed();
+    refreshSpeechVoices();
+    refreshSpeechPage();
+}
+
+void MainWindow::registerTtsEngine(TtsEngine *engine, const PythonController::Component &component)
+{
+    m_ttsEngines.append(engine);
+    m_pythonController->registerComponent(component);
+
+    const QString prefix = QStringLiteral("[%1] ").arg(engine->id());
+
+    connect(engine, &TtsEngine::logLine, this, [prefix](const QString &line) {
+        Log(Logger::Level::Info, prefix + line);
+    });
+
+    connect(engine, &TtsEngine::errorOccurred, this, [this, engine](const QString &error) {
+        if (engine == m_tts)
+            ui->speechStatusLabel->setText(error);
+
+        if (engine == m_speaking)
+            m_speechPending.clear();
+    });
+
+    connect(engine, &TtsEngine::audioReady, this, [this, engine](const QByteArray &wav) {
+        if (engine == m_speaking || engine == m_tts)
+            m_audioPlayer->play(wav);
+    });
+
+    connect(engine, &TtsEngine::stateChanged, this, [this, engine](TtsEngine::State) {
+        if (engine == m_tts || engine == m_speaking)
+            refreshSpeechPage();
+    });
+
+    connect(engine, &TtsEngine::voicesAvailable, this, [this, engine](const QStringList &) {
+        if (engine != m_tts)
+            return;
+
+        const QString before = ui->speechVoiceCombo->currentData().toString();
+        refreshSpeechVoices();
+
+        if (ui->speechVoiceCombo->currentData().toString() != before)
+            ui->speechTestEdit->setText(m_tts->sampleText());
+    });
+}
+
+void MainWindow::populateSpeechEngines()
+{
+    const QSignalBlocker blocker(ui->speechEngineCombo);
+    ui->speechEngineCombo->clear();
+
+    const QList<QPair<TtsEngine::Kind, QString>> groups{
+        {TtsEngine::Kind::Offline, tr("On this machine")},
+        {TtsEngine::Kind::Online, tr("Over the internet")}};
+
+        for (const QPair<TtsEngine::Kind, QString> &group : groups) {
+            bool headed = false;
+
+            for (TtsEngine *engine : std::as_const(m_ttsEngines)) {
+                if (engine->kind() != group.first)
+                    continue;
+
+                if (!headed) {
+                    addSpeechEngineHeading(group.second);
+                    headed = true;
+                }
+
+                ui->speechEngineCombo->addItem(engine->name(), engine->id());
+            }
+        }
+}
+
+void MainWindow::addSpeechEngineHeading(const QString &text)
+{
+    ui->speechEngineCombo->addItem(text);
+
+    QStandardItemModel *model =
+    qobject_cast<QStandardItemModel *>(ui->speechEngineCombo->model());
+    if (!model)
+        return;
+
+    QStandardItem *item = model->item(ui->speechEngineCombo->count() - 1);
+    if (!item)
+        return;
+
+    item->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEnabled));
+
+    QFont font = ui->speechEngineCombo->font();
+    font.setBold(true);
+    item->setFont(font);
+}
+
+void MainWindow::initSpeech()
+{
+    m_audioPlayer = new AudioPlayer(this);
+
+    ui->speechTextCombo->addItem(tr("Translation"), false);
+    ui->speechTextCombo->addItem(tr("Original"), true);
+
+    ui->speechSourceCombo->addItem(tr("Any source"), QString());
+    ui->speechSourceCombo->addItem(tr("Screen (Tesseract)"), QStringLiteral("Tesseract"));
+    ui->speechSourceCombo->addItem(tr("Screen (Ollama Vision)"), QStringLiteral("Ollama Vision"));
+    ui->speechSourceCombo->addItem(tr("Clipboard"), QStringLiteral("Clipboard"));
+    ui->speechSourceCombo->addItem(QStringLiteral("Hook"), QStringLiteral("Hook"));
+
+    ui->speechTranslatorCombo->addItem(tr("Whichever answers first"), QString());
+    ui->speechTranslatorCombo->addItem(QStringLiteral("Google"), QStringLiteral("Google"));
+    ui->speechTranslatorCombo->addItem(QStringLiteral("Ollama"), QStringLiteral("Ollama"));
+
+    ui->speechModeCombo->addItem(tr("Automatic"), false);
+    ui->speechModeCombo->addItem(tr("Manual (by hotkey)"), true);
+
+    ui->speechOnNewTranslationCombo->addItem(tr("Interrupt the current phrase"), true);
+    ui->speechOnNewTranslationCombo->addItem(tr("Let the current phrase finish"), false);
+
+    ui->speechTestButton->setToolTip(tr("Speaks with the settings as applied. Press Apply first to hear a change."));
+
+    ui->speechEngineSettingsButton->setToolTip(tr("Settings for the chosen engine"));
+    ui->speechEngineSettingsButton->setAccessibleName(tr("Engine settings"));
+
+    PiperTts *piper = new PiperTts(this);
+    registerTtsEngine(piper, {piper->id(), piper->name(),
+        {QStringLiteral("piper-tts[http]")},
+                      {QStringLiteral("piper"), QStringLiteral("flask")},
+                      {}});
+
+    populateSpeechEngines();
+    setTtsEngine(piper);
+
+    connect(m_audioPlayer, &AudioPlayer::errorOccurred, this, [this](const QString &error) {
+        ui->speechStatusLabel->setText(error);
+    });
+    connect(m_audioPlayer, &AudioPlayer::playingChanged, this, [this](bool playing) {
+        refreshSpeechPage();
+
+        if (playing || m_speechPending.isEmpty())
+            return;
+
+        const QString text = m_speechPending;
+        m_speechPending.clear();
+
+        if (m_speaking)
+            m_speaking->synthesize(text);
+    });
+
+    connect(ui->speechSpeedSpin, &QSpinBox::valueChanged, this, [this](int percent) {
+        if (percent != m_tts->speed())
+            markSpeechChanged();
+    });
+
+    connect(ui->speechVoiceCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+        const QString key = ui->speechVoiceCombo->currentData().toString();
+        if (!key.isEmpty() && key != m_tts->voice())
+            markSpeechChanged();
+    });
+
+    connect(m_pythonController, &PythonController::jobFinished, this,
+            [this](const QString &id, bool ok, const QString &) {
+                if (id != m_tts->id())
+                    return;
+
+                if (!ok || !m_pythonController->componentReady(id)) {
+                    stopSpeech();
+                    disableSpeech();
+                    return;
+                }
+
+                if (m_speechOn)
+                    startSpeech();
+            });
+
+    connect(m_translationController, &TranslationController::translationReady, this,
+            [this](const QString &source, const QString &translatorName,
+                   const QString &original, const QString &translated) {
+                if (translated.isEmpty())
+                    return;
+
+                if (ui->speechTextCombo->currentData().toBool())
+                    return;
+
+                if (!speechAcceptsSource(source))
+                    return;
+
+                const QString wanted = ui->speechTranslatorCombo->currentData().toString();
+                if (wanted.isEmpty()) {
+                    if (m_speechSpokenOriginals.value(source) == original)
+                        return;
+
+                    m_speechSpokenOriginals.insert(source, original);
+                } else if (translatorName != wanted) {
+                    return;
+                }
+            offerSpeech(replaceText(QStringLiteral("Speech"), translated));
+        });
+
+    connect(m_translationController, &TranslationController::originalReady, this,
+            [this](const QString &source, const QString &original, bool) {
+                if (original.isEmpty())
+                    return;
+
+                if (!ui->speechTextCombo->currentData().toBool())
+                    return;
+
+                if (!speechAcceptsSource(source))
+                    return;
+
+                offerSpeech(replaceText(QStringLiteral("Speech"), original));
+            });
+}
+
+void MainWindow::refreshSpeechPage()
+{
+    QString status;
+    switch (m_tts->state()) {
+        case TtsEngine::State::Stopped:
+            status = tr("Not running");
+            break;
+        case TtsEngine::State::Starting:
+            status = tr("Starting...");
+            break;
+        case TtsEngine::State::Ready:
+            status = m_tts->voice().isEmpty()
+            ? tr("Ready at %1, no voice chosen yet").arg(m_tts->baseUrl())
+            : tr("Ready at %1, voice %2")
+            .arg(m_tts->baseUrl(), m_tts->voiceLabel(m_tts->voice()));
+            break;
+        case TtsEngine::State::Failed:
+            status = tr("Failed");
+            break;
+    }
+
+    if (m_speaking && m_speaking != m_tts)
+        status = tr("Not applied yet — %1 is still in use").arg(m_speaking->name());
+
+    ui->speechStatusLabel->setText(status);
+    ui->speechEngineNote->setText(m_tts->summary());
+    ui->speechEngineSettingsButton->setEnabled(m_tts->hasSettings());
+    ui->speechTestButton->setEnabled(m_tts->state() == TtsEngine::State::Ready);
+    ui->speechStopButton->setEnabled(speechBusy());
+    ui->speechTranslatorCombo->setEnabled(!ui->speechTextCombo->currentData().toBool());
+    ui->speechOnNewTranslationCombo->setEnabled(!speechManual());
+}
+
+void MainWindow::refreshSpeechVoices(VoiceToShow show)
+{
+    const QSignalBlocker blocker(ui->speechVoiceCombo);
+    const QStringList voices = m_tts->availableVoices();
+
+    const QString shownNow = show == VoiceToShow::Pending
+    ? ui->speechVoiceCombo->currentData().toString()
+    : QString();
+
+    const QString wanted = shownNow.isEmpty() ? m_tts->voice() : shownNow;
+
+    QList<QPair<QString, QString>> shown;
+    shown.reserve(voices.size());
+
+    for (const QString &key : voices)
+        shown.append({m_tts->voiceLabel(key), key});
+
+    std::sort(shown.begin(), shown.end(),
+              [](const QPair<QString, QString> &a, const QPair<QString, QString> &b) {
+                  return a.first.localeAwareCompare(b.first) < 0;
+              });
+
+    ui->speechVoiceCombo->clear();
+    for (const QPair<QString, QString> &voice : std::as_const(shown))
+        ui->speechVoiceCombo->addItem(voice.first, voice.second);
+
+    int index = ui->speechVoiceCombo->findData(wanted);
+
+    if (index < 0 && wanted != m_tts->voice())
+        index = ui->speechVoiceCombo->findData(m_tts->voice());
+
+    if (index >= 0) {
+        ui->speechVoiceCombo->setCurrentIndex(index);
+    } else if (!shown.isEmpty()) {
+        const QString had = m_tts->voice();
+        const QString replacement = shown.first().second;
+
+        ui->speechVoiceCombo->setCurrentIndex(0);
+        setSpeechVoice(replacement);
+
+        if (!had.isEmpty())
+            storeSpeechVoice(replacement);
+    }
+
+    ui->speechVoiceCombo->setEnabled(!voices.isEmpty());
+    ui->speechVoiceCombo->setToolTip(
+        !voices.isEmpty()               ? QString()
+        : !m_tts->needsVoiceToStart()   ? tr("The list comes from the service; switch speech on "
+                                             "and apply once to read it.")
+        : m_tts->useExternalServer()    ? tr("The server has not reported its voices yet.")
+        : tr("Open the engine settings to download a voice."));
+}
+
+void MainWindow::refreshSpeechSpeed()
+{
+    const QSignalBlocker blocker(ui->speechSpeedSpin);
+    ui->speechSpeedSpin->setValue(m_tts->speed());
+}
+
+void MainWindow::markSpeechChanged()
+{
+    m_speechChanged = true;
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+}
+
+void MainWindow::setSpeechVoice(const QString &key)
+{
+    if (key == m_tts->voice())
+        return;
+
+    m_tts->setVoice(key);
+
+    ui->speechTestEdit->setText(m_tts->sampleText());
+}
+
+void MainWindow::storeSpeechVoice(const QString &key)
+{
+    QJsonObject speech = Config::getValue("speech").toJsonObject();
+    QJsonObject settings = speech.value(m_tts->id()).toObject();
+
+    if (settings.value(QStringLiteral("voice")).toString() == key)
+        return;
+
+    settings["voice"] = key;
+    speech[m_tts->id()] = settings;
+
+    Config::setValue("speech", speech);
+    Config::save();
+}
+
+void MainWindow::startSpeech()
+{
+    if (m_speaking && m_speaking != m_tts)
+        stopSpeech();
+
+    if (m_tts->useExternalServer()) {
+        m_speaking = m_tts;
+        m_tts->start();
+        return;
+    }
+
+    if (!m_pythonController->componentReady(m_tts->id())) {
+        m_pythonController->installComponent(m_tts->id());
+        return;
+    }
+
+    if (m_tts->needsVoiceToStart() && m_tts->availableVoices().isEmpty()) {
+        DialogUtils::information(this, m_tts->name(),
+                                 tr("Open the engine settings and download a voice first."));
+        disableSpeech();
+        return;
+    }
+
+    m_speaking = m_tts;
+    m_tts->start();
+}
+
+void MainWindow::stopSpeech()
+{
+    m_speechPending.clear();
+    m_speechSpokenOriginals.clear();
+    m_audioPlayer->stop();
+
+    if (!m_speaking)
+        return;
+
+    m_speaking->stop();
+    m_speaking = nullptr;
+}
+
+void MainWindow::disableSpeech()
+{
+    {
+        const QSignalBlocker blocker(ui->speechEnabled);
+        ui->speechEnabled->setChecked(false);
+    }
+
+    m_speechOn = false;
+
+    QJsonObject speech = Config::getValue("speech").toJsonObject();
+    if (!speech["is_speech"].toBool())
+        return;
+
+    speech["is_speech"] = false;
+    Config::setValue("speech", speech);
+    Config::save();
+}
+
+void MainWindow::speak(const QString &text)
+{
+    if (!m_speaking)
+        return;
+
+    const bool interrupt = ui->speechOnNewTranslationCombo->currentData().toBool();
+
+    if (!interrupt && speechBusy()) {
+        m_speechPending = text;
+        return;
+    }
+
+    m_speechPending.clear();
+    m_audioPlayer->stop();
+    m_speaking->synthesize(text);
+
+    refreshSpeechPage();
+}
+
+void MainWindow::offerSpeech(const QString &text)
+{
+    m_speechLastText = text;
+
+    if (!m_speechOn || speechManual())
+        return;
+
+    speak(text);
+}
+
+void MainWindow::speakLastText()
+{
+    if (!m_speaking || m_speechLastText.isEmpty())
+        return;
+
+    m_speechPending.clear();
+    m_audioPlayer->stop();
+    m_speaking->synthesize(m_speechLastText);
+
+    refreshSpeechPage();
+}
+
+bool MainWindow::speechManual() const
+{
+    return ui->speechModeCombo->currentData().toBool();
+}
+
+bool MainWindow::speechBusy() const
+{
+    return (m_speaking && m_speaking->synthesizing())
+    || (m_tts && m_tts->synthesizing())
+    || m_audioPlayer->isPlaying();
+}
+
+bool MainWindow::speechAcceptsSource(const QString &source) const
+{
+    const QString wanted = ui->speechSourceCombo->currentData().toString();
+    if (wanted.isEmpty())
+        return true;
+
+    if (wanted == QLatin1String("Hook"))
+        return source.startsWith(QLatin1String("Hook"));
+
+    return source == wanted;
+}
+
+void MainWindow::on_speechEngineCombo_currentIndexChanged(int arg1)
+{
+    Q_UNUSED(arg1)
+
+    TtsEngine *chosen = ttsEngine(ui->speechEngineCombo->currentData().toString());
+    if (!chosen || chosen == m_tts)
+        return;
+
+    setTtsEngine(chosen);
+    markSpeechChanged();
+}
+
+void MainWindow::on_speechEngineSettingsButton_clicked()
+{
+    QDialog *dialog = m_tts->createSettingsDialog(this);
+
+    if (!dialog)
+        return;
+
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    TtsEngine *engine = m_tts;
+    const QJsonObject before = engine->saveSettings();
+
+    connect(dialog, &QDialog::finished, this, [this, engine, before](int) {
+        const QJsonObject after = engine->saveSettings();
+        const bool changed = after != before;
+
+        refreshSpeechVoices();
+
+        if (changed) {
+            markSpeechChanged();
+
+            if (m_speaking == engine && engine->settingsChangeNeedsRestart(before, after))
+                startSpeech();
+        }
+
+        refreshSpeechPage();
+    });
+
+    dialog->show();
+}
+
+void MainWindow::on_speechTestButton_clicked()
+{
+    const QString text = ui->speechTestEdit->text().trimmed();
+
+    if (text.isEmpty())
+        return;
+
+    m_speechPending.clear();
+    m_audioPlayer->stop();
+    m_tts->synthesize(text);
+
+    refreshSpeechPage();
+}
+
+void MainWindow::on_speechStopButton_clicked()
+{
+    m_speechPending.clear();
+
+    if (m_speaking)
+        m_speaking->cancelSynthesis();
+
+    if (m_tts && m_tts != m_speaking)
+        m_tts->cancelSynthesis();
+
+    m_audioPlayer->stop();
+    refreshSpeechPage();
+}
+
 void MainWindow::setupCoreConnections()
 {
     // UI base
@@ -538,6 +1111,8 @@ void MainWindow::initSubsystems()
         m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
         m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
         m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
+        m_hotkeyController->setSpeakTextShortcut(ui->generalHotkeySpeakTextEdit->keySequence());
+        m_hotkeyController->setStopSpeechShortcut(ui->generalHotkeyStopSpeechEdit->keySequence());
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
@@ -545,6 +1120,10 @@ void MainWindow::initSubsystems()
                 m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setRetranslateShortcut);
+        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setSpeakTextShortcut);
+        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setStopSpeechShortcut);
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
@@ -552,6 +1131,10 @@ void MainWindow::initSubsystems()
                 [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeyManualTranslateEdit->clearFocus(); });
+        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeySpeakTextEdit->clearFocus(); });
+        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyStopSpeechEdit->clearFocus(); });
     }
 
     connect(m_hotkeyController, &HotkeyController::captureRegionTriggered,
@@ -560,6 +1143,10 @@ void MainWindow::initSubsystems()
             this, &MainWindow::showHistory);
     connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
             this, &MainWindow::retranslateText);
+    connect(m_hotkeyController, &HotkeyController::speakTextTriggered,
+            this, &MainWindow::speakLastText);
+    connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
+            this, &MainWindow::on_speechStopButton_clicked);
     connect(m_hotkeyController, &HotkeyController::shortcutReleased, this, [this] {
         if (m_isShortcuts) m_isShortcuts = false;
     });
@@ -656,6 +1243,8 @@ void MainWindow::setupSettingsConnections()
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
     connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
     connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyManualTranslateEdit));
+    connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySpeakTextEdit));
+    connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyStopSpeechEdit));
     connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKey));
     connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKeyPortal));
 
@@ -712,6 +1301,22 @@ void MainWindow::setupSettingsConnections()
 
     // Python
     connect(ui->pythonInterpreterEdit, &QLineEdit::textChanged, this, bind(m_pythonChanged, ui->pythonInterpreterEdit));
+
+    // Speech
+    connect(ui->speechEnabled, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechEnabled));
+    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTextCombo));
+    connect(ui->speechSourceCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechSourceCombo));
+    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
+    connect(ui->speechOnNewTranslationCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechOnNewTranslationCombo));
+    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechModeCombo));
+    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this,
+            [this](int) { refreshSpeechPage(); });
+    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+        m_speechSpokenOriginals.clear();
+        refreshSpeechPage();
+    });
+    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this,
+            [this](int) { m_speechSpokenOriginals.clear(); });
 }
 
 void MainWindow::loadLogMessages()
@@ -763,7 +1368,8 @@ void MainWindow::setupTextProcessingTable()
             QStringLiteral("Hook"),
             QStringLiteral("Clipboard"),
             QStringLiteral("Tesseract"),
-            QStringLiteral("Ollama Vision")
+            QStringLiteral("Ollama Vision"),
+            QStringLiteral("Speech")
         };
         const QStringList hookSources = m_outputWindow->hookDisplayOrder();
         for (const QString &src : hookSources) {
@@ -790,6 +1396,7 @@ void MainWindow::setPropertyChanged(const bool &value)
     m_pluginChanged = value;
     m_proxyChanged = value;
     m_pythonChanged = value;
+    m_speechChanged = value;
 
     for (QObject *w : m_changedWidgets) {
         if (w) w->setProperty("changed", QVariant(value));
@@ -1579,6 +2186,8 @@ void MainWindow::loadConfig()
         loadProxySettings(Config::getValue("proxy").toJsonObject());
     if (m_pythonChanged)
         loadPythonSettings(Config::getValue("python").toJsonObject());
+    if (m_speechChanged)
+        loadSpeechSettings(Config::getValue("speech").toJsonObject());
 
     loadScreencastSettings();
     loadOcrSettings();
@@ -1617,6 +2226,10 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
         ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
     if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
         ui->generalHotkeyManualTranslateEdit->setKeySequence(QKeySequence(general["hotkey_manual_translate"].toString()));
+    if (widgetChanged(ui->generalHotkeySpeakTextEdit))
+        ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
+    if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
+        ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
 
 #ifdef Q_OS_LINUX
     if (!general["hotkeys_type"].toString().isEmpty()) {
@@ -1633,6 +2246,10 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
             ui->generalHotkeyHistoryTranslationEdit->setEnabled(isX11Mode);
         if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
             ui->generalHotkeyManualTranslateEdit->setEnabled(isX11Mode);
+        if (widgetChanged(ui->generalHotkeySpeakTextEdit))
+            ui->generalHotkeySpeakTextEdit->setEnabled(isX11Mode);
+        if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
+            ui->generalHotkeyStopSpeechEdit->setEnabled(isX11Mode);
 
         ui->generalBindShortcut->setEnabled(!isX11Mode);
     }
@@ -1814,7 +2431,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
                 rule.source = rowObject["source"].toString();
                 rule.from = rowObject["from"].toString();
                 rule.to = rowObject["to"].toString();
-                rule.target = rowObject["target"].toString();   // absent = every game
+                rule.target = rowObject["target"].toString(); // absent = every game
                 m_replacementRules << rule;
             }
 
@@ -1876,6 +2493,62 @@ void MainWindow::loadPythonSettings(const QJsonObject& python)
     m_pythonController->setPreferredInterpreter(ui->pythonInterpreterEdit->text());
     if (ui->settingsPages->currentWidget() == ui->pythonPage)
         m_pythonController->ensureDetected();
+}
+
+void MainWindow::loadSpeechSettings(const QJsonObject& speech)
+{
+    const QString spokenBefore = m_tts ? m_tts->voice() : QString();
+    for (TtsEngine *engine : m_ttsEngines)
+        engine->loadSettings(speech.value(engine->id()).toObject());
+
+    TtsEngine *chosen = ttsEngine(speech.value("engine").toString());
+    setTtsEngine(chosen ? chosen : m_ttsEngines.first());
+
+    if (m_tts->voice() != spokenBefore)
+        ui->speechTestEdit->setText(m_tts->sampleText());
+
+    auto restore = [](QComboBox *box, const QVariant &value) {
+        const int index = box->findData(value);
+        box->setCurrentIndex(index >= 0 ? index : 0);
+    };
+
+    if (widgetChanged(ui->speechTextCombo))
+        restore(ui->speechTextCombo, speech.value("original").toBool(false));
+
+    if (widgetChanged(ui->speechSourceCombo))
+        restore(ui->speechSourceCombo, speech.value("source").toString());
+
+    if (widgetChanged(ui->speechTranslatorCombo))
+        restore(ui->speechTranslatorCombo, speech.value("translator").toString());
+
+    if (widgetChanged(ui->speechModeCombo))
+        restore(ui->speechModeCombo, speech.value("manual").toBool(false));
+
+    if (widgetChanged(ui->speechOnNewTranslationCombo))
+        restore(ui->speechOnNewTranslationCombo, speech.value("interrupt").toBool(true));
+
+    m_speechSpokenOriginals.clear();
+
+    refreshSpeechSpeed();
+    refreshSpeechVoices(VoiceToShow::Applied);
+    refreshSpeechPage();
+
+    if (widgetChanged(ui->speechEnabled))
+        ui->speechEnabled->setChecked(speech["is_speech"].toBool());
+
+    m_speechOn = ui->speechEnabled->isChecked();
+
+    if (!m_speechOn) {
+        stopSpeech();
+        return;
+    }
+
+    const bool current = m_speaking == m_tts
+    && (m_tts->state() == TtsEngine::State::Ready
+    || m_tts->state() == TtsEngine::State::Starting);
+
+    if (!current)
+        startSpeech();
 }
 
 void MainWindow::loadScreencastSettings()
@@ -2097,6 +2770,7 @@ void MainWindow::reapplyProfileSections()
     loadTextProcessingSettings(Config::getValue("text_processing").toJsonObject());
     loadScreencastSettings();
     loadOcrSettings();
+    loadSpeechSettings(Config::getValue("speech").toJsonObject());
 
     m_outputWindow->loadConfig();
 
@@ -2240,6 +2914,10 @@ void MainWindow::saveConfig()
             general["hotkey_history_translation"] = ui->generalHotkeyHistoryTranslationEdit->keySequence().toString();
         if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
             general["hotkey_manual_translate"] = ui->generalHotkeyManualTranslateEdit->keySequence().toString();
+        if (widgetChanged(ui->generalHotkeySpeakTextEdit))
+            general["hotkey_speak_text"] = ui->generalHotkeySpeakTextEdit->keySequence().toString();
+        if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
+            general["hotkey_stop_speech"] = ui->generalHotkeyStopSpeechEdit->keySequence().toString();
         Config::setValue("general", general);
 
 #ifdef Q_OS_LINUX
@@ -2440,6 +3118,44 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->pythonInterpreterEdit))
             python["interpreter"] = ui->pythonInterpreterEdit->text().trimmed();
         Config::setValue("python", python);
+    }
+
+    // Speech
+    if (m_speechChanged) {
+        QJsonObject speech = Config::getValue("speech").toJsonObject();
+        if (widgetChanged(ui->speechEnabled))
+            speech["is_speech"] = ui->speechEnabled->isChecked();
+
+        if (widgetChanged(ui->speechTextCombo))
+            speech["original"] = ui->speechTextCombo->currentData().toBool();
+
+        if (widgetChanged(ui->speechSourceCombo))
+            speech["source"] = ui->speechSourceCombo->currentData().toString();
+
+        if (widgetChanged(ui->speechTranslatorCombo))
+            speech["translator"] = ui->speechTranslatorCombo->currentData().toString();
+
+        if (widgetChanged(ui->speechModeCombo))
+            speech["manual"] = ui->speechModeCombo->currentData().toBool();
+
+        if (widgetChanged(ui->speechOnNewTranslationCombo))
+            speech["interrupt"] = ui->speechOnNewTranslationCombo->currentData().toBool();
+
+        speech["engine"] = m_tts->id();
+
+        for (TtsEngine *engine : m_ttsEngines) {
+            QJsonObject settings = engine->saveSettings();
+
+            if (engine == m_tts) {
+                const QString voice = ui->speechVoiceCombo->currentData().toString();
+                if (!voice.isEmpty())
+                    settings["voice"] = voice;
+
+                settings["speed"] = ui->speechSpeedSpin->value();
+            }
+            speech[engine->id()] = settings;
+        }
+        Config::setValue("speech", speech);
     }
 
     // Save Config

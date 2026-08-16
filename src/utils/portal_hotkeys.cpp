@@ -78,7 +78,9 @@ void PortalHotkeys::bindShortcuts()
     Shortcuts shortcuts = {
         { QStringLiteral("CaptureRegion"), { { QStringLiteral("description"), QStringLiteral("Capture OCR Region") } } },
         { QStringLiteral("HistoryTranslation"), { { QStringLiteral("description"), QStringLiteral("Show/Hide History Translation") } } },
-        { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } }
+        { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } },
+        { QStringLiteral("SpeakText"), { { QStringLiteral("description"), QStringLiteral("Speak the Last Text") } } },
+        { QStringLiteral("StopSpeech"), { { QStringLiteral("description"), QStringLiteral("Stop Speaking") } } }
     };
 
     auto reply = m_portalShortcuts->BindShortcuts(m_globalShortcutsSession, shortcuts, 0, {{ "handle_token", QString("hk%1").arg(m_requestTokenCounter += 1) }} );

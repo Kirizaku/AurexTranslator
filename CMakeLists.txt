@@ -33,7 +33,7 @@ configure_file(
     src/data.h
 )
 
-find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets LinguistTools Svg)
+find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets LinguistTools Svg Multimedia)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
 find_package(PkgConfig REQUIRED)
 
@@ -64,6 +64,7 @@ set(PROJECT_SOURCES
     src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
     src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
     src/UI/processlogwindow.h src/UI/processlogwindow.cpp
+    src/UI/pipersettingsdialog.h src/UI/pipersettingsdialog.cpp
 
     src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
     src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp
@@ -77,6 +78,10 @@ set(PROJECT_SOURCES
     src/engines/tesseractocr.cpp src/engines/tesseractocr.h
     src/engines/ollama.cpp src/engines/ollama.h
     src/engines/clipboardqt.h src/engines/clipboardqt.cpp
+    src/engines/ttsengine.h src/engines/ttsengine.cpp
+    src/engines/pipertts.h src/engines/pipertts.cpp
+    src/engines/pipervoicecatalog.h src/engines/pipervoicecatalog.cpp
+    src/engines/audioplayer.h src/engines/audioplayer.cpp
 
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
@@ -208,6 +213,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt::Network
         Qt::Widgets
         Qt::Svg
+        Qt::Multimedia
 
         opencv_core
         opencv_imgproc

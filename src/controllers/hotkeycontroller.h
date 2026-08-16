@@ -42,6 +42,8 @@ public:
     void setCaptureRegionShortcut(const QKeySequence &seq);
     void setShowHistoryShortcut(const QKeySequence &seq);
     void setRetranslateShortcut(const QKeySequence &seq);
+    void setSpeakTextShortcut(const QKeySequence &seq);
+    void setStopSpeechShortcut(const QKeySequence &seq);
 
     // Portar backend
     void bindPortalShortcuts();
@@ -52,6 +54,8 @@ signals:
     void captureRegionTriggered();
     void showHistoryTriggered();
     void retranslateTriggered();
+    void speakTextTriggered();
+    void stopSpeechTriggered();
 
     // Portal-only event
     void shortcutReleased();
@@ -68,6 +72,8 @@ private:
     HotKeys *m_captureRegionHotKey = nullptr;
     HotKeys *m_showHistoryHotKey = nullptr;
     HotKeys *m_retranslateHotKey = nullptr;
+    HotKeys *m_speakTextHotKey = nullptr;
+    HotKeys *m_stopSpeechHotKey = nullptr;
 
 #ifdef Q_OS_LINUX
     // Portal backend

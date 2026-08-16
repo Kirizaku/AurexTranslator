@@ -45,26 +45,6 @@ void hideChildConsole(QProcess *process)
 #endif
 }
 
-QString stripAnsiEscapes(const QString &text)
-{
-    static const QRegularExpression escape(QStringLiteral("\x1B\\[[0-9;?]*[ -/]*[@-~]"));
-
-    QString clean = text;
-    return clean.remove(escape);
-}
-
-void prepareChildEnvironment(QProcess *process)
-{
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert(QStringLiteral("PYTHONUNBUFFERED"), QStringLiteral("1"));
-    env.insert(QStringLiteral("PYTHONIOENCODING"), QStringLiteral("utf-8"));
-    env.insert(QStringLiteral("NO_COLOR"), QStringLiteral("1"));
-    env.insert(QStringLiteral("PIP_DISABLE_PIP_VERSION_CHECK"), QStringLiteral("1"));
-    process->setProcessEnvironment(env);
-    process->setProcessChannelMode(QProcess::MergedChannels);
-    hideChildConsole(process);
-}
-
 #ifdef Q_OS_WIN
 void appendRegisteredPythons(QList<PythonEnv::Interpreter> &candidates)
 {
@@ -146,6 +126,26 @@ PythonEnv::~PythonEnv()
         m_process->kill();
         m_process->waitForFinished(2000);
     }
+}
+
+void PythonEnv::prepareChildEnvironment(QProcess *process)
+{
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("PYTHONUNBUFFERED"), QStringLiteral("1"));
+    env.insert(QStringLiteral("PYTHONIOENCODING"), QStringLiteral("utf-8"));
+    env.insert(QStringLiteral("NO_COLOR"), QStringLiteral("1"));
+    env.insert(QStringLiteral("PIP_DISABLE_PIP_VERSION_CHECK"), QStringLiteral("1"));
+    process->setProcessEnvironment(env);
+    process->setProcessChannelMode(QProcess::MergedChannels);
+    hideChildConsole(process);
+}
+
+QString PythonEnv::stripAnsiEscapes(const QString &text)
+{
+    static const QRegularExpression escape(QStringLiteral("\x1B\\[[0-9;?]*[ -/]*[@-~]"));
+
+    QString clean = text;
+    return clean.remove(escape);
 }
 
 QString PythonEnv::rootDir()
