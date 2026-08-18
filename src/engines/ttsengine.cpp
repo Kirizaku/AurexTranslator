@@ -547,7 +547,10 @@ void TtsEngine::sendSynthesis(const QString &text)
 
         if (reply->error() != QNetworkReply::NoError) {
             logWarning(QStringLiteral("synthesis request failed: ") + reply->errorString());
-            emit errorOccurred(reply->errorString());
+
+            const QString body = QString::fromUtf8(reply->readAll()).trimmed();
+            const bool plainText = !body.isEmpty() && body.size() <= 200 && !body.startsWith(QLatin1Char('<'));
+            emit errorOccurred(plainText ? body : reply->errorString());
             return;
         }
 

@@ -536,11 +536,14 @@ void MainWindow::registerTtsEngine(TtsEngine *engine, const PythonController::Co
     });
 
     connect(engine, &TtsEngine::errorOccurred, this, [this, engine](const QString &error) {
-        if (engine == m_tts)
-            ui->speechStatusLabel->setText(error);
-
         if (engine == m_speaking)
             m_speechPending.clear();
+
+        if (engine == m_tts || engine == m_speaking)
+            refreshSpeechPage();
+
+        if (engine == m_tts)
+            ui->speechStatusLabel->setText(error);
     });
 
     connect(engine, &TtsEngine::audioReady, this, [this, engine](const QByteArray &wav) {
@@ -1021,6 +1024,9 @@ void MainWindow::on_speechEngineSettingsButton_clicked()
             if (m_speaking == engine && engine->settingsChangeNeedsRestart(before, after))
                 startSpeech();
         }
+
+        if (!m_speechOn && engine != m_speaking)
+            engine->stop();
 
         refreshSpeechPage();
     });
