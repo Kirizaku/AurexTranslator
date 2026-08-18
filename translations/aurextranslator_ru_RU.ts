@@ -26,6 +26,24 @@
     </message>
 </context>
 <context>
+    <name>EdgeTts</name>
+    <message>
+        <location filename="../src/engines/edgetts.cpp" line="32"/>
+        <source>Speaks through a Microsoft service. Every phrase is sent over the internet, and nothing is spoken without a connection.</source>
+        <translation>Озвучивает через сервис Microsoft. Каждая фраза отправляется в интернет, без соединения ничего не произносится.</translation>
+    </message>
+    <message>
+        <location filename="../src/engines/edgetts.cpp" line="52"/>
+        <source>%1, male</source>
+        <translation>%1, мужской</translation>
+    </message>
+    <message>
+        <location filename="../src/engines/edgetts.cpp" line="55"/>
+        <source>%1, female</source>
+        <translation>%1, женский</translation>
+    </message>
+</context>
+<context>
     <name>GoogleSettingsDialog</name>
     <message>
         <location filename="../src/UI/googlesettingsdialog.cpp" line="30"/>
@@ -507,7 +525,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1205"/>
-        <location filename="../src/UI/mainwindow.cpp" line="941"/>
+        <location filename="../src/UI/mainwindow.cpp" line="624"/>
         <source>Clipboard</source>
         <translation>Буфер обмена</translation>
     </message>
@@ -636,13 +654,13 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1491"/>
-        <location filename="../src/UI/mainwindow.cpp" line="334"/>
+        <location filename="../src/UI/mainwindow.cpp" line="335"/>
         <source>Create environment</source>
         <translation>Создать окружение</translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1498"/>
-        <location filename="../src/UI/mainwindow.cpp" line="682"/>
+        <location filename="../src/UI/mainwindow.cpp" line="365"/>
         <source>Install Python</source>
         <translation>Установить Python</translation>
     </message>
@@ -688,8 +706,8 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1620"/>
-        <location filename="../src/UI/mainwindow.cpp" line="343"/>
-        <location filename="../src/UI/mainwindow.cpp" line="724"/>
+        <location filename="../src/UI/mainwindow.cpp" line="344"/>
+        <location filename="../src/UI/mainwindow.cpp" line="407"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
@@ -844,97 +862,97 @@ Save anyway?</source>
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="297"/>
+        <location filename="../src/UI/mainwindow.cpp" line="298"/>
         <source>Not found</source>
         <translation>Не найден</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="299"/>
+        <location filename="../src/UI/mainwindow.cpp" line="300"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="300"/>
+        <location filename="../src/UI/mainwindow.cpp" line="301"/>
         <source>Not created yet</source>
         <translation>Еще не создано</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="319"/>
+        <location filename="../src/UI/mainwindow.cpp" line="320"/>
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="319"/>
+        <location filename="../src/UI/mainwindow.cpp" line="320"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="333"/>
+        <location filename="../src/UI/mainwindow.cpp" line="334"/>
         <source>Update environment</source>
         <translation>Обновить окружение</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="343"/>
+        <location filename="../src/UI/mainwindow.cpp" line="344"/>
         <source>Reinstall</source>
         <translation>Переустановить</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="353"/>
+        <location filename="../src/UI/mainwindow.cpp" line="746"/>
         <source>Not running</source>
         <translation>Не запущен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="356"/>
+        <location filename="../src/UI/mainwindow.cpp" line="749"/>
         <source>Starting...</source>
         <translation>Запуск...</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="360"/>
+        <location filename="../src/UI/mainwindow.cpp" line="753"/>
         <source>Ready at %1, no voice chosen yet</source>
         <translation>Готов на %1, голос ещё не выбран</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="361"/>
+        <location filename="../src/UI/mainwindow.cpp" line="754"/>
         <source>Ready at %1, voice %2</source>
         <translation>Готов на %1, голос %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="365"/>
+        <location filename="../src/UI/mainwindow.cpp" line="758"/>
         <source>Failed</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="370"/>
+        <location filename="../src/UI/mainwindow.cpp" line="763"/>
         <source>Not applied yet — %1 is still in use</source>
         <translation>Ещё не применено — сейчас используется %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="428"/>
+        <location filename="../src/UI/mainwindow.cpp" line="821"/>
         <source>The list comes from the service; switch speech on and apply once to read it.</source>
         <translation>Список приходит от сервиса: включите озвучку и один раз нажмите «Применить», чтобы его получить.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="430"/>
+        <location filename="../src/UI/mainwindow.cpp" line="823"/>
         <source>The server has not reported its voices yet.</source>
         <translation>Сервер ещё не сообщил свои голоса.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="431"/>
+        <location filename="../src/UI/mainwindow.cpp" line="824"/>
         <source>Open the engine settings to download a voice.</source>
         <translation>Откройте настройки движка, чтобы загрузить голос.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="554"/>
+        <location filename="../src/UI/mainwindow.cpp" line="882"/>
         <source>Open the engine settings and download a voice first.</source>
         <translation>Сначала откройте настройки движка и загрузите голос.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="683"/>
+        <location filename="../src/UI/mainwindow.cpp" line="366"/>
         <source>Python %1 will be downloaded from python.org (about 30 MB).</source>
         <translation>Python %1 будет загружен с python.org (около 30 МБ).</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="688"/>
+        <location filename="../src/UI/mainwindow.cpp" line="371"/>
         <source>For this program only — installed into its own folder, adds nothing to PATH and leaves the rest of the system alone.
 
 System-wide — an ordinary installation, available to other programs as well.</source>
@@ -943,22 +961,22 @@ System-wide — an ordinary installation, available to other programs as well.</
 Для всей системы — обычная установка, доступная и другим программам.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="692"/>
+        <location filename="../src/UI/mainwindow.cpp" line="375"/>
         <source>For this program only</source>
         <translation>Только для этой программы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="693"/>
+        <location filename="../src/UI/mainwindow.cpp" line="376"/>
         <source>System-wide</source>
         <translation>Для всей системы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="710"/>
+        <location filename="../src/UI/mainwindow.cpp" line="393"/>
         <source>Install %1</source>
         <translation>Установить %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="711"/>
+        <location filename="../src/UI/mainwindow.cpp" line="394"/>
         <source>These packages will be installed from PyPI:
 
 %1</source>
@@ -967,30 +985,30 @@ System-wide — an ordinary installation, available to other programs as well.</
 %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="717"/>
+        <location filename="../src/UI/mainwindow.cpp" line="400"/>
         <source>They are third-party code under their own licenses.
 Destination: %1</source>
         <translation>Это сторонний код со своими лицензиями.
 Куда: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="732"/>
+        <location filename="../src/UI/mainwindow.cpp" line="415"/>
         <source>Select a Python interpreter</source>
         <translation>Выберите интерпретатор Python</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="789"/>
-        <location filename="../src/UI/mainwindow.cpp" line="797"/>
+        <location filename="../src/UI/mainwindow.cpp" line="472"/>
+        <location filename="../src/UI/mainwindow.cpp" line="480"/>
         <source>Remove component</source>
         <translation>Удаление компонента</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="790"/>
+        <location filename="../src/UI/mainwindow.cpp" line="473"/>
         <source>Everything %1 installed is also being used by another component, so there is nothing here to remove.</source>
         <translation>Все, что установил компонент %1, используется и другим компонентом, так что удалять здесь нечего.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="798"/>
+        <location filename="../src/UI/mainwindow.cpp" line="481"/>
         <source>Remove %1?
 
 These packages go: %2
@@ -1003,207 +1021,212 @@ Anything they pulled in with them stays, and so does anything downloaded separat
 Все, что они притянули за собой, останется, как и загруженное отдельно — голоса и языковые пакеты лежат в собственной папке движка, их это не затронет.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="865"/>
+        <location filename="../src/UI/mainwindow.cpp" line="574"/>
         <source>On this machine</source>
         <translation>На этом компьютере</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="866"/>
+        <location filename="../src/UI/mainwindow.cpp" line="575"/>
         <source>Over the internet</source>
         <translation>Через интернет</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="935"/>
+        <location filename="../src/UI/mainwindow.cpp" line="618"/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="936"/>
+        <location filename="../src/UI/mainwindow.cpp" line="619"/>
         <source>Original</source>
         <translation>Оригинал</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="938"/>
+        <location filename="../src/UI/mainwindow.cpp" line="621"/>
         <source>Any source</source>
         <translation>Любой источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="939"/>
+        <location filename="../src/UI/mainwindow.cpp" line="622"/>
         <source>Screen (Tesseract)</source>
         <translation>Экран (Tesseract)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="940"/>
+        <location filename="../src/UI/mainwindow.cpp" line="623"/>
         <source>Screen (Ollama Vision)</source>
         <translation>Экран (Ollama Vision)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="944"/>
+        <location filename="../src/UI/mainwindow.cpp" line="627"/>
         <source>Whichever answers first</source>
         <translation>Кто ответит первым</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="951"/>
+        <location filename="../src/UI/mainwindow.cpp" line="634"/>
         <source>Interrupt the current phrase</source>
         <translation>Прерывать текущую фразу</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="952"/>
+        <location filename="../src/UI/mainwindow.cpp" line="635"/>
         <source>Let the current phrase finish</source>
         <translation>Дожидаться конца фразы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="954"/>
+        <location filename="../src/UI/mainwindow.cpp" line="637"/>
         <source>Speaks with the settings as applied. Press Apply first to hear a change.</source>
         <translation>Озвучивает с применёнными настройками. Чтобы услышать изменения, сначала нажмите «Применить».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="956"/>
+        <location filename="../src/UI/mainwindow.cpp" line="639"/>
         <source>Settings for the chosen engine</source>
         <translation>Настройки выбранного движка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="957"/>
+        <location filename="../src/UI/mainwindow.cpp" line="640"/>
         <source>Engine settings</source>
         <translation>Настройки движка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1342"/>
+        <location filename="../src/UI/mainwindow.cpp" line="652"/>
+        <source>Edge TTS speaks through a Microsoft service rather than on this machine, so every phrase - translated or original - is sent over the internet, and nothing is spoken without a connection. The download itself is a small one.</source>
+        <translation>Edge TTS озвучивает через сервис Microsoft, а не на этом компьютере, поэтому каждая фраза — и перевод, и оригинал — отправляется в интернет, а без соединения ничего не произносится. Сама загрузка при этом небольшая.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="1352"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1345"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1355"/>
         <source>Open Processed Screencast in New Window</source>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1440"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1450"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1445"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1455"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1541"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1541"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1551"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1899"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1909"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1899"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1909"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2040"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2050"/>
         <source>Everywhere</source>
         <translation>Везде</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2042"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2052"/>
         <source>Only in %1</source>
         <translation>Только в %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2787"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2797"/>
         <source>Active profile: %1</source>
         <translation>Активный профиль: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2792"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2802"/>
         <source>%1 (active)</source>
         <translation>%1 (активный)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2808"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2815"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2818"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2825"/>
         <source>New profile</source>
         <translation>Новый профиль</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2809"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2819"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation>Имя профиля (сохранит текущие настройки):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2816"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2861"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2826"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2871"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation>Профиль с именем «%1» уже существует.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2834"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2844"/>
         <source>Load profile</source>
         <translation>Загрузка профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2835"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2845"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation>Не удалось загрузить профиль «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2852"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2860"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2866"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2862"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2870"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2876"/>
         <source>Rename profile</source>
         <translation>Переименование профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2853"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2863"/>
         <source>New name:</source>
         <translation>Новое имя:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2866"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2876"/>
         <source>Rename failed.</source>
         <translation>Не удалось переименовать.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2879"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2885"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2889"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2895"/>
         <source>Delete profile</source>
         <translation>Удаление профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2880"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2890"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation>Активный профиль нельзя удалить. Сначала загрузите другой профиль.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2886"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2896"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation>Удалить профиль «%1»? Это действие необратимо.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2936"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2946"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2937"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2947"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2939"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2949"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2940"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2950"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -1223,12 +1246,12 @@ Anything they pulled in with them stays, and so does anything downloaded separat
         <translation>Остановить озвучку</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="948"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>Automatic</source>
         <translation>Автоматический</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="632"/>
         <source>Manual (by hotkey)</source>
         <translation>Ручной (по горячей клавише)</translation>
     </message>
@@ -1484,17 +1507,17 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>PiperVoiceCatalog</name>
     <message>
-        <location filename="../src/engines/pipervoicecatalog.cpp" line="213"/>
+        <location filename="../src/engines/pipervoicecatalog.cpp" line="227"/>
         <source>Unknown voice: %1</source>
         <translation>Неизвестный голос: %1</translation>
     </message>
     <message>
-        <location filename="../src/engines/pipervoicecatalog.cpp" line="289"/>
+        <location filename="../src/engines/pipervoicecatalog.cpp" line="303"/>
         <source>Cancelled.</source>
         <translation>Отменено.</translation>
     </message>
     <message>
-        <location filename="../src/engines/pipervoicecatalog.cpp" line="296"/>
+        <location filename="../src/engines/pipervoicecatalog.cpp" line="310"/>
         <source>Cannot save %1</source>
         <translation>Не удалось сохранить %1</translation>
     </message>
@@ -1954,27 +1977,27 @@ Use if automatic injection failed</source>
 <context>
     <name>TtsEngine</name>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="350"/>
+        <location filename="../src/engines/ttsengine.cpp" line="345"/>
         <source>No server address given.</source>
         <translation>Не указан адрес сервера.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="368"/>
+        <location filename="../src/engines/ttsengine.cpp" line="363"/>
         <source>The Python environment is not ready.</source>
         <translation>Окружение Python не готово.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="375"/>
+        <location filename="../src/engines/ttsengine.cpp" line="370"/>
         <source>No voice selected.</source>
         <translation>Голос не выбран.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="390"/>
+        <location filename="../src/engines/ttsengine.cpp" line="385"/>
         <source>No free local port.</source>
         <translation>Нет свободного локального порта.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="422"/>
+        <location filename="../src/engines/ttsengine.cpp" line="417"/>
         <source>The %1 server stopped (code %2).</source>
         <translation>Сервер %1 остановился (код %2).</translation>
     </message>
@@ -1989,17 +2012,17 @@ Use if automatic injection failed</source>
         <translation>Сервер %1 не ответил вовремя.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="159"/>
+        <location filename="../src/engines/ttsengine.cpp" line="154"/>
         <source>The %1 server is not running.</source>
         <translation>Сервер %1 не запущен.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="230"/>
+        <location filename="../src/engines/ttsengine.cpp" line="225"/>
         <source>The bundled %1 server script is missing.</source>
         <translation>Встроенный скрипт сервера %1 отсутствует.</translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="239"/>
+        <location filename="../src/engines/ttsengine.cpp" line="234"/>
         <source>Cannot write %1</source>
         <translation>Не удалось записать %1</translation>
     </message>

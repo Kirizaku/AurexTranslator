@@ -81,6 +81,7 @@ set(PROJECT_SOURCES
     src/engines/ttsengine.h src/engines/ttsengine.cpp
     src/engines/pipertts.h src/engines/pipertts.cpp
     src/engines/pipervoicecatalog.h src/engines/pipervoicecatalog.cpp
+    src/engines/edgetts.h src/engines/edgetts.cpp
     src/engines/audioplayer.h src/engines/audioplayer.cpp
 
     src/utils/config.cpp src/utils/config.h

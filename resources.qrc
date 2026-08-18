@@ -12,4 +12,7 @@
         <file>3rdparty/icons/gauge.svg</file>
         <file>3rdparty/icons/text-recognition.svg</file>
     </qresource>
+    <qresource prefix="/python">
+        <file alias="edge_server.py">src/python/edge_server.py</file>
+    </qresource>
 </RCC>

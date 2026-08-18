@@ -38,6 +38,7 @@
 #include "src/controllers/pythoncontroller.h"
 #include "src/engines/audioplayer.h"
 #include "src/engines/pipertts.h"
+#include "src/engines/edgetts.h"
 #include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
@@ -643,6 +644,15 @@ void MainWindow::initSpeech()
         {QStringLiteral("piper-tts[http]")},
                       {QStringLiteral("piper"), QStringLiteral("flask")},
                       {}});
+
+    EdgeTts *edge = new EdgeTts(this);
+    registerTtsEngine(edge, {edge->id(), edge->name(),
+                             {QStringLiteral("edge-tts"), QStringLiteral("flask")},
+                             {QStringLiteral("edge_tts"), QStringLiteral("flask")},
+                             tr("Edge TTS speaks through a Microsoft service rather than on "
+                                "this machine, so every phrase - translated or original - is "
+                                "sent over the internet, and nothing is spoken without a "
+                                "connection. The download itself is a small one.")});
 
     populateSpeechEngines();
     setTtsEngine(piper);
