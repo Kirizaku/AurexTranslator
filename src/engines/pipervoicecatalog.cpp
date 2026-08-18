@@ -28,6 +28,17 @@ namespace {
 const char *kRepoBase = "https://huggingface.co/rhasspy/piper-voices/resolve/main/";
 QString g_repoBase;
 
+// The /raw/ counterpart of the configured base. HuggingFace serves small text
+// files (the voice list, the .onnx.json config) directly from /raw/, but from
+// /resolve/ it answers with a *relative* redirect. Older Qt fails to resolve that
+// relative redirect and ends up with an empty host
+QString rawBase()
+{
+    QString base = PiperVoiceCatalog::repoBase();
+    base.replace(QStringLiteral("/resolve/"), QStringLiteral("/raw/"));
+    return base;
+}
+
 QNetworkRequest makeRequest(const QString &url)
 {
     QNetworkRequest request{QUrl(url)};
@@ -78,12 +89,15 @@ void PiperVoiceCatalog::setRepoBase(const QString &base)
 
 QString PiperVoiceCatalog::voicesJsonUrl()
 {
-    return repoBase() + QStringLiteral("voices.json?download=true");
+    return rawBase() + QStringLiteral("voices.json");
 }
 
 QString PiperVoiceCatalog::fileUrl(const QString &repoPath)
 {
-    return repoBase() + repoPath + QStringLiteral("?download=true");
+    if (repoPath.endsWith(QStringLiteral(".onnx.json")))
+        return rawBase() + repoPath;
+
+    return repoBase() + repoPath;
 }
 
 void PiperVoiceCatalog::refresh()
