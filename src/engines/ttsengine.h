@@ -40,7 +40,7 @@ public:
     enum class Mode { Managed, External };
     Q_ENUM(Mode)
 
-    enum class Kind { Offline, Online };
+    enum class Kind { Offline, Online, Custom };
     Q_ENUM(Kind)
 
     explicit TtsEngine(QObject *parent = nullptr);
@@ -158,4 +158,4 @@ private:
     QString m_queuedText;
 };
 
-#endif // TTSENGINE_H
+#endif // TTSE

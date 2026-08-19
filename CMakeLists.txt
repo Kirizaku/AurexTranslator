@@ -65,6 +65,7 @@ set(PROJECT_SOURCES
     src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
     src/UI/processlogwindow.h src/UI/processlogwindow.cpp
     src/UI/pipersettingsdialog.h src/UI/pipersettingsdialog.cpp
+    src/UI/customsettingsdialog.h src/UI/customsettingsdialog.cpp
 
     src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
     src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp
@@ -82,6 +83,7 @@ set(PROJECT_SOURCES
     src/engines/pipertts.h src/engines/pipertts.cpp
     src/engines/pipervoicecatalog.h src/engines/pipervoicecatalog.cpp
     src/engines/edgetts.h src/engines/edgetts.cpp
+    src/engines/customtts.h src/engines/customtts.cpp
     src/engines/audioplayer.h src/engines/audioplayer.cpp
 
     src/utils/config.cpp src/utils/config.h

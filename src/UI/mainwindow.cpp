@@ -39,6 +39,7 @@
 #include "src/engines/audioplayer.h"
 #include "src/engines/pipertts.h"
 #include "src/engines/edgetts.h"
+#include "src/engines/customtts.h"
 #include "src/utils/plugininterface.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
@@ -527,7 +528,9 @@ void MainWindow::setTtsEngine(TtsEngine *engine)
 void MainWindow::registerTtsEngine(TtsEngine *engine, const PythonController::Component &component)
 {
     m_ttsEngines.append(engine);
-    m_pythonController->registerComponent(component);
+
+    if (!component.id.isEmpty())
+        m_pythonController->registerComponent(component);
 
     const QString prefix = QStringLiteral("[%1] ").arg(engine->id());
 
@@ -575,7 +578,8 @@ void MainWindow::populateSpeechEngines()
 
     const QList<QPair<TtsEngine::Kind, QString>> groups{
         {TtsEngine::Kind::Offline, tr("On this machine")},
-        {TtsEngine::Kind::Online, tr("Over the internet")}};
+        {TtsEngine::Kind::Online, tr("Over the internet")},
+        {TtsEngine::Kind::Custom, tr("Your own server")}};
 
         for (const QPair<TtsEngine::Kind, QString> &group : groups) {
             bool headed = false;
@@ -656,6 +660,9 @@ void MainWindow::initSpeech()
                                 "this machine, so every phrase - translated or original - is "
                                 "sent over the internet, and nothing is spoken without a "
                                 "connection. The download itself is a small one.")});
+
+    CustomTts *custom = new CustomTts(this);
+    registerTtsEngine(custom, {});
 
     populateSpeechEngines();
     setTtsEngine(piper);
