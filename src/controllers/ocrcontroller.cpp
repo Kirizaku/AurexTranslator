@@ -237,12 +237,12 @@ void OcrController::configureTesseract()
         m_tesseractOcr->setTessdataPath(QString());
     } else {
         QDir dir(m_tesseractTessdataPath);
-        if (dir.exists()) {
+        bool isValidTessdataDir = dir.exists() && !dir.entryList({"*.traineddata"}, QDir::Files).isEmpty();
+        if (isValidTessdataDir) {
             m_tesseractOcr->setTessdataPath(m_tesseractTessdataPath);
         } else {
             m_tesseractUseSystemTessdata = true;
-            Log(Logger::Level::Warning,
-                "[tesseract] The specified Tesseract data directory does not exist or is invalid");
+            Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
         }
     }
 

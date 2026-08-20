@@ -211,7 +211,9 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
 
     if (!m_systemTessdataCheckBox->isChecked()) {
         QString tessdataPath = m_pathLineEdit->text();
-        if (!QDir(tessdataPath).exists()) {
+        QDir dir(tessdataPath);
+        bool isValidTessdataDir = dir.exists() && !dir.entryList({"*.traineddata"}, QDir::Files).isEmpty();
+        if (!isValidTessdataDir) {
             Log(Logger::Level::Warning, "[tesseract] The specified Tesseract data directory does not exist or is invalid");
             DialogUtils::warning(nullptr, tr("Invalid Tesseract Data Directory"),
                                  tr("The specified Tesseract data directory does not exist or is invalid.\n"
