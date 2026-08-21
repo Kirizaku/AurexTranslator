@@ -93,6 +93,7 @@ set(PROJECT_SOURCES
     src/utils/plugininterface.h
     src/utils/pluginloader.cpp src/utils/pluginloader.h
     src/utils/metadatareader.cpp src/utils/metadatareader.h
+    src/utils/notificationsound.cpp src/utils/notificationsound.h
     src/utils/dialogutils.h
 
     src/translations/google.cpp src/translations/google.h

@@ -40,6 +40,7 @@ class OcrController;
 class HookController;
 class ClipboardController;
 class AudioPlayer;
+class NotificationSound;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -168,6 +169,7 @@ private:
     TtsEngine *m_speaking = nullptr;
     bool m_speechOn = false;
     AudioPlayer *m_audioPlayer = nullptr;
+    NotificationSound *m_notificationSound = nullptr;
 
     TtsEngine *ttsEngine(const QString &id) const;
     void setTtsEngine(TtsEngine *engine);
@@ -196,6 +198,7 @@ private:
     void disableSpeech();
     void speak(const QString &text);
     void offerSpeech(const QString &text);
+    void toggleSpeech();
     void speakLastText();
     bool speechManual() const;
     bool speechBusy() const;

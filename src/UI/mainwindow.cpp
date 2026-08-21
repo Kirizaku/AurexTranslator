@@ -37,6 +37,7 @@
 #include "src/controllers/hookcontroller.h"
 #include "src/controllers/pythoncontroller.h"
 #include "src/engines/audioplayer.h"
+#include "src/utils/notificationsound.h"
 #include "src/engines/pipertts.h"
 #include "src/engines/edgetts.h"
 #include "src/engines/customtts.h"
@@ -135,6 +136,7 @@ void MainWindow::setupBaseUI()
         ui->generalHotkeyManualTranslateEdit,
         ui->generalHotkeySpeakTextEdit,
         ui->generalHotkeyStopSpeechEdit,
+        ui->generalHotkeyToggleSpeechEdit,
         ui->generalRadioHotKey,
         ui->generalRadioHotKeyPortal,
         ui->outputToggledOriginalScreencast,
@@ -169,6 +171,7 @@ void MainWindow::setupBaseUI()
         ui->proxyTypeSocks,
         ui->pythonInterpreterEdit,
         ui->speechEnabled,
+        ui->speechToggleSoundCheckBox,
         ui->speechTextCombo,
         ui->speechSourceCombo,
         ui->speechTranslatorCombo,
@@ -621,6 +624,7 @@ void MainWindow::addSpeechEngineHeading(const QString &text)
 void MainWindow::initSpeech()
 {
     m_audioPlayer = new AudioPlayer(this);
+    m_notificationSound = new NotificationSound(this);
 
     ui->speechTextCombo->addItem(tr("Translation"), false);
     ui->speechTextCombo->addItem(tr("Original"), true);
@@ -958,6 +962,44 @@ void MainWindow::offerSpeech(const QString &text)
     speak(text);
 }
 
+void MainWindow::toggleSpeech()
+{
+    if (m_speechOn) {
+        stopSpeech();
+        disableSpeech();
+        refreshSpeechPage();
+
+        if (ui->speechToggleSoundCheckBox->isChecked())
+            m_notificationSound->playDisabled();
+        return;
+    }
+
+    {
+        const QSignalBlocker blocker(ui->speechEnabled);
+        ui->speechEnabled->setChecked(true);
+    }
+
+    m_speechOn = true;
+
+    QJsonObject speech = Config::getValue("speech").toJsonObject();
+    if (!speech["is_speech"].toBool()) {
+        speech["is_speech"] = true;
+        Config::setValue("speech", speech);
+        Config::save();
+    }
+
+    const bool current = m_speaking == m_tts && (m_tts->state() == TtsEngine::State::Ready
+                                              || m_tts->state() == TtsEngine::State::Starting);
+
+    if (!current)
+        startSpeech();
+
+    refreshSpeechPage();
+
+    if (ui->speechToggleSoundCheckBox->isChecked())
+        m_notificationSound->playEnabled();
+}
+
 void MainWindow::speakLastText()
 {
     if (!m_speaking || m_speechLastText.isEmpty())
@@ -1134,6 +1176,7 @@ void MainWindow::initSubsystems()
         m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
         m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
         m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
+        m_hotkeyController->setToggleSpeechShortcut(ui->generalHotkeyToggleSpeechEdit->keySequence());
         m_hotkeyController->setSpeakTextShortcut(ui->generalHotkeySpeakTextEdit->keySequence());
         m_hotkeyController->setStopSpeechShortcut(ui->generalHotkeyStopSpeechEdit->keySequence());
 
@@ -1143,6 +1186,8 @@ void MainWindow::initSubsystems()
                 m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setRetranslateShortcut);
+        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setToggleSpeechShortcut);
         connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setSpeakTextShortcut);
         connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
@@ -1154,6 +1199,8 @@ void MainWindow::initSubsystems()
                 [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeyManualTranslateEdit->clearFocus(); });
+        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyToggleSpeechEdit->clearFocus(); });
         connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeySpeakTextEdit->clearFocus(); });
         connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::editingFinished, this,
@@ -1166,6 +1213,8 @@ void MainWindow::initSubsystems()
             this, &MainWindow::showHistory);
     connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
             this, &MainWindow::retranslateText);
+    connect(m_hotkeyController, &HotkeyController::toggleSpeechTriggered,
+            this, &MainWindow::toggleSpeech);
     connect(m_hotkeyController, &HotkeyController::speakTextTriggered,
             this, &MainWindow::speakLastText);
     connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
@@ -1266,6 +1315,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
     connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
     connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyManualTranslateEdit));
+    connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleSpeechEdit));
     connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySpeakTextEdit));
     connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyStopSpeechEdit));
     connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKey));
@@ -1327,6 +1377,7 @@ void MainWindow::setupSettingsConnections()
 
     // Speech
     connect(ui->speechEnabled, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechEnabled));
+    connect(ui->speechToggleSoundCheckBox, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechToggleSoundCheckBox));
     connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTextCombo));
     connect(ui->speechSourceCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechSourceCombo));
     connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
@@ -2253,6 +2304,8 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
         ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
     if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
         ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
+    if (widgetChanged(ui->generalHotkeyToggleSpeechEdit))
+        ui->generalHotkeyToggleSpeechEdit->setKeySequence(QKeySequence(general["hotkey_toggle_speech"].toString()));
 
 #ifdef Q_OS_LINUX
     if (!general["hotkeys_type"].toString().isEmpty()) {
@@ -2273,6 +2326,8 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
             ui->generalHotkeySpeakTextEdit->setEnabled(isX11Mode);
         if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
             ui->generalHotkeyStopSpeechEdit->setEnabled(isX11Mode);
+        if (widgetChanged(ui->generalHotkeyToggleSpeechEdit))
+            ui->generalHotkeyToggleSpeechEdit->setEnabled(isX11Mode);
 
         ui->generalBindShortcut->setEnabled(!isX11Mode);
     }
@@ -2558,6 +2613,9 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
 
     if (widgetChanged(ui->speechEnabled))
         ui->speechEnabled->setChecked(speech["is_speech"].toBool());
+
+    if (widgetChanged(ui->speechToggleSoundCheckBox))
+        ui->speechToggleSoundCheckBox->setChecked(speech.value("toggle_sound").toBool(true));
 
     m_speechOn = ui->speechEnabled->isChecked();
 
@@ -2941,6 +2999,7 @@ void MainWindow::saveConfig()
             general["hotkey_speak_text"] = ui->generalHotkeySpeakTextEdit->keySequence().toString();
         if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
             general["hotkey_stop_speech"] = ui->generalHotkeyStopSpeechEdit->keySequence().toString();
+            general["hotkey_toggle_speech"] = ui->generalHotkeyToggleSpeechEdit->keySequence().toString();
         Config::setValue("general", general);
 
 #ifdef Q_OS_LINUX
@@ -3148,6 +3207,9 @@ void MainWindow::saveConfig()
         QJsonObject speech = Config::getValue("speech").toJsonObject();
         if (widgetChanged(ui->speechEnabled))
             speech["is_speech"] = ui->speechEnabled->isChecked();
+
+        if (widgetChanged(ui->speechToggleSoundCheckBox))
+            speech["toggle_sound"] = ui->speechToggleSoundCheckBox->isChecked();
 
         if (widgetChanged(ui->speechTextCombo))
             speech["original"] = ui->speechTextCombo->currentData().toBool();

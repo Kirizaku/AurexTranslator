@@ -79,6 +79,7 @@ void PortalHotkeys::bindShortcuts()
         { QStringLiteral("CaptureRegion"), { { QStringLiteral("description"), QStringLiteral("Capture OCR Region") } } },
         { QStringLiteral("HistoryTranslation"), { { QStringLiteral("description"), QStringLiteral("Show/Hide History Translation") } } },
         { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } },
+        { QStringLiteral("ToggleSpeech"), { { QStringLiteral("description"), QStringLiteral("Toggle Speech") } } },
         { QStringLiteral("SpeakText"), { { QStringLiteral("description"), QStringLiteral("Speak the Last Text") } } },
         { QStringLiteral("StopSpeech"), { { QStringLiteral("description"), QStringLiteral("Stop Speaking") } } }
     };

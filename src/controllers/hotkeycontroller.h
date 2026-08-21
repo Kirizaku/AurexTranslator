@@ -42,6 +42,7 @@ public:
     void setCaptureRegionShortcut(const QKeySequence &seq);
     void setShowHistoryShortcut(const QKeySequence &seq);
     void setRetranslateShortcut(const QKeySequence &seq);
+    void setToggleSpeechShortcut(const QKeySequence &seq);
     void setSpeakTextShortcut(const QKeySequence &seq);
     void setStopSpeechShortcut(const QKeySequence &seq);
 
@@ -54,6 +55,7 @@ signals:
     void captureRegionTriggered();
     void showHistoryTriggered();
     void retranslateTriggered();
+    void toggleSpeechTriggered();
     void speakTextTriggered();
     void stopSpeechTriggered();
 
@@ -72,6 +74,7 @@ private:
     HotKeys *m_captureRegionHotKey = nullptr;
     HotKeys *m_showHistoryHotKey = nullptr;
     HotKeys *m_retranslateHotKey = nullptr;
+    HotKeys *m_toggleSpeechHotKey = nullptr;
     HotKeys *m_speakTextHotKey = nullptr;
     HotKeys *m_stopSpeechHotKey = nullptr;
 
