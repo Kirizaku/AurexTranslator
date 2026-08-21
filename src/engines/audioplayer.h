@@ -35,6 +35,9 @@ public:
 
     bool isPlaying() const { return m_playing; }
 
+    int volume() const { return m_volume; }
+    void setVolume(int percent);
+
     void play(const QByteArray &audio);
     void stop();
 
@@ -58,6 +61,7 @@ private:
     QByteArray m_decoded;
     QAudioFormat m_decodedFormat;
 
+    int m_volume = 100;
     bool m_playing = false;
 };
 

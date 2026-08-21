@@ -176,7 +176,8 @@ void MainWindow::setupBaseUI()
         ui->speechSourceCombo,
         ui->speechTranslatorCombo,
         ui->speechModeCombo,
-        ui->speechOnNewTranslationCombo
+        ui->speechOnNewTranslationCombo,
+        ui->speechVolumeSlider
     };
 }
 
@@ -687,15 +688,24 @@ void MainWindow::initSpeech()
             m_speaking->synthesize(text);
     });
 
-    connect(ui->speechSpeedSpin, &QSpinBox::valueChanged, this, [this](int percent) {
-        if (percent != m_tts->speed())
-            markSpeechChanged();
-    });
-
     connect(ui->speechVoiceCombo, &QComboBox::currentIndexChanged, this, [this](int) {
         const QString key = ui->speechVoiceCombo->currentData().toString();
         if (!key.isEmpty() && key != m_tts->voice())
             markSpeechChanged();
+    });
+
+    connect(ui->speechSpeedSpin, &QDoubleSpinBox::valueChanged, this, [this](double multiplier) {
+        const int percent = qRound(multiplier * 100.0);
+        if (percent == m_tts->speed())
+            return;
+
+        m_tts->setSpeed(percent);
+        markSpeechChanged();
+    });
+
+    connect(ui->speechVolumeSlider, &QSlider::valueChanged, this, [this](int percent) {
+        ui->speechVolumeValueLabel->setText(QStringLiteral("%1 %").arg(percent));
+        m_audioPlayer->setVolume(percent);
     });
 
     connect(m_pythonController, &PythonController::jobFinished, this,
@@ -841,7 +851,7 @@ void MainWindow::refreshSpeechVoices(VoiceToShow show)
 void MainWindow::refreshSpeechSpeed()
 {
     const QSignalBlocker blocker(ui->speechSpeedSpin);
-    ui->speechSpeedSpin->setValue(m_tts->speed());
+    ui->speechSpeedSpin->setValue(m_tts->speed() / 100.0);
 }
 
 void MainWindow::markSpeechChanged()
@@ -1383,6 +1393,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
     connect(ui->speechOnNewTranslationCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechOnNewTranslationCombo));
     connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechModeCombo));
+    connect(ui->speechVolumeSlider, &QSlider::valueChanged, this, bind(m_speechChanged, ui->speechVolumeSlider));
     connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this,
             [this](int) { refreshSpeechPage(); });
     connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, [this](int) {
@@ -2617,6 +2628,12 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
     if (widgetChanged(ui->speechToggleSoundCheckBox))
         ui->speechToggleSoundCheckBox->setChecked(speech.value("toggle_sound").toBool(true));
 
+    if (widgetChanged(ui->speechVolumeSlider))
+        ui->speechVolumeSlider->setValue(speech.value("volume").toInt(100));
+
+    ui->speechVolumeValueLabel->setText(QStringLiteral("%1 %").arg(ui->speechVolumeSlider->value()));
+    m_audioPlayer->setVolume(ui->speechVolumeSlider->value());
+
     m_speechOn = ui->speechEnabled->isChecked();
 
     if (!m_speechOn) {
@@ -3211,6 +3228,9 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->speechToggleSoundCheckBox))
             speech["toggle_sound"] = ui->speechToggleSoundCheckBox->isChecked();
 
+        if (widgetChanged(ui->speechVolumeSlider))
+            speech["volume"] = ui->speechVolumeSlider->value();
+
         if (widgetChanged(ui->speechTextCombo))
             speech["original"] = ui->speechTextCombo->currentData().toBool();
 
@@ -3236,7 +3256,7 @@ void MainWindow::saveConfig()
                 if (!voice.isEmpty())
                     settings["voice"] = voice;
 
-                settings["speed"] = ui->speechSpeedSpin->value();
+                settings["speed"] = int(qRound(ui->speechSpeedSpin->value() * 100.0));
             }
             speech[engine->id()] = settings;
         }

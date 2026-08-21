@@ -68,7 +68,7 @@ public:
     virtual QJsonObject saveSettings() const;
     virtual void loadSettings(const QJsonObject &settings);
 
-    static constexpr int kSlowest = 50;
+    static constexpr int kSlowest = 25;
     static constexpr int kNormalSpeed = 100;
     static constexpr int kFastest = 200;
 

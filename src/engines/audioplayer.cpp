@@ -86,6 +86,14 @@ AudioPlayer::~AudioPlayer()
     stop();
 }
 
+void AudioPlayer::setVolume(int percent)
+{
+    m_volume = qBound(0, percent, 100);
+
+    if (m_sink)
+        m_sink->setVolume(QAudio::convertVolume(m_volume / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale));
+}
+
 void AudioPlayer::play(const QByteArray &audio)
 {
     stop();
@@ -312,6 +320,7 @@ void AudioPlayer::playPcm(QAudioFormat format, QByteArray pcm)
     m_buffer->open(QIODevice::ReadOnly);
 
     m_sink = new QAudioSink(device, format, this);
+    m_sink->setVolume(QAudio::convertVolume(m_volume / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale));
 
     connect(m_sink, &QAudioSink::stateChanged, this, [this](QAudio::State state) {
         if (state == QAudio::IdleState || state == QAudio::StoppedState)

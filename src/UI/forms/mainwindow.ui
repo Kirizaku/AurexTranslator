@@ -1752,21 +1752,24 @@ font-weight: 700;
                  <item row="4" column="1">
                    <layout class="QHBoxLayout" name="horizontalLayout_speechSpeed">
                      <item>
-                       <widget class="QSpinBox" name="speechSpeedSpin">
+                       <widget class="QDoubleSpinBox" name="speechSpeedSpin">
+                         <property name="decimals">
+                           <number>2</number>
+                         </property>
                          <property name="minimum">
-                           <number>50</number>
+                           <double>0.250000000000000</double>
                          </property>
                          <property name="maximum">
-                           <number>200</number>
+                           <double>2.000000000000000</double>
                          </property>
                          <property name="singleStep">
-                           <number>5</number>
+                           <double>0.050000000000000</double>
                          </property>
                          <property name="value">
-                           <number>100</number>
+                           <double>1.000000000000000</double>
                          </property>
                          <property name="suffix">
-                           <string notr="true"> %</string>
+                           <string notr="true">x</string>
                          </property>
                        </widget>
                      </item>
@@ -1785,7 +1788,56 @@ font-weight: 700;
                      </item>
                    </layout>
                  </item>
-                 <item row="5" column="0" colspan="2">
+                 <item row="5" column="0">
+                   <widget class="QLabel" name="speechVolumeCaption">
+                     <property name="text">
+                       <string>Volume</string>
+                     </property>
+                   </widget>
+                 </item>
+                 <item row="5" column="1">
+                   <layout class="QHBoxLayout" name="horizontalLayout_speechVolume">
+                     <item>
+                       <widget class="QSlider" name="speechVolumeSlider">
+                         <property name="minimum">
+                           <number>0</number>
+                         </property>
+                         <property name="maximum">
+                           <number>100</number>
+                         </property>
+                         <property name="singleStep">
+                           <number>5</number>
+                         </property>
+                         <property name="pageStep">
+                           <number>10</number>
+                         </property>
+                         <property name="value">
+                           <number>100</number>
+                         </property>
+                         <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                         </property>
+                       </widget>
+                     </item>
+                     <item>
+                       <widget class="QLabel" name="speechVolumeValueLabel">
+                         <property name="minimumSize">
+                           <size>
+                             <width>40</width>
+                             <height>0</height>
+                           </size>
+                         </property>
+                         <property name="text">
+                           <string notr="true">100 %</string>
+                         </property>
+                         <property name="alignment">
+                           <set>Qt::AlignRight|Qt::AlignVCenter</set>
+                         </property>
+                       </widget>
+                     </item>
+                   </layout>
+                 </item>
+                 <item row="6" column="0" colspan="2">
                    <widget class="QCheckBox" name="speechToggleSoundCheckBox">
                      <property name="text">
                        <string>Play a sound when toggling speech with the hotkey</string>
