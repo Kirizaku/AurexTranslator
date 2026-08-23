@@ -362,6 +362,74 @@ QPushButton:flat:pressed {
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="speechToggleButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Turn speech on or off</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/speech-off.svg</normaloff>:/icons/speech-off.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="speakLastButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Speak the last text</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/3rdparty/icons/player-play.svg</normaloff>:/icons/3rdparty/icons/player-play.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="settingsButton">
         <property name="mouseTracking">
          <bool>true</bool>

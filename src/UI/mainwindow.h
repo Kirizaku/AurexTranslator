@@ -198,7 +198,7 @@ private:
     void disableSpeech();
     void speak(const QString &text);
     void offerSpeech(const QString &text);
-    void toggleSpeech();
+    void toggleSpeech(bool announce = true);
     void speakLastText();
     bool speechManual() const;
     bool speechBusy() const;

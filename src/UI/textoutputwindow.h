@@ -44,6 +44,8 @@ public:
 
     void sethookState(bool isActive);
     void setSpeedAvailable(bool available);
+    void setSpeechEnabled(bool enabled);
+    void setSpeechBusy(bool busy);
 
     static constexpr int kDefaultFlushMs = 350;
 
@@ -78,6 +80,9 @@ signals:
     void speedSettingsRequested();
     void hookOutputReapplyRequested();
     void hookClearRequested();
+    void toggleSpeechRequested();
+    void speakLastRequested();
+    void stopSpeechRequested();
 
 public slots:
     void setInfoMessage(const QString &message);
@@ -98,6 +103,8 @@ private slots:
     void on_injectHookButton_clicked();
     void on_speedButton_clicked();
     void on_hookSelectButton_clicked();
+    void on_speechToggleButton_clicked();
+    void on_speakLastButton_clicked();
     void on_settingsButton_clicked();
     void on_exitButton_clicked();
     void updateMargin();
@@ -160,6 +167,9 @@ private:
 
     bool m_hookActive = false;
     bool m_speedButtonEligible = false;
+    bool m_speechEnabled = false;
+    bool m_speechBusy = false;
+    void updateSpeakLastButton();
 
     // Multi-text hook
     HookTextModel *m_hookModel = nullptr;

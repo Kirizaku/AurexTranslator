@@ -11,6 +11,10 @@
         <file>3rdparty/icons/vaccine.svg</file>
         <file>3rdparty/icons/gauge.svg</file>
         <file>3rdparty/icons/text-recognition.svg</file>
+        <file>3rdparty/icons/player-play.svg</file>
+        <file>3rdparty/icons/player-stop.svg</file>
+        <file alias="speech-on.svg">resources/icons/speech-on.svg</file>
+        <file alias="speech-off.svg">resources/icons/speech-off.svg</file>
     </qresource>
     <qresource prefix="/python">
         <file alias="edge_server.py">src/python/edge_server.py</file>

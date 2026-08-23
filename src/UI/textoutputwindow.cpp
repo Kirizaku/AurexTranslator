@@ -45,6 +45,7 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     ui->injectHookButton->setVisible(false);
     ui->speedButton->setVisible(false);
     ui->hookSelectButton->setVisible(false);
+    ui->speakLastButton->setVisible(false);
 
     m_historyTextEdit->setWindowTitle(tr("Translation history"));
     m_historyTextEdit->setReadOnly(true);
@@ -174,6 +175,34 @@ void TextOutputWindow::setSpeedAvailable(bool available)
 {
     m_speedButtonEligible = available;
     ui->speedButton->setVisible(m_hookActive && available);
+}
+
+void TextOutputWindow::setSpeechEnabled(bool enabled)
+{
+    m_speechEnabled = enabled;
+
+    ui->speechToggleButton->setIcon(QIcon(enabled ? QStringLiteral(":/icons/speech-on.svg")
+                                                  : QStringLiteral(":/icons/speech-off.svg")));
+
+    updateSpeakLastButton();
+}
+
+void TextOutputWindow::setSpeechBusy(bool busy)
+{
+    if (m_speechBusy == busy)
+        return;
+
+    m_speechBusy = busy;
+    updateSpeakLastButton();
+}
+
+void TextOutputWindow::updateSpeakLastButton()
+{
+    ui->speakLastButton->setVisible(m_speechEnabled);
+    ui->speakLastButton->setToolTip(m_speechBusy ? tr("Stop speaking")
+                                                 : tr("Speak the last text"));
+    ui->speakLastButton->setIcon(QIcon(m_speechBusy ? QStringLiteral(":/icons/3rdparty/icons/player-stop.svg")
+                                                    : QStringLiteral(":/icons/3rdparty/icons/player-play.svg")));
 }
 
 void TextOutputWindow::setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result)
@@ -492,6 +521,19 @@ void TextOutputWindow::on_injectHookButton_clicked()
 void TextOutputWindow::on_speedButton_clicked()
 {
     emit speedSettingsRequested();
+}
+
+void TextOutputWindow::on_speechToggleButton_clicked()
+{
+    emit toggleSpeechRequested();
+}
+
+void TextOutputWindow::on_speakLastButton_clicked()
+{
+    if (m_speechBusy)
+        emit stopSpeechRequested();
+    else
+        emit speakLastRequested();
 }
 
 int TextOutputWindow::promptSpeed(int current)

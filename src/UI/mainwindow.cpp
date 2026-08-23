@@ -641,7 +641,7 @@ void MainWindow::initSpeech()
     ui->speechTranslatorCombo->addItem(QStringLiteral("Ollama"), QStringLiteral("Ollama"));
 
     ui->speechModeCombo->addItem(tr("Automatic"), false);
-    ui->speechModeCombo->addItem(tr("Manual (by hotkey)"), true);
+    ui->speechModeCombo->addItem(tr("Manual (hotkey or button)"), true);
 
     ui->speechOnNewTranslationCombo->addItem(tr("Interrupt the current phrase"), true);
     ui->speechOnNewTranslationCombo->addItem(tr("Let the current phrase finish"), false);
@@ -793,6 +793,9 @@ void MainWindow::refreshSpeechPage()
     ui->speechStopButton->setEnabled(speechBusy());
     ui->speechTranslatorCombo->setEnabled(!ui->speechTextCombo->currentData().toBool());
     ui->speechOnNewTranslationCombo->setEnabled(!speechManual());
+
+    if (m_outputWindow)
+        m_outputWindow->setSpeechBusy(speechBusy());
 }
 
 void MainWindow::refreshSpeechVoices(VoiceToShow show)
@@ -934,6 +937,9 @@ void MainWindow::disableSpeech()
 
     m_speechOn = false;
 
+    if (m_outputWindow)
+        m_outputWindow->setSpeechEnabled(false);
+
     QJsonObject speech = Config::getValue("speech").toJsonObject();
     if (!speech["is_speech"].toBool())
         return;
@@ -972,14 +978,14 @@ void MainWindow::offerSpeech(const QString &text)
     speak(text);
 }
 
-void MainWindow::toggleSpeech()
+void MainWindow::toggleSpeech(bool announce)
 {
     if (m_speechOn) {
         stopSpeech();
         disableSpeech();
         refreshSpeechPage();
 
-        if (ui->speechToggleSoundCheckBox->isChecked())
+        if (announce && ui->speechToggleSoundCheckBox->isChecked())
             m_notificationSound->playDisabled();
         return;
     }
@@ -990,6 +996,9 @@ void MainWindow::toggleSpeech()
     }
 
     m_speechOn = true;
+
+    if (m_outputWindow)
+        m_outputWindow->setSpeechEnabled(true);
 
     QJsonObject speech = Config::getValue("speech").toJsonObject();
     if (!speech["is_speech"].toBool()) {
@@ -1006,7 +1015,7 @@ void MainWindow::toggleSpeech()
 
     refreshSpeechPage();
 
-    if (ui->speechToggleSoundCheckBox->isChecked())
+    if (announce && ui->speechToggleSoundCheckBox->isChecked())
         m_notificationSound->playEnabled();
 }
 
@@ -1170,6 +1179,11 @@ void MainWindow::initSubsystems()
     connect(m_outputWindow, &TextOutputWindow::selectNewInnerRegionRequested, this, &MainWindow::selectNewInnerRegion);
     connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
     connect(m_outputWindow, &TextOutputWindow::hookOutputReapplyRequested, this, &MainWindow::reapplyHookOutput);
+    connect(m_outputWindow, &TextOutputWindow::toggleSpeechRequested, this, [this] { toggleSpeech(false); });
+    connect(m_outputWindow, &TextOutputWindow::speakLastRequested, this, &MainWindow::speakLastText);
+    connect(m_outputWindow, &TextOutputWindow::stopSpeechRequested, this, &MainWindow::on_speechStopButton_clicked);
+    m_outputWindow->setSpeechEnabled(m_speechOn);
+    m_outputWindow->setSpeechBusy(speechBusy());
 
     // Ollama Settings
     m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
@@ -1224,7 +1238,7 @@ void MainWindow::initSubsystems()
     connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
             this, &MainWindow::retranslateText);
     connect(m_hotkeyController, &HotkeyController::toggleSpeechTriggered,
-            this, &MainWindow::toggleSpeech);
+            this, [this] { toggleSpeech(true); });
     connect(m_hotkeyController, &HotkeyController::speakTextTriggered,
             this, &MainWindow::speakLastText);
     connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
@@ -2635,6 +2649,9 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
     m_audioPlayer->setVolume(ui->speechVolumeSlider->value());
 
     m_speechOn = ui->speechEnabled->isChecked();
+
+    if (m_outputWindow)
+        m_outputWindow->setSpeechEnabled(m_speechOn);
 
     if (!m_speechOn) {
         stopSpeech();
