@@ -1270,8 +1270,8 @@ font-weight: 700;
                </attribute>
                <layout class="QVBoxLayout" name="verticalLayout_12">
                 <item>
-                 <widget class="QWidget" name="textProcessingScopeRow" native="true">
-                  <layout class="QHBoxLayout" name="textProcessingScopeLayout">
+                 <widget class="QWidget" name="textProcessingProfileRow" native="true">
+                  <layout class="QHBoxLayout" name="textProcessingProfileLayout">
                    <property name="leftMargin">
                     <number>0</number>
                    </property>
@@ -1285,29 +1285,119 @@ font-weight: 700;
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QLabel" name="textProcessingScopeLabel">
+                    <widget class="QLabel" name="textProcessingProfileLabel">
                      <property name="text">
-                      <string>Apply rules:</string>
+                      <string>Profile:</string>
                      </property>
                     </widget>
                    </item>
                    <item>
-                    <widget class="QComboBox" name="textProcessingScopeBox"/>
+                    <widget class="QComboBox" name="textProcessingProfileBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>1</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
                    </item>
                    <item>
-                    <spacer name="textProcessingScopeSpacer">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
+                    <widget class="QPushButton" name="textProcessingProfileNewButton">
+                     <property name="text">
+                      <string>New</string>
                      </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="textProcessingProfileRenameButton">
+                     <property name="text">
+                      <string>Rename</string>
                      </property>
-                    </spacer>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="textProcessingProfileDeleteButton">
+                     <property name="text">
+                      <string>Delete</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QToolButton" name="textProcessingPresetButton">
+                     <property name="text">
+                      <string>Presets</string>
+                     </property>
+                     <property name="popupMode">
+                      <enum>QToolButton::InstantPopup</enum>
+                     </property>
+                     <property name="toolButtonStyle">
+                      <enum>Qt::ToolButtonTextBesideIcon</enum>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QWidget" name="textProcessingBindingRow" native="true">
+                  <layout class="QHBoxLayout" name="textProcessingBindingLayout">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="textProcessingBindingLabel">
+                     <property name="text">
+                      <string>Auto-select for games:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QComboBox" name="textProcessingBindingBox">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>1</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="textProcessingBindingAddButton">
+                     <property name="text">
+                      <string>Bind current game</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="textProcessingBindingRemoveButton">
+                     <property name="text">
+                      <string>Remove</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="textProcessingBindingHelp">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>When a game starts, its profile is selected automatically. Works only in hook mode.</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -1865,6 +1955,19 @@ font-weight: 700;
                   </property>
                  </widget>
                 </item>
+                <item row="7" column="0" colspan="2">
+                 <widget class="QCheckBox" name="speechOfferPresetsCheckBox">
+                  <property name="text">
+                   <string>Offer a ready-made TTS preset for text normalization when one is available</string>
+                  </property>
+                  <property name="checkable">
+                   <bool>true</bool>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -2407,8 +2510,8 @@ p, li { white-space: pre-wrap; }
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>88</width>
-                  <height>88</height>
+                  <width>811</width>
+                  <height>631</height>
                  </rect>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_11">

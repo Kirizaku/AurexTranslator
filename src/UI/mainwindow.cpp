@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     loadLogMessages();
     setupFinalUI();
+    activateProfileForHook();
 }
 
 MainWindow::~MainWindow()
@@ -110,6 +111,738 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+
+// ===============================================================
+// ui slots: general
+// ===============================================================
+
+void MainWindow::on_availableGeometryChanged()
+{
+    m_outputWindow->move(m_screen->geometry().x() + 50, m_screen->geometry().y() + 50);
+    m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
+
+    if (!m_overlayWindow->isHidden()) {
+        m_overlayWindow->hide();
+        m_outputWindow->show();
+    }
+}
+
+void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
+{
+    QDialogButtonBox::ButtonRole role = ui->buttonBox->buttonRole(button);
+
+    if (role == QDialogButtonBox::ApplyRole) {
+        saveConfig();
+    } else {
+        discardPendingProfileOverride();
+    }
+
+    loadConfig();
+}
+
+#ifdef Q_OS_LINUX
+void MainWindow::on_generalBindShortcut_clicked()
+{
+    m_hotkeyController->bindPortalShortcuts();
+}
+#endif
+
+void MainWindow::on_outputGeneralSelect_clicked()
+{
+    m_captureController->openSourceSelector();
+}
+
+void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
+{
+    ui->outputOriginalScreencast->setVisible(arg1 == Qt::Checked);
+    ui->outputOriginalScreencastLabel->setVisible(arg1 == Qt::Checked);
+}
+
+void MainWindow::on_outputToggledProcessedScreencast_stateChanged(int arg1)
+{
+    ui->outputProcessedScreencast->setVisible(arg1 == Qt::Checked);
+    ui->outputProcessedScreencastLabel->setVisible(arg1 == Qt::Checked);
+}
+
+void MainWindow::on_outputToggledScreencast_stateChanged(int arg1)
+{
+    bool enabled = (arg1 == Qt::Checked);
+    ui->outputGeneralSelect->setEnabled(!enabled);
+
+    if (enabled) {
+        stopScreenCapture();
+    } else {
+        startScreenCapture();
+    }
+}
+
+void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
+{
+    ui->outputProcessedThreshValue->setEnabled(!arg1);
+}
+
+void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
+{
+    GoogleSettingsDialog *dialog = new GoogleSettingsDialog(m_googleSourceLang, m_googleTargetLang, this);
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
+        if (result == QDialog::Accepted) {
+            m_googleSourceLang = dialog->getSourceLang();
+            m_googleTargetLang = dialog->getTargetLang();
+            m_translationController->setGoogleSourceLang(m_googleSourceLang);
+            m_translationController->setGoogleTargetLang(m_googleTargetLang);
+
+            m_translatorChanged = true;
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        }
+    });
+
+    dialog->show();
+}
+
+void MainWindow::on_textProcessingOCREngineToggled_stateChanged(int arg1)
+{
+    ui->textProcessingOCREngineTesseractRadio->setEnabled(arg1);
+    ui->textProcessingOCREngineOllamaVisionRadio->setEnabled(arg1);
+}
+
+void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
+{
+    const QString status = QStringLiteral("<b>%1%2</b>").arg(
+        m_ocrController->isTesseractRunning() ? tr("Active") : tr("Inactive"),
+        m_tesseractActiveLang.isEmpty() ? QString() : QStringLiteral(" [%1]").arg(m_tesseractActiveLang)
+    );
+
+    m_tesseractSettingsDialog = new TesseractSettingsDialog(status,
+                                                            m_tesseractSelectedLang,
+                                                            m_tesserractLangList,
+                                                            m_tesseractTessdataPath,
+                                                            m_tesseractUseSystemTessdata,
+                                                            m_tesseractMode,
+                                                            m_tesseractAutoInterval,
+                                                            m_ocrController->tesseract(),
+                                                            this);
+
+    m_tesseractSettingsDialog->setWindowModality(Qt::WindowModal);
+    m_tesseractSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(m_tesseractSettingsDialog, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted) {
+            m_tesseractSelectedLang = m_tesseractSettingsDialog->getCurrentLanguage();
+            m_tesserractLangList = m_tesseractSettingsDialog->getLanguageList();
+            m_tesseractUseSystemTessdata = m_tesseractSettingsDialog->getUseSystemTessdata();
+            m_tesseractTessdataPath = m_tesseractSettingsDialog->getTessdataPath();
+            m_tesseractMode = m_tesseractSettingsDialog->getMode();
+            m_tesseractAutoInterval = m_tesseractSettingsDialog->getAutoInterval();
+
+            m_textProcessingChanged = true;
+            ui->textProcessingOCREngineTesseractRadio->setProperty("changed", true);
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        }
+    });
+
+    m_tesseractSettingsDialog->show();
+}
+
+void MainWindow::on_textProcessingHookSettingsButton_clicked()
+{
+    m_hookSettingsDialog = new HookSettingsDialog(m_hookMode, m_hookGameAppPluginList, m_hookEnginePluginList, m_currentGameAppPlugin, m_currentEnginePlugin, this);
+    m_hookSettingsDialog->setWindowModality(Qt::WindowModal);
+    m_hookSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(m_hookSettingsDialog, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted) {
+            m_hookMode = m_hookSettingsDialog->getCurrentMode();
+            m_currentGameAppPlugin = m_hookSettingsDialog->getCurrentGameAppPlugin();
+            m_currentEnginePlugin = m_hookSettingsDialog->getSelectedEngine();
+            m_currentEngineProcess = m_hookSettingsDialog->getSelectedProcessName();
+
+            m_textProcessingChanged = true;
+            ui->textProcessingHookCheckBox->setProperty("changed", true);
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        }
+    });
+
+    m_hookSettingsDialog->show();
+}
+
+void MainWindow::on_textProcessingAddRowButton_clicked()
+{
+    int row = ui->textProcessingTableWidget->rowCount();
+    ui->textProcessingTableWidget->insertRow(row);
+    ui->textProcessingTableWidget->setItem(row, ColRegex, makeRegexFlagItem(false));
+    ui->textProcessingTableWidget->setItem(row, ColSource, new QTableWidgetItem(QString()));
+    commitReplacementTable();
+    markRulesChanged();
+}
+
+void MainWindow::on_textProcessingRemoveRowButton_clicked()
+{
+    int row = ui->textProcessingTableWidget->currentRow();
+
+    if (row >= 0) {
+        ui->textProcessingTableWidget->removeRow(row);
+        commitReplacementTable();
+        markRulesChanged();
+    }
+}
+
+// ===============================================================
+// configs
+// ===============================================================
+
+void MainWindow::on_configsNewButton_clicked()
+{
+    bool ok = false;
+    const QString name = DialogUtils::getText(this,
+                                              tr("New profile"),
+                                              tr("Profile name (snapshots the current settings):"),
+                                              QLineEdit::Normal, QString(), &ok).trimmed();
+    if (!ok || name.isEmpty()) return;
+
+    if (Config::availableProfiles().contains(name)) {
+        DialogUtils::warning(this,
+                             tr("New profile"),
+                             tr("A profile named '%1' already exists.").arg(name));
+        return;
+    }
+
+    Config::saveCurrentAsProfile(name); // writes configs/<name>.json + switches active
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsLoadButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString name = item->data(Qt::UserRole).toString();
+    if (name == Config::activeProfile()) return;
+
+    if (!Config::loadProfile(name)) {
+        DialogUtils::warning(this,
+                             tr("Load profile"),
+                             tr("Could not load profile '%1'.").arg(name));
+        return;
+    }
+    reapplyProfileSections();
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsRenameButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString oldName = item->data(Qt::UserRole).toString();
+
+    bool ok = false;
+
+    const QString newName = DialogUtils::getText(this,
+                                                 tr("Rename profile"),
+                                                 tr("New name:"), QLineEdit::Normal, oldName, &ok).trimmed();
+
+    if (!ok || newName.isEmpty() || newName == oldName)
+        return;
+
+    if (Config::availableProfiles().contains(newName)) {
+        DialogUtils::warning(this,
+                             tr("Rename profile"),
+                             tr("A profile named '%1' already exists.").arg(newName));
+        return;
+    }
+
+    if (!Config::renameProfile(oldName, newName))
+        DialogUtils::warning(this, tr("Rename profile"), tr("Rename failed."));
+
+    refreshConfigsPage();
+}
+
+void MainWindow::on_configsDeleteButton_clicked()
+{
+    QListWidgetItem *item = ui->configsListWidget->currentItem();
+    if (!item) return;
+
+    const QString name = item->data(Qt::UserRole).toString();
+    if (name == Config::activeProfile()) {
+        DialogUtils::information(this,
+                                 tr("Delete profile"),
+                                 tr("The active profile can't be deleted. Load another profile first."));
+        return;
+    }
+
+    if (DialogUtils::question(this,
+                              tr("Delete profile"),
+                              tr("Delete profile '%1'? This cannot be undone.").arg(name)) != QMessageBox::Yes) {
+        return;
+    }
+
+    Config::deleteProfile(name);
+    refreshConfigsPage();
+}
+
+void MainWindow::on_pluginsReloadButton_clicked()
+{
+    if (m_pluginManager) {
+        if (m_hookController->isPluginLoaded()) {
+            m_hookController->stop();
+            m_hookController->setPlugin(nullptr);
+        }
+        m_pluginManager->unloadPlugins();
+        m_hookGameAppPluginList.clear();
+        ui->textProcessingHookCheckBox->setProperty("changed", true);
+
+        initPlugins();
+        loadHookPluginSettings();
+    }
+}
+
+void MainWindow::on_pluginsOpenDirectoryButton_clicked()
+{
+    QDir dir(Config::getConfigDirPath() + "plugins/");
+    if (dir.exists()) {
+        QString path = dir.path();
+        QUrl url = QUrl::fromLocalFile(path);
+        QDesktopServices::openUrl(url);
+    }
+}
+
+// ===============================================================
+// speech
+// ===============================================================
+
+void MainWindow::on_speechEngineCombo_currentIndexChanged(int arg1)
+{
+    Q_UNUSED(arg1)
+
+    TtsEngine *chosen = ttsEngine(ui->speechEngineCombo->currentData().toString());
+    if (!chosen || chosen == m_tts)
+        return;
+
+    setTtsEngine(chosen);
+    markSpeechChanged();
+}
+
+void MainWindow::on_speechEngineSettingsButton_clicked()
+{
+    QDialog *dialog = m_tts->createSettingsDialog(this);
+
+    if (!dialog)
+        return;
+
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+
+    TtsEngine *engine = m_tts;
+    const QJsonObject before = engine->saveSettings();
+
+    connect(dialog, &QDialog::finished, this, [this, engine, before](int) {
+        const QJsonObject after = engine->saveSettings();
+        const bool changed = after != before;
+
+        refreshSpeechVoices();
+
+        if (changed) {
+            markSpeechChanged();
+
+            if (m_speaking == engine && engine->settingsChangeNeedsRestart(before, after))
+                startSpeech();
+        }
+
+        if (!m_speechOn && engine != m_speaking)
+            engine->stop();
+
+        refreshSpeechPage();
+    });
+
+    dialog->show();
+}
+
+void MainWindow::on_speechTestButton_clicked()
+{
+    const QString text = ui->speechTestEdit->text().trimmed();
+
+    if (text.isEmpty())
+        return;
+
+    m_speechPending.clear();
+    m_audioPlayer->stop();
+    m_tts->synthesize(text);
+
+    refreshSpeechPage();
+}
+
+void MainWindow::on_speechStopButton_clicked()
+{
+    m_speechPending.clear();
+
+    if (m_speaking)
+        m_speaking->cancelSynthesis();
+
+    if (m_tts && m_tts != m_speaking)
+        m_tts->cancelSynthesis();
+
+    m_audioPlayer->stop();
+    refreshSpeechPage();
+}
+
+// ===============================================================
+// python
+// ===============================================================
+
+void MainWindow::on_pythonRecheckButton_clicked()
+{
+    m_pythonController->setPreferredInterpreter(ui->pythonInterpreterEdit->text());
+    m_pythonController->detect();
+}
+
+void MainWindow::on_pythonSetupButton_clicked()
+{
+    m_pythonController->setupEnvironment();
+    updatePythonButtons();
+}
+
+#ifdef Q_OS_WIN
+void MainWindow::on_pythonInstallPythonButton_clicked()
+{
+    QMessageBox box(QMessageBox::Question,
+                    tr("Install Python"),
+                    tr("Python %1 will be downloaded from python.org (about 30 MB).").arg(PythonEnv::windowsPythonVersion()),
+                    QMessageBox::NoButton,
+                    this);
+    box.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    box.setInformativeText(
+        tr("For this program only — installed into its own folder, adds nothing to PATH "
+           "and leaves the rest of the system alone.\n\n"
+           "System-wide — an ordinary installation, available to other programs as well."));
+
+    QPushButton *privateButton = box.addButton(tr("For this program only"), QMessageBox::AcceptRole);
+    QPushButton *systemButton = box.addButton(tr("System-wide"), QMessageBox::AcceptRole);
+    box.addButton(QMessageBox::Cancel);
+    box.setDefaultButton(privateButton);
+    box.exec();
+
+    QAbstractButton *chosen = box.clickedButton();
+    if (chosen != privateButton && chosen != systemButton)
+        return;
+
+    m_pythonController->installPython(chosen == systemButton);
+    updatePythonButtons();
+}
+#endif
+
+void MainWindow::on_pythonInterpreterBrowseButton_clicked()
+{
+    const QString path = QFileDialog::getOpenFileName(this, tr("Select a Python interpreter"),
+                                                      ui->pythonInterpreterEdit->text());
+    if (path.isEmpty())
+        return;
+
+    ui->pythonInterpreterEdit->setText(path);
+}
+
+void MainWindow::on_pythonOpenDirectoryButton_clicked()
+{
+    QDir dir(PythonEnv::rootDir());
+    if (!dir.exists())
+        dir.mkpath(QStringLiteral("."));
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.path()));
+}
+
+void MainWindow::on_pythonShowLogButton_clicked()
+{
+    m_pythonController->showLog();
+}
+
+void MainWindow::on_pythonComponentInstallButton_clicked()
+{
+    const QTableWidgetItem *row = selectedPythonRow();
+
+    if (!row)
+        return;
+
+    m_pythonController->installComponent(row->data(Qt::UserRole).toString(), row->data(Qt::UserRole + 1).toBool());
+    updatePythonButtons();
+}
+
+void MainWindow::on_pythonComponentRemoveButton_clicked()
+{
+    const QString id = selectedPythonComponent();
+    if (id.isEmpty())
+        return;
+
+    const PythonController::Component *component = m_pythonController->component(id);
+    if (!component)
+        return;
+
+    const QStringList packages = m_pythonController->removablePackages(id);
+
+    if (packages.isEmpty()) {
+        DialogUtils::information(this, tr("Remove component"),
+                                 tr("Everything %1 installed is also being used by another "
+                                    "component, so there is nothing here to remove.")
+                                     .arg(component->name));
+        return;
+    }
+
+    if (DialogUtils::question(
+            this, tr("Remove component"),
+            tr("Remove %1?\n\nThese packages go: %2\n\nAnything they pulled in with them "
+               "stays, and so does anything downloaded separately - voices and language "
+               "packs live in the engine's own folder and are left alone.").arg(component->name, packages.join(QStringLiteral(", "))))
+        != QMessageBox::Yes)
+        return;
+
+    m_pythonController->uninstallComponent(id);
+    updatePythonButtons();
+}
+
+// ===============================================================
+// logs and proxy
+// ===============================================================
+
+void MainWindow::on_logsNewLogMessage(const QString& message)
+{
+    ui->logsPlainText->appendPlainText(message);
+}
+
+void MainWindow::on_logsCopyAllButton_clicked()
+{
+    const QString text = ui->logsPlainText->toPlainText();
+    if (m_clipboardController)
+        m_clipboardController->suppress(text);
+
+    QApplication::clipboard()->setText(text);
+}
+
+void MainWindow::on_logsOpenDirectoryButton_clicked()
+{
+    QDir dir(Logger::getLogDirPath());
+    if (dir.exists()) {
+        QString path = dir.path();
+        QUrl url = QUrl::fromLocalFile(path);
+        QDesktopServices::openUrl(url);
+    }
+}
+
+void MainWindow::on_proxyEnabledCheckBox_stateChanged(int arg1)
+{
+    bool enabled = (arg1 == Qt::Unchecked);
+
+    ui->proxyIPLabel->setEnabled(enabled);
+    ui->proxyPortLabel->setEnabled(enabled);
+    ui->proxyUserLabel->setEnabled(enabled);
+    ui->proxyPasswordLabel->setEnabled(enabled);
+    ui->proxyAddressEdit->setEnabled(enabled);
+    ui->proxyPortEdit->setEnabled(enabled);
+    ui->proxyUserEdit->setEnabled(enabled);
+    ui->proxyPasswordEdit->setEnabled(enabled);
+    ui->proxyTypeHttp->setEnabled(enabled);
+    ui->proxyTypeSocks->setEnabled(enabled);
+}
+
+// ===============================================================
+// opencv
+// ===============================================================
+
+void MainWindow::setCurrentOriginalFrame(const QImage &frame)
+{
+    m_overlayImage = frame.copy();
+    m_overlayImage.setDevicePixelRatio(this->devicePixelRatio());
+
+    if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
+        ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_overlayImage).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
+    }
+
+    m_captureController->notifyFrameProcessed();
+}
+
+void MainWindow::setCurrentProcessedFrame(const QImage &frame)
+{
+    QImage image = frame;
+    image.setDevicePixelRatio(this->devicePixelRatio());
+
+    if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
+        ui->outputProcessedScreencast->setPixmap(QPixmap::fromImage(image).scaled(ui->outputProcessedScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
+    }
+}
+
+void MainWindow::setCurrentProcessedMat(const cv::Mat &frame)
+{
+    if (frame.empty()) return;
+    m_ocrController->processFrame(frame);
+}
+
+// ===============================================================
+// screen capture
+// ===============================================================
+
+void MainWindow::startScreenCapture()
+{
+    if (m_opencv) {
+        m_opencv->setIsStopped(false);
+    }
+    m_captureController->start();
+}
+
+void MainWindow::stopScreenCapture()
+{
+    if (m_opencv) {
+        m_opencv->setIsStopped(true);
+        ui->outputOriginalScreencast->clear();
+        ui->outputProcessedScreencast->clear();
+        m_overlayWindow->clearFrame();
+        m_overlayImage = QImage();
+        emit screenCastFinished();
+    }
+
+    m_captureController->stop();
+
+    if (!m_overlayWindow->isHidden()) {
+        m_overlayWindow->hide();
+        m_outputWindow->show();
+    }
+}
+
+// ===============================================================
+// utility actions
+// ===============================================================
+
+void MainWindow::setCurrentOutput(const QString &source, const QString &output)
+{
+    QString outputFilt = replaceText(source, output);
+
+    if (source.startsWith(QStringLiteral("Hook"))) {
+        m_currentHookTexts.insert(source, output);
+        m_outputWindow->noteHookSource(source, output);
+
+        const QString effSource = m_outputWindow->hookEffectiveSource(source);
+        const QString effText = (effSource == source)
+            ? outputFilt
+            : replaceText(effSource, m_outputWindow->hookCombinedOriginal(effSource));
+
+        m_hookBurstBuffer.insert(effSource, effText);
+
+        if (!m_hookBurstTimer->isActive())
+            m_hookBurstTimer->start(m_outputWindow->hookBurstMs());
+        return;
+    }
+
+    m_translationController->translate(source, outputFilt);
+}
+
+void MainWindow::openOllamaSettings()
+{
+    m_ollamaSettingsDialog->setCurrentSettings(m_ollamaUrl, m_ollamaCurrentModel, m_ollamaTranslationPrompt, m_ollamaVisionPrompt, m_ollamaVisionMode, m_ollamaVisionAutoInterval, m_waitForOllamaResponse);
+    m_ollamaSettingsDialog->setWindowModality(Qt::WindowModal);
+
+    connect(m_ollamaSettingsDialog, &QDialog::finished, this, [this](int result) {
+        if (result == QDialog::Accepted) {
+            m_ollamaUrl = m_ollamaSettingsDialog->getUrl();
+            m_ollamaCurrentModel = m_ollamaSettingsDialog->getCurrentModel();
+            m_ollamaModels = m_ollamaSettingsDialog->getModels();
+            m_ollamaTranslationPrompt = m_ollamaSettingsDialog->getTranslationPrompt();
+            m_ollamaVisionPrompt = m_ollamaSettingsDialog->getVisionPrompt();
+            m_ollamaVisionMode = m_ollamaSettingsDialog->getMode();
+            m_ollamaVisionAutoInterval = m_ollamaSettingsDialog->getAutoInterval();
+            m_waitForOllamaResponse = m_ollamaSettingsDialog->getIsWaitForResponse();
+
+            m_translationController->setOllamaUrl(m_ollamaUrl);
+            m_translationController->setOllamaModel(m_ollamaCurrentModel);
+            m_translationController->setOllamaPrompt(m_ollamaTranslationPrompt);
+
+            m_ocrController->setOllamaUrl(m_ollamaUrl);
+            m_ocrController->setOllamaModel(m_ollamaCurrentModel);
+            m_ocrController->setOllamaVisionPrompt(m_ollamaVisionPrompt);
+            m_ocrController->setOllamaVisionMode(m_ollamaVisionMode);
+            m_ocrController->setOllamaVisionAutoInterval(m_ollamaVisionAutoInterval);
+            m_ocrController->setOllamaWaitForResponse(m_waitForOllamaResponse);
+
+            m_translatorChanged = true; m_textProcessingChanged = true;
+            ui->textProcessingOCREngineOllamaVisionRadio->setProperty("changed", true);
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        }
+    });
+
+    m_ollamaSettingsDialog->show();
+}
+
+void MainWindow::retranslateText()
+{
+    if (!m_overlayWindow->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
+        m_ocrController->triggerManual();
+    }
+
+    if (ui->textProcessingHookCheckBox->isChecked()) {
+        for (auto it = m_currentHookTexts.cbegin(); it != m_currentHookTexts.cend(); ++it) {
+            if (!it.value().isEmpty())
+                setCurrentOutput(it.key(), it.value());
+        }
+    }
+}
+
+void MainWindow::manualInjectHook()
+{
+    m_hookController->manualInject();
+}
+
+void MainWindow::reapplyHookOutput()
+{
+    QHash<QString, QString> effTexts;
+    const QStringList displayed = m_outputWindow->hookDisplayOrder();
+    for (const QString &src : displayed) {
+        const QString orig = m_outputWindow->hookLatestOriginal(src);
+        if (!orig.isEmpty())
+            effTexts.insert(src, orig);
+    }
+    if (effTexts.isEmpty())
+        return;
+
+    const QStringList winners = m_outputWindow->hookSourcesToOutput(effTexts.keys());
+    QHash<QString, QString> toSend;
+    QStringList sendOrder;
+    for (const QString &src : winners) {
+        auto it = effTexts.constFind(src);
+        if (it == effTexts.constEnd() || it.value().isEmpty())
+            continue;
+        const QString filtered = replaceText(src, it.value());
+        if (m_outputWindow->hasHookTranslation(src, filtered))
+            continue;
+        toSend.insert(src, filtered);
+        sendOrder << src;
+    }
+
+    m_outputWindow->beginHookBatch(sendOrder);
+    for (const QString &src : sendOrder)
+        m_translationController->translate(src, toSend.value(src));
+}
+
+// ===============================================================
+// output window
+// ===============================================================
+
+void MainWindow::selectNewRegion()
+{
+    if (!m_overlayImage.isNull()) {
+        m_overlayWindow->setInnerBrushActive(false);
+        showOverlayWindow();
+    }
+}
+
+void MainWindow::selectNewInnerRegion()
+{
+    if (!m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
+        m_overlayWindow->setInnerBrushActive(true);
+        showOverlayWindow();
+    }
+}
+
+// ===============================================================
+// startup
+// ===============================================================
 
 void MainWindow::setupBaseUI()
 {
@@ -172,6 +905,7 @@ void MainWindow::setupBaseUI()
         ui->pythonInterpreterEdit,
         ui->speechEnabled,
         ui->speechToggleSoundCheckBox,
+        ui->speechOfferPresetsCheckBox,
         ui->speechTextCombo,
         ui->speechSourceCombo,
         ui->speechTranslatorCombo,
@@ -257,10 +991,386 @@ void MainWindow::initPlugins()
     ui->textProcessingHookRow->setVisible(hookPluginReady);
     ui->textProcessingHookCheckBox->setEnabled(hookPluginReady && dependencyErrors.isEmpty());
 
+    // Auto select for games
+    ui->textProcessingBindingRow->setVisible(hookPluginReady);
+    ui->textProcessingBindingHelp->setVisible(hookPluginReady);
+
     // Push the current target's plugin config again: a reload dropped whatever
     // the plugin had been told before
     syncPluginConfigs();
 }
+
+void MainWindow::setupCoreConnections()
+{
+    // UI base
+    connect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::on_availableGeometryChanged);
+    connect(ui->listSettingsWidget, &QListWidget::currentRowChanged, ui->settingsPages, &QStackedWidget::setCurrentIndex);
+
+    // Blur
+    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, m_opencv, &OpenCV::setBlurEnabled);
+    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setBlurType);
+    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, m_opencv, &OpenCV::setBlurSize);
+    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, m_opencv, &OpenCV::setSubtractBlur);
+    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, m_opencv, &OpenCV::setNormalizeBlur);
+
+    // Threshold
+    connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, m_opencv, &OpenCV::setThresholdMethod);
+    connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setSimpleThresholdType);
+    connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, m_opencv, &OpenCV::setThresholdValue);
+    connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, m_opencv, &OpenCV::setOtsuEnabled);
+    connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setAdaptiveThresholdType);
+}
+
+void MainWindow::loadApplicationConfig()
+{
+    setPropertyChanged(true);
+    if (Config::isLoaded()) {
+        loadConfig();
+    } else {
+        show();
+        saveConfig();
+    }
+}
+
+void MainWindow::initSubsystems()
+{
+    // Overlay Window
+    m_overlayWindow->raise();
+    connect(m_overlayWindow, &OverlayWindow::hideOverlay, this, [this] {
+        m_overlayWindow->hide();
+        m_outputWindow->show();
+    });
+
+    // Output Window
+    m_outputWindow->show();
+    connect(this, &MainWindow::showHistoryRequested, m_outputWindow, &TextOutputWindow::showHistory);
+    connect(m_outputWindow, &TextOutputWindow::retranslateRequested, this, &MainWindow::retranslateText);
+    connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
+    connect(m_outputWindow, &TextOutputWindow::selectNewInnerRegionRequested, this, &MainWindow::selectNewInnerRegion);
+    connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
+    connect(m_outputWindow, &TextOutputWindow::hookOutputReapplyRequested, this, &MainWindow::reapplyHookOutput);
+    connect(m_outputWindow, &TextOutputWindow::toggleSpeechRequested, this, [this] { toggleSpeech(false); });
+    connect(m_outputWindow, &TextOutputWindow::speakLastRequested, this, &MainWindow::speakLastText);
+    connect(m_outputWindow, &TextOutputWindow::stopSpeechRequested, this, &MainWindow::on_speechStopButton_clicked);
+    m_outputWindow->setSpeechEnabled(m_speechOn);
+    m_outputWindow->setSpeechBusy(speechBusy());
+
+    // Ollama Settings
+    m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
+
+    const HotkeyController::Mode hkMode =
+#ifdef Q_OS_LINUX
+        ui->generalRadioHotKey->isChecked() ? HotkeyController::X11 : HotkeyController::Portal;
+#else
+        HotkeyController::X11;
+#endif
+    m_hotkeyController->initialize(hkMode);
+
+    if (hkMode == HotkeyController::X11) {
+        m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
+        m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
+        m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
+        m_hotkeyController->setToggleSpeechShortcut(ui->generalHotkeyToggleSpeechEdit->keySequence());
+        m_hotkeyController->setSpeakTextShortcut(ui->generalHotkeySpeakTextEdit->keySequence());
+        m_hotkeyController->setStopSpeechShortcut(ui->generalHotkeyStopSpeechEdit->keySequence());
+
+        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
+        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setRetranslateShortcut);
+        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setToggleSpeechShortcut);
+        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setSpeakTextShortcut);
+        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setStopSpeechShortcut);
+
+        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
+        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
+        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyManualTranslateEdit->clearFocus(); });
+        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyToggleSpeechEdit->clearFocus(); });
+        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeySpeakTextEdit->clearFocus(); });
+        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyStopSpeechEdit->clearFocus(); });
+    }
+
+    connect(m_hotkeyController, &HotkeyController::captureRegionTriggered,
+            this, &MainWindow::captureRegion);
+    connect(m_hotkeyController, &HotkeyController::showHistoryTriggered,
+            this, &MainWindow::showHistory);
+    connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
+            this, &MainWindow::retranslateText);
+    connect(m_hotkeyController, &HotkeyController::toggleSpeechTriggered,
+            this, [this] { toggleSpeech(true); });
+    connect(m_hotkeyController, &HotkeyController::speakTextTriggered,
+            this, &MainWindow::speakLastText);
+    connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
+            this, &MainWindow::on_speechStopButton_clicked);
+    connect(m_hotkeyController, &HotkeyController::shortcutReleased, this, [this] {
+        if (m_isShortcuts) m_isShortcuts = false;
+    });
+
+    initScreenCast();
+
+    connect(m_ocrController, &OcrController::textRecognized,
+            this, &MainWindow::setCurrentOutput);
+
+    connect(m_ocrController, &OcrController::engineDeactivated, m_outputWindow,
+            [this](const QString &source) {
+                m_outputWindow->clearResultsBySource(source);
+            });
+
+    connect(m_hookController, &HookController::textReceived,
+            this, &MainWindow::setCurrentOutput);
+    connect(m_hookController, &HookController::infoMessage,
+            m_outputWindow, &TextOutputWindow::setInfoMessage);
+    connect(m_hookController, &HookController::hookStateChanged,
+            m_outputWindow, &TextOutputWindow::sethookState);
+    connect(m_hookController, &HookController::hookStateChanged,
+            this, &MainWindow::updateSpeedButtonAvailability);
+    connect(m_hookController, &HookController::hookStateChanged,
+            this, [this] { activateProfileForHook(); });
+    connect(m_hookController, &HookController::hookStateChanged, this, [this](bool active) {
+        if (active)
+            pushCurrentPluginConfig();
+    });
+    connect(m_outputWindow, &TextOutputWindow::speedSettingsRequested,
+            this, &MainWindow::openSpeedSettings);
+    connect(m_hookController, &HookController::shouldClearResults,
+            this, &MainWindow::clearHookState);
+    connect(m_outputWindow, &TextOutputWindow::hookClearRequested,
+            this, &MainWindow::clearHookState);
+    connect(m_hookController, &HookController::shouldClearInfoMessage,
+            m_outputWindow, &TextOutputWindow::clearInfoMessage);
+
+    connect(ui->configsListWidget, &QListWidget::itemSelectionChanged, this, [this] {
+        QListWidgetItem *sel = ui->configsListWidget->currentItem();
+        const QString name = sel ? sel->data(Qt::UserRole).toString() : QString();
+        const bool hasSel = sel != nullptr;
+        const bool isActive = hasSel && name == Config::activeProfile();
+        ui->configsLoadButton->setEnabled(hasSel && !isActive);
+        ui->configsRenameButton->setEnabled(hasSel);
+        ui->configsDeleteButton->setEnabled(hasSel && !isActive);
+    });
+    refreshConfigsPage();
+
+    m_outputWindow->sethookState(m_hookController->isRunning());
+    updateSpeedButtonAvailability();
+}
+
+void MainWindow::initClipboardController()
+{
+    m_clipboardController = ClipboardController::create(this);
+
+    if (!m_clipboardController) {
+        Log(Logger::Level::Warning, "[Clipboard] No supported clipboard backend found"
+                                    "Clipboard input mode is unavailable on this compositor");
+        return;
+    }
+
+    connect(m_clipboardController, &ClipboardController::textChanged, this, [this](const QString &text) {
+        setCurrentOutput(QStringLiteral("Clipboard"), text);
+    });
+
+    connect(m_clipboardController, &ClipboardController::failed, this, [this]() {
+        m_clipboardController->stop();
+        ui->textProcessingClipboardCheckBox->blockSignals(true);
+        ui->textProcessingClipboardCheckBox->setChecked(false);
+        ui->textProcessingClipboardCheckBox->blockSignals(false);
+    });
+
+    connect(m_outputWindow, &TextOutputWindow::internalClipboardWrite,
+            m_clipboardController, &ClipboardController::suppress);
+
+    if (ui->textProcessingClipboardCheckBox->isChecked())
+        m_clipboardController->start();
+}
+
+void MainWindow::setupSettingsConnections()
+{
+    auto bind = [this](bool& flag, QWidget* w) {
+        return [this, &flag, w]() {
+            flag = true;
+            w->setProperty("changed", true);
+            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+        };
+    };
+
+    // General
+    connect(ui->generalBoxLanguage, &QComboBox::currentIndexChanged, this, bind(m_generalChanged, ui->generalBoxLanguage));
+    connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, bind(m_generalChanged, ui->generalToggledStartup));
+    connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
+    connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
+    connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyManualTranslateEdit));
+    connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleSpeechEdit));
+    connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySpeakTextEdit));
+    connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyStopSpeechEdit));
+    connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKey));
+    connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKeyPortal));
+
+    // Output
+    connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledOriginalScreencast));
+    connect(ui->outputToggledProcessedScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledProcessedScreencast));
+    connect(ui->outputToggledScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledScreencast));
+    connect(ui->outputGeneralBoxFramerate, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputGeneralBoxFramerate));
+    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedToggledBlur));
+    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedBlurType));
+    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, this, bind(m_outputChanged, ui->outputProcessedBlurValue));
+    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedBlurSubtract));
+    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedBlurNormalize));
+    connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputProcessedSimpleThresh));
+    connect(ui->outputProcessedAdaptiveThresh, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputProcessedAdaptiveThresh));
+    connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedOtsu));
+    connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedSimpleThresholdingType));
+    connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, this, bind(m_outputChanged, ui->outputProcessedThreshValue));
+    connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedAdaptiveThresholdingType));
+
+    // Translator
+    connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOnlineGoogleToggled));
+    connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOfflineOllamaToggled));
+
+    // Text Processing
+    connect(ui->textProcessingOCREngineToggled, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineToggled));
+    connect(ui->textProcessingOCREngineTesseractRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineTesseractRadio));
+    connect(ui->textProcessingOCREngineOllamaVisionRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineOllamaVisionRadio));
+    connect(ui->textProcessingHookCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingHookCheckBox));
+    connect(ui->textProcessingClipboardCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingClipboardCheckBox));
+    connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
+    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
+    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, [this] { commitReplacementTable(); });
+
+    connect(ui->textProcessingBindingBox, &QComboBox::currentIndexChanged, this, [this](int) {
+        ui->textProcessingBindingRemoveButton->setEnabled(!ui->textProcessingBindingBox->currentData().toString().isEmpty());
+    });
+
+    connect(ui->textProcessingBindingAddButton, &QPushButton::clicked, this, &MainWindow::addProfileBinding);
+    connect(ui->textProcessingBindingRemoveButton, &QPushButton::clicked, this, &MainWindow::removeProfileBinding);
+
+    connect(ui->textProcessingProfileBox, &QComboBox::currentIndexChanged, this, [this](int) {
+        commitReplacementTable();
+
+        m_activeProfile = ui->textProcessingProfileBox->currentData().toString();
+        m_profileHookState = ProfileHookState::ManualOverride;
+
+        const bool custom = !m_activeProfile.isEmpty();
+
+        ui->textProcessingProfileRenameButton->setEnabled(custom);
+        ui->textProcessingProfileDeleteButton->setEnabled(custom);
+
+        markRulesChanged();
+        refreshBindingBox();
+        populateReplacementTable();
+    });
+    connect(ui->textProcessingProfileNewButton, &QPushButton::clicked, this, &MainWindow::addRuleProfile);
+    connect(ui->textProcessingProfileRenameButton, &QPushButton::clicked, this, &MainWindow::renameRuleProfile);
+    connect(ui->textProcessingProfileDeleteButton, &QPushButton::clicked, this, &MainWindow::deleteRuleProfile);
+
+    // Proxy
+    connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, bind(m_proxyChanged, ui->proxyEnabledCheckBox));
+    connect(ui->proxyAddressEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyAddressEdit));
+    connect(ui->proxyPortEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyPortEdit));
+    connect(ui->proxyUserEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyUserEdit));
+    connect(ui->proxyPasswordEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyPasswordEdit));
+    connect(ui->proxyTypeHttp, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeHttp));
+    connect(ui->proxyTypeSocks, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeSocks));
+
+    // Python
+    connect(ui->pythonInterpreterEdit, &QLineEdit::textChanged, this, bind(m_pythonChanged, ui->pythonInterpreterEdit));
+
+    // Speech
+    connect(ui->speechEnabled, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechEnabled));
+    connect(ui->speechToggleSoundCheckBox, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechToggleSoundCheckBox));
+    connect(ui->speechOfferPresetsCheckBox, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechOfferPresetsCheckBox));
+    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTextCombo));
+    connect(ui->speechSourceCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechSourceCombo));
+    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
+    connect(ui->speechOnNewTranslationCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechOnNewTranslationCombo));
+    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechModeCombo));
+    connect(ui->speechVolumeSlider, &QSlider::valueChanged, this, bind(m_speechChanged, ui->speechVolumeSlider));
+    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this,
+            [this](int) { refreshSpeechPage(); });
+    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+        m_speechSpokenOriginals.clear();
+        refreshSpeechPage();
+    });
+    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this,
+            [this](int) { m_speechSpokenOriginals.clear(); });
+}
+
+void MainWindow::loadLogMessages()
+{
+    QFile file(Logger::getLogFilePath());
+    if (file.open(QFile::ReadOnly | QFile::Text)) {
+        QTextStream in(&file);
+        QString line;
+        while (in.readLineInto(&line)) {
+            ui->logsPlainText->appendPlainText(line);
+        }
+        file.close();
+    }
+
+    connect(Logger::instance(), &Logger::newLogMessage, this, &MainWindow::on_logsNewLogMessage);
+}
+
+void MainWindow::setupFinalUI()
+{
+    setupTextProcessingTable();
+
+    contextMenus[ui->outputOriginalScreencast] =
+        createMenu(tr("Open Original Screencast in New Window"), &MainWindow::openOriginalPreview);
+
+    contextMenus[ui->outputProcessedScreencast] =
+        createMenu(tr("Open Processed Screencast in New Window"), &MainWindow::openProcessedPreview);
+
+    for (QLabel *label : contextMenus.keys()) {
+        label->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(label, &QLabel::customContextMenuRequested,
+                this, &MainWindow::showContextMenu);
+    }
+}
+
+void MainWindow::setupTextProcessingTable()
+{
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    QHeaderView *header = table->horizontalHeader();
+    header->setSectionResizeMode(ColRegex, QHeaderView::Interactive);
+    header->setSectionResizeMode(ColSource, QHeaderView::Interactive);
+    header->resizeSection(ColSource, 100);
+    header->setSectionResizeMode(ColFrom, QHeaderView::Stretch);
+    header->setSectionResizeMode(ColTo, QHeaderView::Stretch);
+
+    table->setItemDelegateForColumn(ColRegex, new CheckBoxDelegate(table));
+    table->setItemDelegateForColumn(ColSource, new SourceComboDelegate([this] {
+        QStringList sources{
+            QStringLiteral("Hook"),
+            QStringLiteral("Clipboard"),
+            QStringLiteral("Tesseract"),
+            QStringLiteral("Ollama Vision"),
+            QStringLiteral("Speech")
+        };
+        const QStringList hookSources = m_outputWindow->hookDisplayOrder();
+        for (const QString &src : hookSources) {
+            if (!sources.contains(src))
+                sources << src;
+        }
+        return sources;
+    }, table));
+
+    setupReplacementPresets();
+    refreshProfileBox();
+}
+
+// ===============================================================
+// python
+// ===============================================================
 
 void MainWindow::initPythonController()
 {
@@ -351,46 +1461,16 @@ void MainWindow::updatePythonButtons()
     ui->pythonComponentRemoveButton->setEnabled(!busy && installed);
 }
 
-void MainWindow::on_pythonRecheckButton_clicked()
+QTableWidgetItem *MainWindow::selectedPythonRow() const
 {
-    m_pythonController->setPreferredInterpreter(ui->pythonInterpreterEdit->text());
-    m_pythonController->detect();
+    return ui->pythonComponentsTable->item(ui->pythonComponentsTable->currentRow(), 0);
 }
 
-void MainWindow::on_pythonSetupButton_clicked()
+QString MainWindow::selectedPythonComponent() const
 {
-    m_pythonController->setupEnvironment();
-    updatePythonButtons();
+    const QTableWidgetItem *row = selectedPythonRow();
+    return row ? row->data(Qt::UserRole).toString() : QString();
 }
-
-#ifdef Q_OS_WIN
-void MainWindow::on_pythonInstallPythonButton_clicked()
-{
-    QMessageBox box(QMessageBox::Question,
-                    tr("Install Python"),
-                    tr("Python %1 will be downloaded from python.org (about 30 MB).").arg(PythonEnv::windowsPythonVersion()),
-                    QMessageBox::NoButton,
-                    this);
-    box.setWindowFlag(Qt::WindowStaysOnTopHint, true);
-    box.setInformativeText(
-        tr("For this program only — installed into its own folder, adds nothing to PATH "
-           "and leaves the rest of the system alone.\n\n"
-           "System-wide — an ordinary installation, available to other programs as well."));
-
-    QPushButton *privateButton = box.addButton(tr("For this program only"), QMessageBox::AcceptRole);
-    QPushButton *systemButton = box.addButton(tr("System-wide"), QMessageBox::AcceptRole);
-    box.addButton(QMessageBox::Cancel);
-    box.setDefaultButton(privateButton);
-    box.exec();
-
-    QAbstractButton *chosen = box.clickedButton();
-    if (chosen != privateButton && chosen != systemButton)
-        return;
-
-    m_pythonController->installPython(chosen == systemButton);
-    updatePythonButtons();
-}
-#endif
 
 bool MainWindow::confirmPythonDownload(const PythonController::Component &component)
 {
@@ -415,83 +1495,9 @@ bool MainWindow::confirmPythonDownload(const PythonController::Component &compon
     return box.exec() == QMessageBox::Ok;
 }
 
-void MainWindow::on_pythonInterpreterBrowseButton_clicked()
-{
-    const QString path = QFileDialog::getOpenFileName(this, tr("Select a Python interpreter"),
-                                                      ui->pythonInterpreterEdit->text());
-    if (path.isEmpty())
-        return;
-
-    ui->pythonInterpreterEdit->setText(path);
-}
-
-void MainWindow::on_pythonOpenDirectoryButton_clicked()
-{
-    QDir dir(PythonEnv::rootDir());
-    if (!dir.exists())
-        dir.mkpath(QStringLiteral("."));
-
-    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.path()));
-}
-
-void MainWindow::on_pythonShowLogButton_clicked()
-{
-    m_pythonController->showLog();
-}
-
-QTableWidgetItem *MainWindow::selectedPythonRow() const
-{
-    return ui->pythonComponentsTable->item(ui->pythonComponentsTable->currentRow(), 0);
-}
-
-QString MainWindow::selectedPythonComponent() const
-{
-    const QTableWidgetItem *row = selectedPythonRow();
-    return row ? row->data(Qt::UserRole).toString() : QString();
-}
-
-void MainWindow::on_pythonComponentInstallButton_clicked()
-{
-    const QTableWidgetItem *row = selectedPythonRow();
-
-    if (!row)
-        return;
-
-    m_pythonController->installComponent(row->data(Qt::UserRole).toString(), row->data(Qt::UserRole + 1).toBool());
-    updatePythonButtons();
-}
-
-void MainWindow::on_pythonComponentRemoveButton_clicked()
-{
-    const QString id = selectedPythonComponent();
-    if (id.isEmpty())
-        return;
-
-    const PythonController::Component *component = m_pythonController->component(id);
-    if (!component)
-        return;
-
-    const QStringList packages = m_pythonController->removablePackages(id);
-
-    if (packages.isEmpty()) {
-        DialogUtils::information(this, tr("Remove component"),
-                                 tr("Everything %1 installed is also being used by another "
-                                    "component, so there is nothing here to remove.")
-                                     .arg(component->name));
-        return;
-    }
-
-    if (DialogUtils::question(
-            this, tr("Remove component"),
-            tr("Remove %1?\n\nThese packages go: %2\n\nAnything they pulled in with them "
-               "stays, and so does anything downloaded separately - voices and language "
-               "packs live in the engine's own folder and are left alone.").arg(component->name, packages.join(QStringLiteral(", "))))
-        != QMessageBox::Yes)
-        return;
-
-    m_pythonController->uninstallComponent(id);
-    updatePythonButtons();
-}
+// ===============================================================
+// speech
+// ===============================================================
 
 TtsEngine *MainWindow::ttsEngine(const QString &id) const
 {
@@ -527,6 +1533,8 @@ void MainWindow::setTtsEngine(TtsEngine *engine)
     refreshSpeechSpeed();
     refreshSpeechVoices();
     refreshSpeechPage();
+
+    QTimer::singleShot(0, this, &MainWindow::maybeSuggestLanguagePreset);
 }
 
 void MainWindow::registerTtsEngine(TtsEngine *engine, const PythonController::Component &component)
@@ -685,7 +1693,7 @@ void MainWindow::initSpeech()
         m_speechPending.clear();
 
         if (m_speaking)
-            m_speaking->synthesize(text);
+            m_speaking->synthesize(replaceText(QStringLiteral("Speech"), text));
     });
 
     connect(ui->speechVoiceCombo, &QComboBox::currentIndexChanged, this, [this](int) {
@@ -744,7 +1752,7 @@ void MainWindow::initSpeech()
                 } else if (translatorName != wanted) {
                     return;
                 }
-            offerSpeech(replaceText(QStringLiteral("Speech"), translated));
+            offerSpeech(translated);
         });
 
     connect(m_translationController, &TranslationController::originalReady, this,
@@ -758,7 +1766,7 @@ void MainWindow::initSpeech()
                 if (!speechAcceptsSource(source))
                     return;
 
-                offerSpeech(replaceText(QStringLiteral("Speech"), original));
+                offerSpeech(original);
             });
 }
 
@@ -963,7 +1971,7 @@ void MainWindow::speak(const QString &text)
 
     m_speechPending.clear();
     m_audioPlayer->stop();
-    m_speaking->synthesize(text);
+    m_speaking->synthesize(replaceText(QStringLiteral("Speech"), text));
 
     refreshSpeechPage();
 }
@@ -1017,6 +2025,8 @@ void MainWindow::toggleSpeech(bool announce)
 
     if (announce && ui->speechToggleSoundCheckBox->isChecked())
         m_notificationSound->playEnabled();
+
+    maybeSuggestLanguagePreset();
 }
 
 void MainWindow::speakLastText()
@@ -1026,7 +2036,7 @@ void MainWindow::speakLastText()
 
     m_speechPending.clear();
     m_audioPlayer->stop();
-    m_speaking->synthesize(m_speechLastText);
+    m_speaking->synthesize(replaceText(QStringLiteral("Speech"), m_speechLastText));
 
     refreshSpeechPage();
 }
@@ -1055,431 +2065,9 @@ bool MainWindow::speechAcceptsSource(const QString &source) const
     return source == wanted;
 }
 
-void MainWindow::on_speechEngineCombo_currentIndexChanged(int arg1)
-{
-    Q_UNUSED(arg1)
-
-    TtsEngine *chosen = ttsEngine(ui->speechEngineCombo->currentData().toString());
-    if (!chosen || chosen == m_tts)
-        return;
-
-    setTtsEngine(chosen);
-    markSpeechChanged();
-}
-
-void MainWindow::on_speechEngineSettingsButton_clicked()
-{
-    QDialog *dialog = m_tts->createSettingsDialog(this);
-
-    if (!dialog)
-        return;
-
-    dialog->setWindowModality(Qt::WindowModal);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    TtsEngine *engine = m_tts;
-    const QJsonObject before = engine->saveSettings();
-
-    connect(dialog, &QDialog::finished, this, [this, engine, before](int) {
-        const QJsonObject after = engine->saveSettings();
-        const bool changed = after != before;
-
-        refreshSpeechVoices();
-
-        if (changed) {
-            markSpeechChanged();
-
-            if (m_speaking == engine && engine->settingsChangeNeedsRestart(before, after))
-                startSpeech();
-        }
-
-        if (!m_speechOn && engine != m_speaking)
-            engine->stop();
-
-        refreshSpeechPage();
-    });
-
-    dialog->show();
-}
-
-void MainWindow::on_speechTestButton_clicked()
-{
-    const QString text = ui->speechTestEdit->text().trimmed();
-
-    if (text.isEmpty())
-        return;
-
-    m_speechPending.clear();
-    m_audioPlayer->stop();
-    m_tts->synthesize(text);
-
-    refreshSpeechPage();
-}
-
-void MainWindow::on_speechStopButton_clicked()
-{
-    m_speechPending.clear();
-
-    if (m_speaking)
-        m_speaking->cancelSynthesis();
-
-    if (m_tts && m_tts != m_speaking)
-        m_tts->cancelSynthesis();
-
-    m_audioPlayer->stop();
-    refreshSpeechPage();
-}
-
-void MainWindow::setupCoreConnections()
-{
-    // UI base
-    connect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::on_availableGeometryChanged);
-    connect(ui->listSettingsWidget, &QListWidget::currentRowChanged, ui->settingsPages, &QStackedWidget::setCurrentIndex);
-
-    // Blur
-    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, m_opencv, &OpenCV::setBlurEnabled);
-    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setBlurType);
-    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, m_opencv, &OpenCV::setBlurSize);
-    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, m_opencv, &OpenCV::setSubtractBlur);
-    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, m_opencv, &OpenCV::setNormalizeBlur);
-
-    // Threshold
-    connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, m_opencv, &OpenCV::setThresholdMethod);
-    connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setSimpleThresholdType);
-    connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, m_opencv, &OpenCV::setThresholdValue);
-    connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, m_opencv, &OpenCV::setOtsuEnabled);
-    connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, m_opencv, &OpenCV::setAdaptiveThresholdType);
-}
-
-void MainWindow::loadApplicationConfig()
-{
-    setPropertyChanged(true);
-    if (Config::isLoaded()) {
-        loadConfig();
-    } else {
-        show();
-        saveConfig();
-    }
-}
-
-void MainWindow::initSubsystems()
-{
-    // Overlay Window
-    m_overlayWindow->raise();
-    connect(m_overlayWindow, &OverlayWindow::hideOverlay, this, [this] {
-        m_overlayWindow->hide();
-        m_outputWindow->show();
-    });
-
-    // Output Window
-    m_outputWindow->show();
-    connect(this, &MainWindow::showHistoryRequested, m_outputWindow, &TextOutputWindow::showHistory);
-    connect(m_outputWindow, &TextOutputWindow::retranslateRequested, this, &MainWindow::retranslateText);
-    connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
-    connect(m_outputWindow, &TextOutputWindow::selectNewInnerRegionRequested, this, &MainWindow::selectNewInnerRegion);
-    connect(m_outputWindow, &TextOutputWindow::manualInjectHookRequested, this, &MainWindow::manualInjectHook);
-    connect(m_outputWindow, &TextOutputWindow::hookOutputReapplyRequested, this, &MainWindow::reapplyHookOutput);
-    connect(m_outputWindow, &TextOutputWindow::toggleSpeechRequested, this, [this] { toggleSpeech(false); });
-    connect(m_outputWindow, &TextOutputWindow::speakLastRequested, this, &MainWindow::speakLastText);
-    connect(m_outputWindow, &TextOutputWindow::stopSpeechRequested, this, &MainWindow::on_speechStopButton_clicked);
-    m_outputWindow->setSpeechEnabled(m_speechOn);
-    m_outputWindow->setSpeechBusy(speechBusy());
-
-    // Ollama Settings
-    m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
-
-    const HotkeyController::Mode hkMode =
-#ifdef Q_OS_LINUX
-        ui->generalRadioHotKey->isChecked() ? HotkeyController::X11 : HotkeyController::Portal;
-#else
-        HotkeyController::X11;
-#endif
-    m_hotkeyController->initialize(hkMode);
-
-    if (hkMode == HotkeyController::X11) {
-        m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
-        m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
-        m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
-        m_hotkeyController->setToggleSpeechShortcut(ui->generalHotkeyToggleSpeechEdit->keySequence());
-        m_hotkeyController->setSpeakTextShortcut(ui->generalHotkeySpeakTextEdit->keySequence());
-        m_hotkeyController->setStopSpeechShortcut(ui->generalHotkeyStopSpeechEdit->keySequence());
-
-        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
-        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
-        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setRetranslateShortcut);
-        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setToggleSpeechShortcut);
-        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setSpeakTextShortcut);
-        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
-                m_hotkeyController, &HotkeyController::setStopSpeechShortcut);
-
-        connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
-        connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
-        connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeyManualTranslateEdit->clearFocus(); });
-        connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeyToggleSpeechEdit->clearFocus(); });
-        connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeySpeakTextEdit->clearFocus(); });
-        connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::editingFinished, this,
-                [this] { ui->generalHotkeyStopSpeechEdit->clearFocus(); });
-    }
-
-    connect(m_hotkeyController, &HotkeyController::captureRegionTriggered,
-            this, &MainWindow::captureRegion);
-    connect(m_hotkeyController, &HotkeyController::showHistoryTriggered,
-            this, &MainWindow::showHistory);
-    connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
-            this, &MainWindow::retranslateText);
-    connect(m_hotkeyController, &HotkeyController::toggleSpeechTriggered,
-            this, [this] { toggleSpeech(true); });
-    connect(m_hotkeyController, &HotkeyController::speakTextTriggered,
-            this, &MainWindow::speakLastText);
-    connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
-            this, &MainWindow::on_speechStopButton_clicked);
-    connect(m_hotkeyController, &HotkeyController::shortcutReleased, this, [this] {
-        if (m_isShortcuts) m_isShortcuts = false;
-    });
-
-    initScreenCast();
-
-    connect(m_ocrController, &OcrController::textRecognized,
-            this, &MainWindow::setCurrentOutput);
-
-    connect(m_ocrController, &OcrController::engineDeactivated, m_outputWindow,
-            [this](const QString &source) {
-                m_outputWindow->clearResultsBySource(source);
-            });
-
-    connect(m_hookController, &HookController::textReceived,
-            this, &MainWindow::setCurrentOutput);
-    connect(m_hookController, &HookController::infoMessage,
-            m_outputWindow, &TextOutputWindow::setInfoMessage);
-    connect(m_hookController, &HookController::hookStateChanged,
-            m_outputWindow, &TextOutputWindow::sethookState);
-    connect(m_hookController, &HookController::hookStateChanged,
-            this, &MainWindow::updateSpeedButtonAvailability);
-    connect(m_hookController, &HookController::hookStateChanged,
-            this, [this] { refreshRuleScopeBox(); });
-    connect(m_hookController, &HookController::hookStateChanged, this, [this](bool active) {
-        if (active)
-            pushCurrentPluginConfig();
-    });
-    connect(m_outputWindow, &TextOutputWindow::speedSettingsRequested,
-            this, &MainWindow::openSpeedSettings);
-    connect(m_hookController, &HookController::shouldClearResults,
-            this, &MainWindow::clearHookState);
-    connect(m_outputWindow, &TextOutputWindow::hookClearRequested,
-            this, &MainWindow::clearHookState);
-    connect(m_hookController, &HookController::shouldClearInfoMessage,
-            m_outputWindow, &TextOutputWindow::clearInfoMessage);
-
-    connect(ui->configsListWidget, &QListWidget::itemSelectionChanged, this, [this] {
-        QListWidgetItem *sel = ui->configsListWidget->currentItem();
-        const QString name = sel ? sel->data(Qt::UserRole).toString() : QString();
-        const bool hasSel = sel != nullptr;
-        const bool isActive = hasSel && name == Config::activeProfile();
-        ui->configsLoadButton->setEnabled(hasSel && !isActive);
-        ui->configsRenameButton->setEnabled(hasSel);
-        ui->configsDeleteButton->setEnabled(hasSel && !isActive);
-    });
-    refreshConfigsPage();
-
-    m_outputWindow->sethookState(m_hookController->isRunning());
-    updateSpeedButtonAvailability();
-}
-
-void MainWindow::initClipboardController()
-{
-    m_clipboardController = ClipboardController::create(this);
-
-    if (!m_clipboardController) {
-        Log(Logger::Level::Warning, "[Clipboard] No supported clipboard backend found"
-                                    "Clipboard input mode is unavailable on this compositor");
-        return;
-    }
-
-    connect(m_clipboardController, &ClipboardController::textChanged, this, [this](const QString &text) {
-        setCurrentOutput(QStringLiteral("Clipboard"), text);
-    });
-
-    connect(m_clipboardController, &ClipboardController::failed, this, [this]() {
-        m_clipboardController->stop();
-        ui->textProcessingClipboardCheckBox->blockSignals(true);
-        ui->textProcessingClipboardCheckBox->setChecked(false);
-        ui->textProcessingClipboardCheckBox->blockSignals(false);
-    });
-
-    connect(m_outputWindow, &TextOutputWindow::internalClipboardWrite,
-            m_clipboardController, &ClipboardController::suppress);
-
-    if (ui->textProcessingClipboardCheckBox->isChecked())
-        m_clipboardController->start();
-}
-
-void MainWindow::setupSettingsConnections()
-{
-    auto bind = [this](bool& flag, QWidget* w) {
-        return [this, &flag, w]() {
-            flag = true;
-            w->setProperty("changed", true);
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        };
-    };
-
-    // General
-    connect(ui->generalBoxLanguage, &QComboBox::currentIndexChanged, this, bind(m_generalChanged, ui->generalBoxLanguage));
-    connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, bind(m_generalChanged, ui->generalToggledStartup));
-    connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
-    connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
-    connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyManualTranslateEdit));
-    connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleSpeechEdit));
-    connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySpeakTextEdit));
-    connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyStopSpeechEdit));
-    connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKey));
-    connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKeyPortal));
-
-    // Output
-    connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledOriginalScreencast));
-    connect(ui->outputToggledProcessedScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledProcessedScreencast));
-    connect(ui->outputToggledScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledScreencast));
-    connect(ui->outputGeneralBoxFramerate, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputGeneralBoxFramerate));
-    connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedToggledBlur));
-    connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedBlurType));
-    connect(ui->outputProcessedBlurValue, &QSlider::valueChanged, this, bind(m_outputChanged, ui->outputProcessedBlurValue));
-    connect(ui->outputProcessedBlurSubtract, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedBlurSubtract));
-    connect(ui->outputProcessedBlurNormalize, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedBlurNormalize));
-    connect(ui->outputProcessedSimpleThresh, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputProcessedSimpleThresh));
-    connect(ui->outputProcessedAdaptiveThresh, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputProcessedAdaptiveThresh));
-    connect(ui->outputProcessedOtsu, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedOtsu));
-    connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedSimpleThresholdingType));
-    connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, this, bind(m_outputChanged, ui->outputProcessedThreshValue));
-    connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedAdaptiveThresholdingType));
-
-    // Translator
-    connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOnlineGoogleToggled));
-    connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOfflineOllamaToggled));
-
-    // Text Processing
-    connect(ui->textProcessingOCREngineToggled, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineToggled));
-    connect(ui->textProcessingOCREngineTesseractRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineTesseractRadio));
-    connect(ui->textProcessingOCREngineOllamaVisionRadio, &QRadioButton::toggled, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineOllamaVisionRadio));
-    connect(ui->textProcessingHookCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingHookCheckBox));
-    connect(ui->textProcessingClipboardCheckBox, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingClipboardCheckBox));
-    connect(ui->textProcessingTableWidget, &QTableWidget::currentItemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
-    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, bind(m_textProcessingChanged, ui->textProcessingTableWidget));
-    connect(ui->textProcessingTableWidget, &QTableWidget::itemChanged, this, [this] { commitReplacementTable(); });
-    connect(ui->textProcessingScopeBox, &QComboBox::currentIndexChanged, this, [this](int) {
-        const QString target = activeHookTargetKey();
-        if (!target.isEmpty()) {
-            if (currentRuleScope().isEmpty())
-                m_gameScopedTargets.remove(target);
-            else
-                m_gameScopedTargets.insert(target);
-            saveRuleScope();
-        }
-        populateReplacementTable();
-    });
-
-    // Proxy
-    connect(ui->proxyEnabledCheckBox, &QCheckBox::stateChanged, this, bind(m_proxyChanged, ui->proxyEnabledCheckBox));
-    connect(ui->proxyAddressEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyAddressEdit));
-    connect(ui->proxyPortEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyPortEdit));
-    connect(ui->proxyUserEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyUserEdit));
-    connect(ui->proxyPasswordEdit, &QLineEdit::textChanged, this, bind(m_proxyChanged, ui->proxyPasswordEdit));
-    connect(ui->proxyTypeHttp, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeHttp));
-    connect(ui->proxyTypeSocks, &QRadioButton::toggled, this, bind(m_proxyChanged, ui->proxyTypeSocks));
-
-    // Python
-    connect(ui->pythonInterpreterEdit, &QLineEdit::textChanged, this, bind(m_pythonChanged, ui->pythonInterpreterEdit));
-
-    // Speech
-    connect(ui->speechEnabled, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechEnabled));
-    connect(ui->speechToggleSoundCheckBox, &QCheckBox::stateChanged, this, bind(m_speechChanged, ui->speechToggleSoundCheckBox));
-    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTextCombo));
-    connect(ui->speechSourceCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechSourceCombo));
-    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
-    connect(ui->speechOnNewTranslationCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechOnNewTranslationCombo));
-    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechModeCombo));
-    connect(ui->speechVolumeSlider, &QSlider::valueChanged, this, bind(m_speechChanged, ui->speechVolumeSlider));
-    connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this,
-            [this](int) { refreshSpeechPage(); });
-    connect(ui->speechTextCombo, &QComboBox::currentIndexChanged, this, [this](int) {
-        m_speechSpokenOriginals.clear();
-        refreshSpeechPage();
-    });
-    connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this,
-            [this](int) { m_speechSpokenOriginals.clear(); });
-}
-
-void MainWindow::loadLogMessages()
-{
-    QFile file(Logger::getLogFilePath());
-    if (file.open(QFile::ReadOnly | QFile::Text)) {
-        QTextStream in(&file);
-        QString line;
-        while (in.readLineInto(&line)) {
-            ui->logsPlainText->appendPlainText(line);
-        }
-        file.close();
-    }
-
-    connect(Logger::instance(), &Logger::newLogMessage, this, &MainWindow::on_logsNewLogMessage);
-}
-
-void MainWindow::setupFinalUI()
-{
-    setupTextProcessingTable();
-
-    contextMenus[ui->outputOriginalScreencast] =
-        createMenu(tr("Open Original Screencast in New Window"), &MainWindow::openOriginalPreview);
-
-    contextMenus[ui->outputProcessedScreencast] =
-        createMenu(tr("Open Processed Screencast in New Window"), &MainWindow::openProcessedPreview);
-
-    for (QLabel *label : contextMenus.keys()) {
-        label->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(label, &QLabel::customContextMenuRequested,
-                this, &MainWindow::showContextMenu);
-    }
-}
-
-void MainWindow::setupTextProcessingTable()
-{
-    QTableWidget *table = ui->textProcessingTableWidget;
-
-    QHeaderView *header = table->horizontalHeader();
-    header->setSectionResizeMode(ColRegex, QHeaderView::Interactive);
-    header->setSectionResizeMode(ColSource, QHeaderView::Interactive);
-    header->resizeSection(ColSource, 100);
-    header->setSectionResizeMode(ColFrom, QHeaderView::Stretch);
-    header->setSectionResizeMode(ColTo, QHeaderView::Stretch);
-
-    table->setItemDelegateForColumn(ColRegex, new CheckBoxDelegate(table));
-    table->setItemDelegateForColumn(ColSource, new SourceComboDelegate([this] {
-        QStringList sources{
-            QStringLiteral("Hook"),
-            QStringLiteral("Clipboard"),
-            QStringLiteral("Tesseract"),
-            QStringLiteral("Ollama Vision"),
-            QStringLiteral("Speech")
-        };
-        const QStringList hookSources = m_outputWindow->hookDisplayOrder();
-        for (const QString &src : hookSources) {
-            if (!sources.contains(src))
-                sources << src;
-        }
-        return sources;
-    }, table));
-
-    refreshRuleScopeBox();
-}
+// ===============================================================
+// unsaved changes
+// ===============================================================
 
 bool MainWindow::widgetChanged(QWidget *widget)
 {
@@ -1492,7 +2080,6 @@ void MainWindow::setPropertyChanged(const bool &value)
     m_outputChanged = value;
     m_textProcessingChanged = value;
     m_translatorChanged = value;
-    m_pluginChanged = value;
     m_proxyChanged = value;
     m_pythonChanged = value;
     m_speechChanged = value;
@@ -1501,6 +2088,10 @@ void MainWindow::setPropertyChanged(const bool &value)
         if (w) w->setProperty("changed", QVariant(value));
     }
 }
+
+// ===============================================================
+// menus and previews
+// ===============================================================
 
 QMenu* MainWindow::createMenu(const QString &title, void (MainWindow::*slot)())
 {
@@ -1544,450 +2135,9 @@ void MainWindow::openProcessedPreview()
     createPreviewWindow(tr("Processed Screencast Preview"), &OpenCV::currentProcessedFrame);
 }
 
-void MainWindow::on_availableGeometryChanged()
-{
-    m_outputWindow->move(m_screen->geometry().x() + 50, m_screen->geometry().y() + 50);
-    m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
-
-    if (!m_overlayWindow->isHidden()) {
-        m_overlayWindow->hide();
-        m_outputWindow->show();
-    }
-}
-
-void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
-{
-    QDialogButtonBox::ButtonRole role = ui->buttonBox->buttonRole(button);
-
-    if (role == QDialogButtonBox::ApplyRole) {
-        saveConfig();
-    }
-
-    loadConfig();
-}
-
-#ifdef Q_OS_LINUX
-void MainWindow::on_generalBindShortcut_clicked()
-{
-    m_hotkeyController->bindPortalShortcuts();
-}
-#endif
-
-void MainWindow::on_outputGeneralSelect_clicked()
-{
-    m_captureController->openSourceSelector();
-}
-
-void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
-{
-    ui->outputOriginalScreencast->setVisible(arg1 == Qt::Checked);
-    ui->outputOriginalScreencastLabel->setVisible(arg1 == Qt::Checked);
-}
-
-void MainWindow::on_outputToggledProcessedScreencast_stateChanged(int arg1)
-{
-    ui->outputProcessedScreencast->setVisible(arg1 == Qt::Checked);
-    ui->outputProcessedScreencastLabel->setVisible(arg1 == Qt::Checked);
-}
-
-void MainWindow::on_outputToggledScreencast_stateChanged(int arg1)
-{
-    bool enabled = (arg1 == Qt::Checked);
-    ui->outputGeneralSelect->setEnabled(!enabled);
-
-    if (enabled) {
-        stopScreenCapture();
-    } else {
-        startScreenCapture();
-    }
-}
-
-void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
-{
-    ui->outputProcessedThreshValue->setEnabled(!arg1);
-}
-
-void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
-{
-    GoogleSettingsDialog *dialog = new GoogleSettingsDialog(m_googleSourceLang, m_googleTargetLang, this);
-    dialog->setWindowModality(Qt::WindowModal);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(dialog, &QDialog::finished, this, [this, dialog](int result) {
-        if (result == QDialog::Accepted) {
-            m_googleSourceLang = dialog->getSourceLang();
-            m_googleTargetLang = dialog->getTargetLang();
-            m_translationController->setGoogleSourceLang(m_googleSourceLang);
-            m_translationController->setGoogleTargetLang(m_googleTargetLang);
-
-            m_translatorChanged = true;
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        }
-    });
-
-    dialog->show();
-}
-
-void MainWindow::on_textProcessingOCREngineToggled_stateChanged(int arg1)
-{
-    ui->textProcessingOCREngineTesseractRadio->setEnabled(arg1);
-    ui->textProcessingOCREngineOllamaVisionRadio->setEnabled(arg1);
-}
-
-void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
-{
-    const QString status = QStringLiteral("<b>%1%2</b>").arg(
-        m_ocrController->isTesseractRunning() ? tr("Active") : tr("Inactive"),
-        m_tesseractActiveLang.isEmpty() ? QString() : QStringLiteral(" [%1]").arg(m_tesseractActiveLang)
-    );
-
-    m_tesseractSettingsDialog = new TesseractSettingsDialog(status,
-                                                            m_tesseractSelectedLang,
-                                                            m_tesserractLangList,
-                                                            m_tesseractTessdataPath,
-                                                            m_tesseractUseSystemTessdata,
-                                                            m_tesseractMode,
-                                                            m_tesseractAutoInterval,
-                                                            m_ocrController->tesseract(),
-                                                            this);
-
-    m_tesseractSettingsDialog->setWindowModality(Qt::WindowModal);
-    m_tesseractSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(m_tesseractSettingsDialog, &QDialog::finished, this, [this](int result) {
-        if (result == QDialog::Accepted) {
-            m_tesseractSelectedLang = m_tesseractSettingsDialog->getCurrentLanguage();
-            m_tesserractLangList = m_tesseractSettingsDialog->getLanguageList();
-            m_tesseractUseSystemTessdata = m_tesseractSettingsDialog->getUseSystemTessdata();
-            m_tesseractTessdataPath = m_tesseractSettingsDialog->getTessdataPath();
-            m_tesseractMode = m_tesseractSettingsDialog->getMode();
-            m_tesseractAutoInterval = m_tesseractSettingsDialog->getAutoInterval();
-
-            m_textProcessingChanged = true;
-            ui->textProcessingOCREngineTesseractRadio->setProperty("changed", true);
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        }
-    });
-
-    m_tesseractSettingsDialog->show();
-}
-
-void MainWindow::on_textProcessingHookSettingsButton_clicked()
-{
-    m_hookSettingsDialog = new HookSettingsDialog(m_hookMode, m_hookGameAppPluginList, m_hookEnginePluginList, m_currentGameAppPlugin, m_currentEnginePlugin, this);
-    m_hookSettingsDialog->setWindowModality(Qt::WindowModal);
-    m_hookSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
-
-    connect(m_hookSettingsDialog, &QDialog::finished, this, [this](int result) {
-        if (result == QDialog::Accepted) {
-            m_hookMode = m_hookSettingsDialog->getCurrentMode();
-            m_currentGameAppPlugin = m_hookSettingsDialog->getCurrentGameAppPlugin();
-            m_currentEnginePlugin = m_hookSettingsDialog->getSelectedEngine();
-            m_currentEngineProcess = m_hookSettingsDialog->getSelectedProcessName();
-
-            m_textProcessingChanged = true;
-            ui->textProcessingHookCheckBox->setProperty("changed", true);
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        }
-    });
-
-    m_hookSettingsDialog->show();
-}
-
-
-QTableWidgetItem *MainWindow::makeRegexFlagItem(bool checked)
-{
-    QTableWidgetItem *item = new QTableWidgetItem();
-    item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
-    item->setTextAlignment(Qt::AlignCenter);
-    return item;
-}
-
-void MainWindow::on_textProcessingAddRowButton_clicked()
-{
-    int row = ui->textProcessingTableWidget->rowCount();
-    ui->textProcessingTableWidget->insertRow(row);
-    ui->textProcessingTableWidget->setItem(row, ColRegex, makeRegexFlagItem(false));
-    ui->textProcessingTableWidget->setItem(row, ColSource, new QTableWidgetItem(QString()));
-    commitReplacementTable();
-    markRulesChanged();
-}
-
-void MainWindow::on_textProcessingRemoveRowButton_clicked()
-{
-    int row = ui->textProcessingTableWidget->currentRow();
-
-    if (row >= 0) {
-        ui->textProcessingTableWidget->removeRow(row);
-        commitReplacementTable();
-        markRulesChanged();
-    }
-}
-
-void MainWindow::on_pluginsReloadButton_clicked()
-{
-    if (m_pluginManager) {
-        if (m_hookController->isPluginLoaded()) {
-            m_hookController->stop();
-            m_hookController->setPlugin(nullptr);
-        }
-        m_pluginManager->unloadPlugins();
-        m_hookGameAppPluginList.clear();
-        ui->textProcessingHookCheckBox->setProperty("changed", true);
-
-        initPlugins();
-        loadHookPluginSettings();
-    }
-}
-
-void MainWindow::on_pluginsOpenDirectoryButton_clicked()
-{
-    QDir dir(Config::getConfigDirPath() + "plugins/");
-    if (dir.exists()) {
-        QString path = dir.path();
-        QUrl url = QUrl::fromLocalFile(path);
-        QDesktopServices::openUrl(url);
-    }
-}
-
-void MainWindow::on_logsNewLogMessage(const QString& message)
-{
-    ui->logsPlainText->appendPlainText(message);
-}
-
-void MainWindow::on_logsCopyAllButton_clicked()
-{
-    const QString text = ui->logsPlainText->toPlainText();
-    if (m_clipboardController)
-        m_clipboardController->suppress(text);
-
-    QApplication::clipboard()->setText(text);
-}
-
-void MainWindow::on_logsOpenDirectoryButton_clicked()
-{
-    QDir dir(Logger::getLogDirPath());
-    if (dir.exists()) {
-        QString path = dir.path();
-        QUrl url = QUrl::fromLocalFile(path);
-        QDesktopServices::openUrl(url);
-    }
-}
-
-void MainWindow::on_proxyEnabledCheckBox_stateChanged(int arg1)
-{
-    bool enabled = (arg1 == Qt::Unchecked);
-
-    ui->proxyIPLabel->setEnabled(enabled);
-    ui->proxyPortLabel->setEnabled(enabled);
-    ui->proxyUserLabel->setEnabled(enabled);
-    ui->proxyPasswordLabel->setEnabled(enabled);
-    ui->proxyAddressEdit->setEnabled(enabled);
-    ui->proxyPortEdit->setEnabled(enabled);
-    ui->proxyUserEdit->setEnabled(enabled);
-    ui->proxyPasswordEdit->setEnabled(enabled);
-    ui->proxyTypeHttp->setEnabled(enabled);
-    ui->proxyTypeSocks->setEnabled(enabled);
-}
-
-void MainWindow::setCurrentOriginalFrame(const QImage &frame)
-{
-    m_overlayImage = frame.copy();
-    m_overlayImage.setDevicePixelRatio(this->devicePixelRatio());
-
-    if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
-        ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_overlayImage).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
-    }
-
-    m_captureController->notifyFrameProcessed();
-}
-
-void MainWindow::setCurrentProcessedFrame(const QImage &frame)
-{
-    QImage image = frame;
-    image.setDevicePixelRatio(this->devicePixelRatio());
-
-    if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
-        ui->outputProcessedScreencast->setPixmap(QPixmap::fromImage(image).scaled(ui->outputProcessedScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
-    }
-}
-
-void MainWindow::setCurrentProcessedMat(const cv::Mat &frame)
-{
-    if (frame.empty()) return;
-    m_ocrController->processFrame(frame);
-}
-
-void MainWindow::startScreenCapture()
-{
-    if (m_opencv) {
-        m_opencv->setIsStopped(false);
-    }
-    m_captureController->start();
-}
-
-void MainWindow::stopScreenCapture()
-{
-    if (m_opencv) {
-        m_opencv->setIsStopped(true);
-        ui->outputOriginalScreencast->clear();
-        ui->outputProcessedScreencast->clear();
-        m_overlayWindow->clearFrame();
-        m_overlayImage = QImage();
-        emit screenCastFinished();
-    }
-
-    m_captureController->stop();
-
-    if (!m_overlayWindow->isHidden()) {
-        m_overlayWindow->hide();
-        m_outputWindow->show();
-    }
-}
-
-void MainWindow::setCurrentOutput(const QString &source, const QString &output)
-{
-    QString outputFilt = replaceText(source, output);
-
-    if (source.startsWith(QStringLiteral("Hook"))) {
-        m_currentHookTexts.insert(source, output);
-        m_outputWindow->noteHookSource(source, output);
-
-        const QString effSource = m_outputWindow->hookEffectiveSource(source);
-        const QString effText = (effSource == source)
-            ? outputFilt
-            : replaceText(effSource, m_outputWindow->hookCombinedOriginal(effSource));
-
-        m_hookBurstBuffer.insert(effSource, effText);
-
-        if (!m_hookBurstTimer->isActive())
-            m_hookBurstTimer->start(m_outputWindow->hookBurstMs());
-        return;
-    }
-
-    m_translationController->translate(source, outputFilt);
-}
-
-void MainWindow::flushHookBurst()
-{
-    if (m_hookBurstBuffer.isEmpty())
-        return;
-
-    const QStringList winners = m_outputWindow->hookSourcesToOutput(m_hookBurstBuffer.keys());
-    QStringList sent;
-    for (const QString &src : winners)
-        if (m_hookBurstBuffer.contains(src))
-            sent << src;
-
-    m_outputWindow->beginHookBatch(sent);
-
-    for (const QString &src : sent)
-        m_translationController->translate(src, m_hookBurstBuffer.value(src));
-
-    m_hookBurstBuffer.clear();
-}
-
-void MainWindow::openOllamaSettings()
-{
-    m_ollamaSettingsDialog->setCurrentSettings(m_ollamaUrl, m_ollamaCurrentModel, m_ollamaTranslationPrompt, m_ollamaVisionPrompt, m_ollamaVisionMode, m_ollamaVisionAutoInterval, m_waitForOllamaResponse);
-    m_ollamaSettingsDialog->setWindowModality(Qt::WindowModal);
-
-    connect(m_ollamaSettingsDialog, &QDialog::finished, this, [this](int result) {
-        if (result == QDialog::Accepted) {
-            m_ollamaUrl = m_ollamaSettingsDialog->getUrl();
-            m_ollamaCurrentModel = m_ollamaSettingsDialog->getCurrentModel();
-            m_ollamaModels = m_ollamaSettingsDialog->getModels();
-            m_ollamaTranslationPrompt = m_ollamaSettingsDialog->getTranslationPrompt();
-            m_ollamaVisionPrompt = m_ollamaSettingsDialog->getVisionPrompt();
-            m_ollamaVisionMode = m_ollamaSettingsDialog->getMode();
-            m_ollamaVisionAutoInterval = m_ollamaSettingsDialog->getAutoInterval();
-            m_waitForOllamaResponse = m_ollamaSettingsDialog->getIsWaitForResponse();
-
-            m_translationController->setOllamaUrl(m_ollamaUrl);
-            m_translationController->setOllamaModel(m_ollamaCurrentModel);
-            m_translationController->setOllamaPrompt(m_ollamaTranslationPrompt);
-
-            m_ocrController->setOllamaUrl(m_ollamaUrl);
-            m_ocrController->setOllamaModel(m_ollamaCurrentModel);
-            m_ocrController->setOllamaVisionPrompt(m_ollamaVisionPrompt);
-            m_ocrController->setOllamaVisionMode(m_ollamaVisionMode);
-            m_ocrController->setOllamaVisionAutoInterval(m_ollamaVisionAutoInterval);
-            m_ocrController->setOllamaWaitForResponse(m_waitForOllamaResponse);
-
-            m_translatorChanged = true; m_textProcessingChanged = true;
-            ui->textProcessingOCREngineOllamaVisionRadio->setProperty("changed", true);
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        }
-    });
-
-    m_ollamaSettingsDialog->show();
-}
-
-void MainWindow::retranslateText()
-{
-    if (!m_overlayWindow->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
-        m_ocrController->triggerManual();
-    }
-
-    if (ui->textProcessingHookCheckBox->isChecked()) {
-        for (auto it = m_currentHookTexts.cbegin(); it != m_currentHookTexts.cend(); ++it) {
-            if (!it.value().isEmpty())
-                setCurrentOutput(it.key(), it.value());
-        }
-    }
-}
-
-void MainWindow::manualInjectHook()
-{
-    m_hookController->manualInject();
-}
-
-void MainWindow::reapplyHookOutput()
-{
-    QHash<QString, QString> effTexts;
-    const QStringList displayed = m_outputWindow->hookDisplayOrder();
-    for (const QString &src : displayed) {
-        const QString orig = m_outputWindow->hookLatestOriginal(src);
-        if (!orig.isEmpty())
-            effTexts.insert(src, orig);
-    }
-    if (effTexts.isEmpty())
-        return;
-
-    const QStringList winners = m_outputWindow->hookSourcesToOutput(effTexts.keys());
-    QHash<QString, QString> toSend;
-    QStringList sendOrder;
-    for (const QString &src : winners) {
-        auto it = effTexts.constFind(src);
-        if (it == effTexts.constEnd() || it.value().isEmpty())
-            continue;
-        const QString filtered = replaceText(src, it.value());
-        if (m_outputWindow->hasHookTranslation(src, filtered))
-            continue;
-        toSend.insert(src, filtered);
-        sendOrder << src;
-    }
-
-    m_outputWindow->beginHookBatch(sendOrder);
-    for (const QString &src : sendOrder)
-        m_translationController->translate(src, toSend.value(src));
-}
-
-void MainWindow::selectNewRegion()
-{
-    if (!m_overlayImage.isNull()) {
-        m_overlayWindow->setInnerBrushActive(false);
-        showOverlayWindow();
-    }
-}
-void MainWindow::selectNewInnerRegion()
-{
-    if (!m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
-        m_overlayWindow->setInnerBrushActive(true);
-        showOverlayWindow();
-    }
-}
+// ===============================================================
+// overlay
+// ===============================================================
 
 void MainWindow::captureRegion()
 {
@@ -2021,186 +2171,9 @@ void MainWindow::showOverlayWindow()
     m_overlayWindow->showFullScreen();
 }
 
-QString MainWindow::replaceText(const QString &source, QString output)
-{
-    const QString target = activeHookTargetKey();
-
-    const auto applyPass = [&](bool globalPass) {
-        for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
-            if (rule.target.isEmpty() != globalPass)
-                continue;
-            if (!globalPass && rule.target != target)
-                continue;
-            if (rule.from.isEmpty())
-                continue;
-            if (!rule.source.isEmpty() && rule.source.compare(source, Qt::CaseInsensitive) != 0)
-                continue;
-
-            if (rule.regex) {
-                QRegularExpression re(rule.from);
-                if (re.isValid())
-                    output.replace(re, rule.to);
-            } else {
-                output.replace(rule.from, rule.to);
-            }
-        }
-    };
-
-    applyPass(true);
-    applyPass(false);
-
-    return output;
-}
-
-void MainWindow::markRulesChanged()
-{
-    m_textProcessingChanged = true;
-    ui->textProcessingTableWidget->setProperty("changed", true);
-    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-}
-
-QString MainWindow::currentRuleScope() const
-{
-    return ui->textProcessingScopeBox->currentData().toString();
-}
-
-void MainWindow::saveRuleScope()
-{
-    // Only the games told to show their own rules are listed; for the rest the
-    // table shows the shared ones
-    QStringList targets = m_gameScopedTargets.values();
-    targets.sort();
-
-    QJsonArray value;
-    for (const QString &target : targets)
-        value.append(target);
-
-    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
-    if (textProcessing["rules_scope"].toArray() == value)
-        return;
-
-    // Which subset the table shows is a view preference, not something worth
-    // queueing behind Apply, so it goes straight to the config
-    textProcessing["rules_scope"] = value;
-    Config::setValue("text_processing", textProcessing);
-    Config::save();
-}
-
-QString MainWindow::activeHookTargetKey() const
-{
-    // What is hooked right now, as opposed to what is merely selected in the
-    // settings - a rule can only be tied to a game that is actually running
-    const QString plugin = m_hookController->currentRunningPlugin();
-    if (plugin.isEmpty())
-        return QString();
-
-    QString process = m_hookController->runningEngineProcess();
-    if (process.isEmpty()) {
-        for (const auto &p : m_registry) {
-            if (p.name == plugin) {
-                process = p.targetExecutable;
-                break;
-            }
-        }
-    }
-    return plugin + QStringLiteral("|") + process;
-}
-
-QString MainWindow::currentGameLabel() const
-{
-    const QString plugin = m_hookController->currentRunningPlugin();
-    if (plugin.isEmpty())
-        return QString();
-
-    // An engine plugin covers many games, so the process is the game. A
-    // game/application plugin is written for one game and names it
-    const QString process = m_hookController->runningEngineProcess();
-    if (!process.isEmpty())
-        return process;
-
-    for (const auto &p : m_registry)
-        if (p.name == plugin)
-            return p.targetTitle.isEmpty() ? p.name : p.targetTitle;
-
-    return plugin;
-}
-
-void MainWindow::refreshRuleScopeBox()
-{
-    // Only the hooked game is ever offered: rules of the other games stay in the
-    // config and come back with them, which beats a list that grows forever
-    const QString target = activeHookTargetKey();
-    const QString name = currentGameLabel();
-
-    QComboBox *box = ui->textProcessingScopeBox;
-    const QSignalBlocker blocker(box);
-
-    box->clear();
-    box->addItem(tr("Everywhere"), QString());
-    if (!name.isEmpty())
-        box->addItem(tr("Only in %1").arg(name), target);
-
-    // Every game remembers on its own whether the table shows its rules or the
-    // shared ones
-    const int idx = m_gameScopedTargets.contains(target) ? box->findData(target) : 0;
-    box->setCurrentIndex(idx >= 0 ? idx : 0);
-
-    // Until a game is hooked there is nothing to choose between, so the whole
-    // idea of a scope stays out of the way
-    ui->textProcessingScopeRow->setVisible(!target.isEmpty() && !name.isEmpty());
-
-    populateReplacementTable();
-}
-
-void MainWindow::populateReplacementTable()
-{
-    const QString scope = currentRuleScope();
-    QTableWidget *table = ui->textProcessingTableWidget;
-
-    // Refilling the table is not a user edit: no commit, no Apply button
-    const QSignalBlocker blocker(table);
-    table->setRowCount(0);
-
-    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
-        if (rule.target != scope)
-            continue;
-
-        const int row = table->rowCount();
-        table->insertRow(row);
-        table->setItem(row, ColRegex, makeRegexFlagItem(rule.regex));
-        table->setItem(row, ColSource, new QTableWidgetItem(rule.source));
-        table->setItem(row, ColFrom, new QTableWidgetItem(rule.from));
-        table->setItem(row, ColTo, new QTableWidgetItem(rule.to));
-    }
-}
-
-void MainWindow::commitReplacementTable()
-{
-    const QString scope = currentRuleScope();
-    QTableWidget *table = ui->textProcessingTableWidget;
-
-    QList<ReplacementRule> kept;
-    for (const ReplacementRule &rule : std::as_const(m_replacementRules))
-        if (rule.target != scope)
-            kept << rule;
-
-    for (int i = 0; i < table->rowCount(); ++i) {
-        QTableWidgetItem *regexItem = table->item(i, ColRegex);
-        QTableWidgetItem *srcItem = table->item(i, ColSource);
-        QTableWidgetItem *fromItem = table->item(i, ColFrom);
-        QTableWidgetItem *toItem = table->item(i, ColTo);
-
-        ReplacementRule rule;
-        rule.regex = regexItem && regexItem->checkState() == Qt::Checked;
-        rule.source = srcItem ? srcItem->text().trimmed() : QString();
-        rule.from = fromItem ? fromItem->text() : QString();
-        rule.to = toItem ? toItem->text() : QString();
-        rule.target = scope;
-        kept << rule;
-    }
-
-    m_replacementRules = kept;
-}
+// ===============================================================
+// screen casting
+// ===============================================================
 
 void MainWindow::initScreenCast()
 {
@@ -2271,6 +2244,882 @@ void MainWindow::initScreenCast()
     }
 }
 
+// ===============================================================
+// hook
+// ===============================================================
+
+void MainWindow::flushHookBurst()
+{
+    if (m_hookBurstBuffer.isEmpty())
+        return;
+
+    const QStringList winners = m_outputWindow->hookSourcesToOutput(m_hookBurstBuffer.keys());
+    QStringList sent;
+    for (const QString &src : winners)
+        if (m_hookBurstBuffer.contains(src))
+            sent << src;
+
+    m_outputWindow->beginHookBatch(sent);
+
+    for (const QString &src : sent)
+        m_translationController->translate(src, m_hookBurstBuffer.value(src));
+
+    m_hookBurstBuffer.clear();
+}
+
+// ===============================================================
+// preset [speech]
+// ===============================================================
+
+QString MainWindow::presetsDirPath() const
+{
+    return Config::getConfigDirPath() + QStringLiteral("presets/");
+}
+
+static int presetVersion(const QString &path)
+{
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly))
+        return -1;
+
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    return doc.isObject() ? doc.object().value(QStringLiteral("version")).toInt(0) : 0;
+}
+
+void MainWindow::ensurePresetsSeed()
+{
+    QDir dir(presetsDirPath());
+    if (!dir.exists()) {
+        dir.mkpath(QStringLiteral("."));
+    }
+
+    const QString seeded = dir.filePath(QStringLiteral("tts_ru.json"));
+    const QString builtin = QStringLiteral(":/presets/tts_ru.json");
+
+    if (QFileInfo::exists(seeded)) {
+        if (presetVersion(builtin) <= presetVersion(seeded)) {
+            return;
+        }
+        QFile::remove(seeded);
+    }
+
+    if (QFile::copy(builtin, seeded)) {
+        QFile::setPermissions(seeded, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther);
+    } else {
+        Log(Logger::Level::Warning, QStringLiteral("[text] could not seed built-in preset into ") + seeded);
+    }
+}
+
+void MainWindow::setupReplacementPresets()
+{
+    ensurePresetsSeed();
+
+    QMenu *menu = new QMenu(this);
+    connect(menu, &QMenu::aboutToShow, this, &MainWindow::rebuildPresetMenu);
+    ui->textProcessingPresetButton->setMenu(menu);
+}
+
+void MainWindow::rebuildPresetMenu()
+{
+    QMenu *menu = ui->textProcessingPresetButton->menu();
+    if (!menu)
+        return;
+
+    menu->clear();
+
+    const QFileInfoList files = QDir(presetsDirPath()).entryInfoList({ QStringLiteral("*.json") }, QDir::Files, QDir::Name);
+
+    for (const QFileInfo &info : files) {
+        const QString path = info.absoluteFilePath();
+        QString name;
+        QJsonArray rules;
+        const QString label = readPresetFile(path, name, rules) ? name : info.completeBaseName();
+        menu->addAction(label, this, [this, path] { choosePresetTarget(path); });
+    }
+
+    if (files.isEmpty())
+        menu->addAction(tr("No presets found"))->setEnabled(false);
+
+    menu->addSeparator();
+    menu->addAction(tr("Load from file…"), this, &MainWindow::importPresetFile);
+    menu->addAction(tr("Export current profile…"), this, &MainWindow::exportCurrentProfile);
+    menu->addAction(tr("Open presets folder"), this, &MainWindow::openPresetsFolder);
+}
+
+bool MainWindow::readPresetFile(const QString &path, QString &name, QJsonArray &rules, QString *lang)
+{
+    if (lang)
+        lang->clear();
+
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly)) {
+        Log(Logger::Level::Warning, QStringLiteral("[text] preset: cannot open %1").arg(path));
+        return false;
+    }
+
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        Log(Logger::Level::Warning, QStringLiteral("[text] preset %1: invalid JSON (%2)").arg(path, parseError.errorString()));
+        return false;
+    }
+
+    if (doc.isObject()) {
+        const QJsonObject obj = doc.object();
+        name = obj["name"].toString();
+        rules = obj["rules"].toArray();
+        if (lang) {
+            *lang = obj["lang"].toString();
+        }
+    } else if (doc.isArray()) {
+        name.clear();
+        rules = doc.array();
+    } else {
+        return false;
+    }
+
+    if (name.isEmpty())
+        name = QFileInfo(path).completeBaseName();
+
+    return true;
+}
+
+void MainWindow::choosePresetTarget(const QString &path)
+{
+    QString presetName;
+    QJsonArray rules;
+    if (!readPresetFile(path, presetName, rules) || rules.isEmpty()) {
+        QMessageBox::warning(this, tr("Load preset"), tr("This preset file could not be read."));
+        return;
+    }
+
+    const QString currentLabel = m_activeProfile.isEmpty() ? tr("Default") : m_activeProfile;
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("Load preset"));
+    box.setText(tr("Load preset \"%1\".").arg(presetName));
+    box.setInformativeText(tr("Load it into a new profile, or add it to the current profile \"%1\"?").arg(currentLabel));
+    QPushButton *newBtn = box.addButton(tr("New profile"), QMessageBox::AcceptRole);
+    QPushButton *curBtn = box.addButton(tr("Add to current"), QMessageBox::AcceptRole);
+    box.addButton(QMessageBox::Cancel);
+    box.setDefaultButton(newBtn);
+    box.exec();
+
+    QAbstractButton *clicked = box.clickedButton();
+    if (clicked == newBtn) {
+        applyReplacementPresetFile(path, false);
+    } else if (clicked == curBtn) {
+        applyReplacementPresetFile(path, true);
+    }
+}
+
+void MainWindow::applyReplacementPresetFile(const QString &path, bool intoCurrentProfile, bool commitNow)
+{
+    QString presetName;
+    QJsonArray rules;
+    if (!readPresetFile(path, presetName, rules)) {
+        QMessageBox::warning(this, tr("Load preset"), tr("This preset file could not be read."));
+        return;
+    }
+
+    const QString targetProfile = intoCurrentProfile ? m_activeProfile : presetName;
+    if (!intoCurrentProfile) {
+        if (!m_ruleProfiles.contains(targetProfile)) {
+            m_ruleProfiles << targetProfile;
+        }
+        m_replacementRules.erase(std::remove_if(m_replacementRules.begin(),
+                                                m_replacementRules.end(),
+                                                [&targetProfile](const ReplacementRule &r) {
+                                                    return r.profile == targetProfile;
+                                                }), m_replacementRules.end());
+    }
+
+    for (const QJsonValue &value : std::as_const(rules)) {
+        const QJsonObject rowObject = value.toObject();
+
+        ReplacementRule rule;
+        rule.regex = rowObject["regex"].toBool();
+        rule.source = rowObject["source"].toString();
+        rule.from = rowObject["from"].toString();
+        rule.to = rowObject["to"].toString();
+        rule.profile = targetProfile;
+
+        const bool exists = std::any_of(m_replacementRules.cbegin(),
+                                        m_replacementRules.cend(),
+                                        [&rule](const ReplacementRule &existing) {
+                                            return existing.regex == rule.regex && existing.source == rule.source
+                                                   && existing.from == rule.from && existing.to == rule.to
+                                                   && existing.profile == rule.profile;
+                                        });
+
+        if (exists)
+            continue;
+
+        m_replacementRules << rule;
+    }
+
+    m_activeProfile = targetProfile;
+    refreshProfileBox();
+
+    if (commitNow) {
+        m_liveProfile = m_activeProfile;
+        persistProfilesMeta();
+        persistReplacementRules();
+    } else {
+        persistProfilesMeta();
+        markRulesChanged();
+    }
+}
+
+void MainWindow::importPresetFile()
+{
+    const QString src = QFileDialog::getOpenFileName(this, tr("Load preset"), QString(), tr("Preset files (*.json)"));
+
+    if (src.isEmpty())
+        return;
+
+    QString name;
+    QJsonArray rules;
+    if (!readPresetFile(src, name, rules) || rules.isEmpty()) {
+        QMessageBox::warning(this, tr("Load preset"), tr("This preset file could not be read."));
+        return;
+    }
+
+    QDir dir(presetsDirPath());
+    if (!dir.exists())
+        dir.mkpath(QStringLiteral("."));
+
+    const QFileInfo srcInfo(src);
+    if (srcInfo.absolutePath() == QFileInfo(dir.path()).absoluteFilePath()) {
+        choosePresetTarget(src);
+        return;
+    }
+
+    QString dest = dir.filePath(srcInfo.fileName());
+    for (int n = 1; QFileInfo::exists(dest); ++n)
+        dest = dir.filePath(srcInfo.completeBaseName() + QStringLiteral("_%1.").arg(n) + srcInfo.suffix());
+
+    if (!QFile::copy(src, dest)) {
+        QMessageBox::warning(this, tr("Load preset"), tr("The preset could not be copied into the presets folder."));
+        return;
+    }
+    QFile::setPermissions(dest, QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup | QFile::ReadOther);
+
+    choosePresetTarget(dest);
+}
+
+void MainWindow::exportCurrentProfile()
+{
+    commitReplacementTable();
+
+    const QString profileName = m_activeProfile.isEmpty() ? tr("Default") : m_activeProfile;
+
+    QJsonArray rules;
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+        if (rule.profile != m_activeProfile)
+            continue;
+
+        QJsonObject row;
+        row["regex"] = rule.regex;
+        row["source"] = rule.source;
+        row["from"] = rule.from;
+        row["to"] = rule.to;
+        rules.append(row);
+    }
+
+    if (rules.isEmpty()) {
+        QMessageBox::information(this, tr("Export preset"), tr("This profile has no rules to export."));
+        return;
+    }
+
+    QDir dir(presetsDirPath());
+    if (!dir.exists())
+        dir.mkpath(QStringLiteral("."));
+
+    QString suggested = profileName;
+    suggested.replace(QRegularExpression(QStringLiteral("[/\\\\:*?\"<>|]")), QStringLiteral("_"));
+    if (suggested.isEmpty())
+        suggested = QStringLiteral("preset");
+
+    const QString path = QFileDialog::getSaveFileName(this, tr("Export preset"),
+        dir.filePath(suggested + QStringLiteral(".json")), tr("Preset files (*.json)"));
+    if (path.isEmpty())
+        return;
+
+    QJsonObject root;
+    root["name"] = profileName;
+    root["rules"] = rules;
+
+    QFile file(path);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+        QMessageBox::warning(this, tr("Export preset"), tr("The preset could not be written."));
+        return;
+    }
+    file.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+
+    Log(Logger::Level::Info, QStringLiteral("[text] exported profile '%1' (%2 rule(s)) to %3").arg(profileName).arg(rules.size()).arg(path));
+}
+
+void MainWindow::openPresetsFolder()
+{
+    QDir dir(presetsDirPath());
+    if (!dir.exists())
+        dir.mkpath(QStringLiteral("."));
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dir.path()));
+}
+
+void MainWindow::persistOfferedPresetLangs()
+{
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+
+    QJsonArray langs;
+    QStringList sorted = m_offeredPresetLangs.values();
+    sorted.sort();
+    for (const QString &lang : std::as_const(sorted))
+        langs.append(lang);
+
+    if (textProcessing["offered_preset_langs"].toArray() == langs)
+        return;
+
+    textProcessing["offered_preset_langs"] = langs;
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+}
+
+QString MainWindow::currentSpeechLang() const
+{
+    if (!m_tts) return QString();
+    return m_tts->voiceLanguage(m_tts->voice());
+}
+
+void MainWindow::maybeSuggestLanguagePreset()
+{
+    if (m_suggestingPreset)
+        return;
+
+    if (!m_speechOn)
+        return;
+
+    if (!ui->speechOfferPresetsCheckBox->isChecked())
+        return;
+
+    const QString lang = currentSpeechLang();
+    if (lang.isEmpty() || m_offeredPresetLangs.contains(lang))
+        return;
+
+    QString presetPath;
+    QString presetName;
+
+    const QFileInfoList files = QDir(presetsDirPath()).entryInfoList({ QStringLiteral("*.json") }, QDir::Files, QDir::Name);
+
+    for (const QFileInfo &info : files) {
+        QString name;
+        QString fileLang;
+        QJsonArray rules;
+        if (readPresetFile(info.absoluteFilePath(), name, rules, &fileLang)
+            && !fileLang.isEmpty() && fileLang.compare(lang, Qt::CaseInsensitive) == 0) {
+            presetPath = info.absoluteFilePath();
+            presetName = name;
+            break;
+        }
+    }
+
+    if (presetPath.isEmpty())
+        return;
+
+    const QString currentLabel = m_activeProfile.isEmpty() ? tr("Default") : m_activeProfile;
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("TTS preset"));
+    box.setText(tr("A ready-made TTS preset \"%1\" is available.").arg(presetName));
+    box.setInformativeText(tr("It adds text-normalization rules under Text processing → "
+                              "String replacement, where you can also load it yourself later."
+                              "\n\nLoad it into a new profile, or add it to "
+                              "the current profile \"%1\"?").arg(currentLabel));
+
+    QPushButton *newBtn = box.addButton(tr("New profile"), QMessageBox::AcceptRole);
+    QPushButton *curBtn = box.addButton(tr("Add to current"), QMessageBox::AcceptRole);
+    box.addButton(tr("Not now"), QMessageBox::RejectRole);
+    box.setDefaultButton(newBtn);
+    box.setWindowModality(Qt::WindowModal);
+    box.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+
+    m_suggestingPreset = true;
+    box.show();
+    box.raise();
+    box.activateWindow();
+    box.exec();
+    m_suggestingPreset = false;
+
+    QAbstractButton *clicked = box.clickedButton();
+    if (clicked == newBtn) {
+        applyReplacementPresetFile(presetPath, false, true);
+    } else if (clicked == curBtn) {
+        applyReplacementPresetFile(presetPath, true, true);
+    }
+
+    m_offeredPresetLangs.insert(lang);
+    persistOfferedPresetLangs();
+}
+
+// ===============================================================
+// text replacement
+// ===============================================================
+
+QTableWidgetItem *MainWindow::makeRegexFlagItem(bool checked)
+{
+    QTableWidgetItem *item = new QTableWidgetItem();
+    item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+    item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    item->setTextAlignment(Qt::AlignCenter);
+    return item;
+}
+
+QString MainWindow::replaceText(const QString &source, QString output)
+{
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+        if (rule.profile != m_liveProfile)
+            continue;
+        if (rule.from.isEmpty())
+            continue;
+        if (!rule.source.isEmpty() && rule.source.compare(source, Qt::CaseInsensitive) != 0)
+            continue;
+
+        if (rule.regex) {
+            QRegularExpression re(rule.from);
+            if (re.isValid())
+                output.replace(re, rule.to);
+        } else {
+            output.replace(rule.from, rule.to);
+        }
+    }
+
+    return output;
+}
+
+void MainWindow::markRulesChanged()
+{
+    m_textProcessingChanged = true;
+    ui->textProcessingTableWidget->setProperty("changed", true);
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+}
+
+// ===============================================================
+// profiles and bindings
+// ===============================================================
+
+void MainWindow::saveProfileBindings()
+{
+    QJsonObject bindings;
+    for (auto it = m_profileBindings.constBegin(); it != m_profileBindings.constEnd(); ++it) {
+        if (it.value().isEmpty())
+            continue;
+        QStringList targets = it.value().values();
+        targets.sort();
+        QJsonArray arr;
+        for (const QString &target : std::as_const(targets)) {
+            arr.append(target);
+        }
+        bindings[it.key()] = arr;
+    }
+
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+    if (textProcessing["profile_bindings"].toObject() == bindings)
+        return;
+
+    textProcessing["profile_bindings"] = bindings;
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+}
+
+QString MainWindow::activeHookTargetKey() const
+{
+    const QString plugin = m_hookController->currentRunningPlugin();
+    if (plugin.isEmpty())
+        return QString();
+
+    QString process = m_hookController->runningEngineProcess();
+    if (process.isEmpty()) {
+        for (const auto &p : m_registry) {
+            if (p.name == plugin) {
+                process = p.targetExecutable;
+                break;
+            }
+        }
+    }
+    return plugin + QStringLiteral("|") + process;
+}
+
+QString MainWindow::currentGameLabel() const
+{
+    const QString plugin = m_hookController->currentRunningPlugin();
+
+    if (plugin.isEmpty())
+        return QString();
+
+    const QString process = m_hookController->runningEngineProcess();
+    if (!process.isEmpty())
+        return process;
+
+    for (const auto &p : m_registry) {
+        if (p.name == plugin) {
+            return p.targetTitle.isEmpty() ? p.name : p.targetTitle;
+        }
+    }
+    return plugin;
+}
+
+QString MainWindow::hookTargetLabel(const QString &key) const
+{
+    const QString plugin = key.section(QLatin1Char('|'), 0, 0);
+    const QString process = key.section(QLatin1Char('|'), 1);
+    for (const auto &p : m_registry) {
+        if (p.name != plugin) {
+            continue;
+        }
+        if ((p.category == QLatin1String("game") || p.category == QLatin1String("application")) && !p.targetTitle.isEmpty()) {
+            return QStringLiteral("%1 (%2)").arg(p.targetTitle, p.name);
+        }
+        break;
+    }
+
+    if (process.isEmpty())
+        return plugin;
+    return QStringLiteral("%1 (%2)").arg(process, plugin);
+}
+
+void MainWindow::refreshBindingBox()
+{
+    QComboBox *box = ui->textProcessingBindingBox;
+    const QSignalBlocker blocker(box);
+
+    box->clear();
+
+    QStringList targets = m_profileBindings.value(m_activeProfile).values();
+    targets.sort();
+    if (targets.isEmpty()) {
+        box->addItem(tr("None"), QString());
+    } else {
+        for (const QString &key : std::as_const(targets)) {
+            box->addItem(hookTargetLabel(key), key);
+        }
+    }
+
+    const QString target = activeHookTargetKey();
+    const int currentIdx = target.isEmpty() ? -1 : box->findData(target);
+    box->setCurrentIndex(currentIdx >= 0 ? currentIdx : 0);
+
+    const bool canAdd = !target.isEmpty() && !m_profileBindings.value(m_activeProfile).contains(target);
+
+    ui->textProcessingBindingAddButton->setEnabled(canAdd);
+    ui->textProcessingBindingRemoveButton->setEnabled(!box->currentData().toString().isEmpty());
+}
+
+void MainWindow::activateProfileForHook()
+{
+    const QString target = activeHookTargetKey();
+
+    bool found = false;
+    QString bound;
+    if (!target.isEmpty()) {
+        QStringList candidates = m_ruleProfiles;
+        candidates.append(QString());
+        for (const QString &profile : std::as_const(candidates)) {
+            if (m_profileBindings.value(profile).contains(target)) {
+                found = true;
+                bound = profile;
+                break;
+            }
+        }
+    }
+
+    if (target != m_lastHookTarget) {
+        // A different game (or none) is running now - any earlier manual
+        // pick was scoped to the previous game, so it no longer applies
+        if (m_profileHookState == ProfileHookState::ManualOverride)
+            m_profileHookState = ProfileHookState::Idle;
+        m_lastHookTarget = target;
+    }
+
+    if (found && m_profileHookState != ProfileHookState::ManualOverride) {
+        if (bound != m_liveProfile) {
+            if (m_profileHookState != ProfileHookState::AutoSwitched) {
+                m_profileBeforeHook = m_liveProfile;
+                m_profileHookState = ProfileHookState::AutoSwitched;
+            }
+            m_liveProfile = bound;
+            m_activeProfile = bound;
+            refreshProfileBox();
+            return;
+        }
+    } else if (!found && m_profileHookState == ProfileHookState::AutoSwitched) {
+        m_profileHookState = ProfileHookState::Idle;
+        if (m_profileBeforeHook != m_liveProfile) {
+            m_liveProfile = m_profileBeforeHook;
+            m_activeProfile = m_profileBeforeHook;
+            refreshProfileBox();
+            return;
+        }
+    }
+
+    refreshBindingBox();
+}
+
+void MainWindow::discardPendingProfileOverride()
+{
+    if (m_profileHookState == ProfileHookState::ManualOverride)
+        m_profileHookState = ProfileHookState::Idle;
+}
+
+void MainWindow::addProfileBinding()
+{
+    const QString target = activeHookTargetKey();
+    if (target.isEmpty())
+        return;
+
+    for (auto it = m_profileBindings.begin(); it != m_profileBindings.end(); ++it) {
+        if (it.key() == m_activeProfile || !it.value().contains(target))
+            continue;
+
+        const QString other = it.key().isEmpty() ? tr("Default") : it.key();
+        const auto reply = QMessageBox::question(this,
+                                                 tr("Bind current game"),
+                                                 tr("\"%1\" already auto-selects the profile \"%2\". Move it to this profile?")
+                                                 .arg(currentGameLabel(), other));
+        if (reply != QMessageBox::Yes)
+            return;
+
+        it.value().remove(target);
+
+        if (it.value().isEmpty()) {
+            m_profileBindings.erase(it);
+        }
+
+        break;
+    }
+
+    m_profileBindings[m_activeProfile].insert(target);
+    markRulesChanged();
+    refreshBindingBox();
+}
+
+void MainWindow::removeProfileBinding()
+{
+    const QString target = ui->textProcessingBindingBox->currentData().toString();
+    if (target.isEmpty())
+        return;
+
+    QSet<QString> &binding = m_profileBindings[m_activeProfile];
+    binding.remove(target);
+    if (binding.isEmpty()) {
+        m_profileBindings.remove(m_activeProfile);
+    }
+
+    markRulesChanged();
+    refreshBindingBox();
+}
+
+void MainWindow::refreshProfileBox()
+{
+    QComboBox *box = ui->textProcessingProfileBox;
+    const QSignalBlocker blocker(box);
+
+    box->clear();
+    box->addItem(tr("Default"), QString());
+    for (const QString &name : std::as_const(m_ruleProfiles))
+        box->addItem(name, name);
+
+    int idx = box->findData(m_activeProfile);
+    if (idx < 0) {
+        idx = 0;
+        m_activeProfile.clear();
+    }
+    box->setCurrentIndex(idx);
+
+    const bool custom = !m_activeProfile.isEmpty();
+    ui->textProcessingProfileRenameButton->setEnabled(custom);
+    ui->textProcessingProfileDeleteButton->setEnabled(custom);
+
+    refreshBindingBox();
+    populateReplacementTable();
+}
+
+void MainWindow::persistProfilesMeta()
+{
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+
+    QJsonArray profiles;
+    for (const QString &name : std::as_const(m_ruleProfiles))
+        profiles.append(name);
+
+    if (textProcessing["profiles"].toArray() == profiles && textProcessing["active_profile"].toString() == m_liveProfile)
+        return;
+
+    textProcessing["profiles"] = profiles;
+    textProcessing["active_profile"] = m_liveProfile;
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+}
+
+void MainWindow::persistReplacementRules()
+{
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+
+    QJsonArray jsonArray;
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+        QJsonObject rowObject;
+        rowObject["regex"] = rule.regex;
+        rowObject["source"] = rule.source;
+        rowObject["from"] = rule.from;
+        rowObject["to"] = rule.to;
+        if (!rule.profile.isEmpty())
+            rowObject["profile"] = rule.profile;
+        jsonArray.append(rowObject);
+    }
+    textProcessing["text_replacement_table"] = jsonArray;
+
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+}
+
+void MainWindow::addRuleProfile()
+{
+    bool ok = false;
+    const QString name = QInputDialog::getText(this, tr("New profile"), tr("Profile name:"), QLineEdit::Normal, QString(), &ok).trimmed();
+    if (!ok || name.isEmpty())
+        return;
+
+    if (name.compare(tr("Default"), Qt::CaseInsensitive) == 0 || m_ruleProfiles.contains(name)) {
+        QMessageBox::warning(this, tr("New profile"), tr("A profile with this name already exists."));
+        return;
+    }
+
+    m_ruleProfiles << name;
+    m_activeProfile = name;
+    if (m_profileHookState == ProfileHookState::AutoSwitched)
+        m_profileHookState = ProfileHookState::Idle;
+    refreshProfileBox();
+    persistProfilesMeta();
+    markRulesChanged();
+}
+
+void MainWindow::renameRuleProfile()
+{
+    if (m_activeProfile.isEmpty())
+        return;
+
+    bool ok = false;
+    const QString name = QInputDialog::getText(this, tr("Rename profile"), tr("Profile name:"), QLineEdit::Normal, m_activeProfile, &ok).trimmed();
+    if (!ok || name.isEmpty() || name == m_activeProfile)
+        return;
+
+    if (name.compare(tr("Default"), Qt::CaseInsensitive) == 0 || m_ruleProfiles.contains(name)) {
+        QMessageBox::warning(this, tr("Rename profile"), tr("A profile with this name already exists."));
+        return;
+    }
+
+    const QString previous = m_activeProfile;
+    for (ReplacementRule &rule : m_replacementRules)
+        if (rule.profile == previous)
+            rule.profile = name;
+
+    const int i = m_ruleProfiles.indexOf(previous);
+    if (i >= 0) {
+        m_ruleProfiles[i] = name;
+    }
+
+    if (m_profileBindings.contains(previous))
+        m_profileBindings.insert(name, m_profileBindings.take(previous));
+
+    m_activeProfile = name;
+
+    refreshProfileBox();
+    persistProfilesMeta();
+    saveProfileBindings();
+    markRulesChanged();
+}
+
+void MainWindow::deleteRuleProfile()
+{
+    if (m_activeProfile.isEmpty())
+        return;
+
+    const QString name = m_activeProfile;
+    const auto reply = QMessageBox::question(this, tr("Delete profile"), tr("Delete profile \"%1\" and all its rules?").arg(name));
+    if (reply != QMessageBox::Yes)
+        return;
+
+    m_replacementRules.erase( std::remove_if(m_replacementRules.begin(),
+                                            m_replacementRules.end(),
+                                            [&name](const ReplacementRule &rule) {
+                                                return rule.profile == name;
+                                            }), m_replacementRules.end());
+
+    m_ruleProfiles.removeAll(name);
+    m_profileBindings.remove(name);
+    m_activeProfile.clear();
+
+    refreshProfileBox();
+    persistProfilesMeta();
+    saveProfileBindings();
+    markRulesChanged();
+}
+
+void MainWindow::populateReplacementTable()
+{
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    // Refilling the table is not a user edit: no commit, no Apply button
+    const QSignalBlocker blocker(table);
+    table->setRowCount(0);
+
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
+        if (rule.profile != m_activeProfile)
+            continue;
+
+        const int row = table->rowCount();
+        table->insertRow(row);
+        table->setItem(row, ColRegex, makeRegexFlagItem(rule.regex));
+        table->setItem(row, ColSource, new QTableWidgetItem(rule.source));
+        table->setItem(row, ColFrom, new QTableWidgetItem(rule.from));
+        table->setItem(row, ColTo, new QTableWidgetItem(rule.to));
+    }
+}
+
+void MainWindow::commitReplacementTable()
+{
+    QTableWidget *table = ui->textProcessingTableWidget;
+
+    QList<ReplacementRule> kept;
+    for (const ReplacementRule &rule : std::as_const(m_replacementRules))
+        if (rule.profile != m_activeProfile)
+            kept << rule;
+
+    for (int i = 0; i < table->rowCount(); ++i) {
+        QTableWidgetItem *regexItem = table->item(i, ColRegex);
+        QTableWidgetItem *srcItem = table->item(i, ColSource);
+        QTableWidgetItem *fromItem = table->item(i, ColFrom);
+        QTableWidgetItem *toItem = table->item(i, ColTo);
+
+        ReplacementRule rule;
+        rule.regex = regexItem && regexItem->checkState() == Qt::Checked;
+        rule.source = srcItem ? srcItem->text().trimmed() : QString();
+        rule.from = fromItem ? fromItem->text() : QString();
+        rule.to = toItem ? toItem->text() : QString();
+        rule.profile = m_activeProfile;
+        kept << rule;
+    }
+
+    m_replacementRules = kept;
+}
+
+// ===============================================================
+// config load
+// ===============================================================
+
 void MainWindow::loadConfig()
 {
     if (m_generalChanged)
@@ -2294,6 +3143,8 @@ void MainWindow::loadConfig()
 
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
     setPropertyChanged(false);
+
+    activateProfileForHook();
 }
 
 void MainWindow::loadGeneralSettings(const QJsonObject& general)
@@ -2515,14 +3366,28 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         }
 
         // Text Replacement
-        const QJsonValue scopeValue = textProcessing["rules_scope"];
-        m_gameScopedTargets.clear();
-        for (const QJsonValue &value : scopeValue.toArray())
-            m_gameScopedTargets.insert(value.toString());
 
-        // Briefly this held a single target key instead of a list
-        if (scopeValue.isString() && !scopeValue.toString().isEmpty())
-            m_gameScopedTargets.insert(scopeValue.toString());
+        // Per-profile bindings
+        m_profileBindings.clear();
+        const QJsonObject bindings = textProcessing["profile_bindings"].toObject();
+        for (auto it = bindings.constBegin(); it != bindings.constEnd(); ++it) {
+            QSet<QString> set;
+            for (const QJsonValue &value : it.value().toArray())
+                set.insert(value.toString());
+            m_profileBindings.insert(it.key(), set);
+        }
+
+        // Named rule profiles
+        m_ruleProfiles.clear();
+        for (const QJsonValue &value : textProcessing["profiles"].toArray())
+            m_ruleProfiles << value.toString();
+        m_activeProfile = textProcessing["active_profile"].toString();
+        m_liveProfile = m_activeProfile; // committed == shown until the user edits
+
+        // Target languages
+        m_offeredPresetLangs.clear();
+        for (const QJsonValue &value : textProcessing["offered_preset_langs"].toArray())
+            m_offeredPresetLangs.insert(value.toString());
 
         const QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
         if (widgetChanged(ui->textProcessingTableWidget)) {
@@ -2534,11 +3399,11 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
                 rule.source = rowObject["source"].toString();
                 rule.from = rowObject["from"].toString();
                 rule.to = rowObject["to"].toString();
-                rule.target = rowObject["target"].toString(); // absent = every game
+                rule.profile = rowObject["profile"].toString();  // absent = default profile
                 m_replacementRules << rule;
             }
 
-            refreshRuleScopeBox();
+            refreshProfileBox();
         }
     }
 }
@@ -2642,6 +3507,9 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
     if (widgetChanged(ui->speechToggleSoundCheckBox))
         ui->speechToggleSoundCheckBox->setChecked(speech.value("toggle_sound").toBool(true));
 
+    if (widgetChanged(ui->speechOfferPresetsCheckBox))
+        ui->speechOfferPresetsCheckBox->setChecked(speech.value("offer_tts_presets").toBool(true));
+
     if (widgetChanged(ui->speechVolumeSlider))
         ui->speechVolumeSlider->setValue(speech.value("volume").toInt(100));
 
@@ -2664,6 +3532,8 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
 
     if (!current)
         startSpeech();
+
+    QTimer::singleShot(0, this, &MainWindow::maybeSuggestLanguagePreset);
 }
 
 void MainWindow::loadScreencastSettings()
@@ -2703,6 +3573,10 @@ void MainWindow::loadScreencastSettings()
         }
     }
 }
+
+// ===============================================================
+// ocr and hook load
+// ===============================================================
 
 void MainWindow::loadOcrSettings()
 {
@@ -2771,10 +3645,14 @@ void MainWindow::syncHookControllerTargets()
     m_hookController->setCurrentEnginePlugin(m_currentEnginePlugin);
     m_hookController->setCurrentEngineProcess(m_currentEngineProcess);
     m_outputWindow->setHookTarget(currentHookTargetKey());
-    refreshRuleScopeBox();
+    activateProfileForHook();
 
     syncPluginConfigs();
 }
+
+// ===============================================================
+// hook state
+// ===============================================================
 
 QString MainWindow::currentHookTargetKey() const
 {
@@ -2796,17 +3674,12 @@ QString MainWindow::currentHookTargetKey() const
     return plugin + QStringLiteral("|") + process;
 }
 
-int MainWindow::storedFlushMs(const QString &targetKey) const
+void MainWindow::clearHookState()
 {
-    const QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
-    return all.value(targetKey).toInt(TextOutputWindow::kDefaultFlushMs);
-}
-
-QString MainWindow::buildPluginConfigJson(int flushMs) const
-{
-    QJsonObject root;
-    root[QStringLiteral("flush_interval_ms")] = flushMs;
-    return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
+    m_hookBurstTimer->stop();
+    m_hookBurstBuffer.clear();
+    m_currentHookTexts.clear();
+    m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
 }
 
 void MainWindow::syncPluginConfigs()
@@ -2825,12 +3698,11 @@ void MainWindow::syncPluginConfigs()
     m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(target)));
 }
 
-void MainWindow::clearHookState()
+QString MainWindow::buildPluginConfigJson(int flushMs) const
 {
-    m_hookBurstTimer->stop();
-    m_hookBurstBuffer.clear();
-    m_currentHookTexts.clear();
-    m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
+    QJsonObject root;
+    root[QStringLiteral("flush_interval_ms")] = flushMs;
+    return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
 void MainWindow::pushCurrentPluginConfig()
@@ -2841,17 +3713,9 @@ void MainWindow::pushCurrentPluginConfig()
     m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(currentHookTargetKey())));
 }
 
-void MainWindow::updateSpeedButtonAvailability()
-{
-    const QString pluginName = m_hookController->currentRunningPlugin();
-    bool eligible = false;
-    if (!pluginName.isEmpty()) {
-        auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
-                               [&](const PluginManager::PluginInfo &i) { return i.name == pluginName; });
-        eligible = it != m_registry.cend() && it->textMode == QLatin1String("per_char");
-    }
-    m_outputWindow->setSpeedAvailable(eligible);
-}
+// ===============================================================
+// speed settings [hook]
+// ===============================================================
 
 void MainWindow::openSpeedSettings()
 {
@@ -2875,6 +3739,28 @@ void MainWindow::openSpeedSettings()
 
     m_hookController->setPluginConfig(pluginName, buildPluginConfigJson(chosen));
 }
+
+void MainWindow::updateSpeedButtonAvailability()
+{
+    const QString pluginName = m_hookController->currentRunningPlugin();
+    bool eligible = false;
+    if (!pluginName.isEmpty()) {
+        auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                               [&](const PluginManager::PluginInfo &i) { return i.name == pluginName; });
+        eligible = it != m_registry.cend() && it->textMode == QLatin1String("per_char");
+    }
+    m_outputWindow->setSpeedAvailable(eligible);
+}
+
+int MainWindow::storedFlushMs(const QString &targetKey) const
+{
+    const QJsonObject all = Config::getValue("plugin_flush_ms").toJsonObject();
+    return all.value(targetKey).toInt(TextOutputWindow::kDefaultFlushMs);
+}
+
+// ===============================================================
+// config save
+// ===============================================================
 
 void MainWindow::reapplyProfileSections()
 {
@@ -2914,96 +3800,6 @@ void MainWindow::refreshConfigsPage()
     ui->configsLoadButton->setEnabled(hasSel && selName != active);
     ui->configsRenameButton->setEnabled(hasSel);
     ui->configsDeleteButton->setEnabled(hasSel && selName != active);
-}
-
-void MainWindow::on_configsNewButton_clicked()
-{
-    bool ok = false;
-    const QString name = DialogUtils::getText(this,
-                                              tr("New profile"),
-                                              tr("Profile name (snapshots the current settings):"),
-                                              QLineEdit::Normal, QString(), &ok).trimmed();
-    if (!ok || name.isEmpty()) return;
-
-    if (Config::availableProfiles().contains(name)) {
-        DialogUtils::warning(this,
-                             tr("New profile"),
-                             tr("A profile named '%1' already exists.").arg(name));
-        return;
-    }
-
-    Config::saveCurrentAsProfile(name); // writes configs/<name>.json + switches active
-    refreshConfigsPage();
-}
-
-void MainWindow::on_configsLoadButton_clicked()
-{
-    QListWidgetItem *item = ui->configsListWidget->currentItem();
-    if (!item) return;
-
-    const QString name = item->data(Qt::UserRole).toString();
-    if (name == Config::activeProfile()) return;
-
-    if (!Config::loadProfile(name)) {
-        DialogUtils::warning(this,
-                             tr("Load profile"),
-                             tr("Could not load profile '%1'.").arg(name));
-        return;
-    }
-    reapplyProfileSections();
-    refreshConfigsPage();
-}
-
-void MainWindow::on_configsRenameButton_clicked()
-{
-    QListWidgetItem *item = ui->configsListWidget->currentItem();
-    if (!item) return;
-
-    const QString oldName = item->data(Qt::UserRole).toString();
-
-    bool ok = false;
-
-    const QString newName = DialogUtils::getText(this,
-                                                 tr("Rename profile"),
-                                                 tr("New name:"), QLineEdit::Normal, oldName, &ok).trimmed();
-
-    if (!ok || newName.isEmpty() || newName == oldName)
-        return;
-
-    if (Config::availableProfiles().contains(newName)) {
-        DialogUtils::warning(this,
-                             tr("Rename profile"),
-                             tr("A profile named '%1' already exists.").arg(newName));
-        return;
-    }
-
-    if (!Config::renameProfile(oldName, newName))
-        DialogUtils::warning(this, tr("Rename profile"), tr("Rename failed."));
-
-    refreshConfigsPage();
-}
-
-void MainWindow::on_configsDeleteButton_clicked()
-{
-    QListWidgetItem *item = ui->configsListWidget->currentItem();
-    if (!item) return;
-
-    const QString name = item->data(Qt::UserRole).toString();
-    if (name == Config::activeProfile()) {
-        DialogUtils::information(this,
-                                 tr("Delete profile"),
-                                 tr("The active profile can't be deleted. Load another profile first."));
-        return;
-    }
-
-    if (DialogUtils::question(this,
-                              tr("Delete profile"),
-                              tr("Delete profile '%1'? This cannot be undone.").arg(name)) != QMessageBox::Yes) {
-        return;
-    }
-
-    Config::deleteProfile(name);
-    refreshConfigsPage();
 }
 
 void MainWindow::saveConfig()
@@ -3187,6 +3983,7 @@ void MainWindow::saveConfig()
 
         if (widgetChanged(ui->textProcessingTableWidget)) {
             commitReplacementTable();
+            m_liveProfile = m_activeProfile;
 
             QJsonArray jsonArray;
             for (const ReplacementRule &rule : std::as_const(m_replacementRules)) {
@@ -3195,13 +3992,33 @@ void MainWindow::saveConfig()
                 rowObject["source"] = rule.source;
                 rowObject["from"] = rule.from;
                 rowObject["to"] = rule.to;
-                if (!rule.target.isEmpty())
-                    rowObject["target"] = rule.target;
+                if (!rule.profile.isEmpty())
+                    rowObject["profile"] = rule.profile;
                 jsonArray.append(rowObject);
             }
             textProcessing["text_replacement_table"] = jsonArray;
+
+            QJsonArray profiles;
+            for (const QString &name : std::as_const(m_ruleProfiles))
+                profiles.append(name);
+            textProcessing["profiles"] = profiles;
+            textProcessing["active_profile"] = m_liveProfile;
+
+            QJsonObject bindings;
+            for (auto it = m_profileBindings.constBegin(); it != m_profileBindings.constEnd(); ++it) {
+                if (it.value().isEmpty())
+                    continue;
+                QStringList targets = it.value().values();
+                targets.sort();
+                QJsonArray arr;
+                for (const QString &target : std::as_const(targets))
+                    arr.append(target);
+                bindings[it.key()] = arr;
+            }
+            textProcessing["profile_bindings"] = bindings;
         }
         Config::setValue("text_processing", textProcessing);
+        activateProfileForHook();
     }
 
     // Proxy
@@ -3244,6 +4061,9 @@ void MainWindow::saveConfig()
 
         if (widgetChanged(ui->speechToggleSoundCheckBox))
             speech["toggle_sound"] = ui->speechToggleSoundCheckBox->isChecked();
+
+        if (widgetChanged(ui->speechOfferPresetsCheckBox))
+            speech["offer_tts_presets"] = ui->speechOfferPresetsCheckBox->isChecked();
 
         if (widgetChanged(ui->speechVolumeSlider))
             speech["volume"] = ui->speechVolumeSlider->value();

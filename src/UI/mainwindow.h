@@ -309,20 +309,58 @@ private:
         QString source;
         QString from;
         QString to;
-        QString target;
+        QString profile;
     };
 
-    QList<ReplacementRule> m_replacementRules;
-    QSet<QString> m_gameScopedTargets;
+    enum class ProfileHookState { Idle, AutoSwitched, ManualOverride };
 
-    QString replaceText(const QString &source, QString output);
+    QList<ReplacementRule> m_replacementRules;
+    QHash<QString, QSet<QString>> m_profileBindings;
+    QStringList m_ruleProfiles;
+    QString m_activeProfile;
+    QString m_liveProfile;
+    QString m_profileBeforeHook;
+    ProfileHookState m_profileHookState = ProfileHookState::Idle;
+    QString m_lastHookTarget;
+    QSet<QString> m_offeredPresetLangs;
+    bool m_suggestingPreset = false;
+
+    // Presets for Text replacement
+    QString presetsDirPath() const;
+    void ensurePresetsSeed();
+    void setupReplacementPresets();
+    void rebuildPresetMenu();
+    bool readPresetFile(const QString &path, QString &name, QJsonArray &rules, QString *lang = nullptr);
+    void choosePresetTarget(const QString &path);
+    void applyReplacementPresetFile(const QString &path, bool intoCurrentProfile = false, bool commitNow = false);
+    void importPresetFile();
+    void exportCurrentProfile();
+    void openPresetsFolder();
+    void persistOfferedPresetLangs();
+    QString currentSpeechLang() const;
+    void maybeSuggestLanguagePreset();
+
+    // Text replacement
     QTableWidgetItem *makeRegexFlagItem(bool checked);
-    QString currentRuleScope() const;
-    void saveRuleScope();
+    QString replaceText(const QString &source, QString output);
+    void markRulesChanged();
+
+    // Profiles and per-game auto-select bindings
+    void saveProfileBindings();
     QString activeHookTargetKey() const;
     QString currentGameLabel() const;
-    void markRulesChanged();
-    void refreshRuleScopeBox();
+    QString hookTargetLabel(const QString &key) const;
+    void refreshBindingBox();
+    void activateProfileForHook();
+    void discardPendingProfileOverride();
+    void addProfileBinding();
+    void removeProfileBinding();
+    void refreshProfileBox();
+    void persistProfilesMeta();
+    void persistReplacementRules();
+    void addRuleProfile();
+    void renameRuleProfile();
+    void deleteRuleProfile();
     void populateReplacementTable();
     void commitReplacementTable();
 

@@ -52,6 +52,7 @@ public:
     virtual QString summary() const = 0;
     virtual QStringList availableVoices() const = 0;
     virtual QString voiceLabel(const QString &voice) const { return voice; }
+    virtual QString voiceLanguage(const QString &voice) const;
 
     virtual bool needsVoiceToStart() const { return true; }
     virtual bool settingsChangeNeedsRestart(const QJsonObject &before, const QJsonObject &after) const;

@@ -49,6 +49,13 @@ TtsEngine::~TtsEngine()
     stop();
 }
 
+QString TtsEngine::voiceLanguage(const QString &voice) const
+{
+    static const QRegularExpression re(QStringLiteral("^([A-Za-z]{2,3})[-_]"));
+    const QRegularExpressionMatch match = re.match(voice);
+    return match.hasMatch() ? match.captured(1).toLower() : QString();
+}
+
 bool TtsEngine::settingsChangeNeedsRestart(const QJsonObject &before, const QJsonObject &after) const
 {
     return before != after;

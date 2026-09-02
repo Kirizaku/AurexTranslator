@@ -385,7 +385,7 @@ Save anyway?</source>
         <location filename="../src/UI/forms/mainwindow.ui" line="44"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="114"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="456"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2188"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2291"/>
         <source>General</source>
         <translation type="unfinished"></translation>
     </message>
@@ -396,7 +396,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="54"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2000"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2103"/>
         <source>Translator</source>
         <translation type="unfinished"></translation>
     </message>
@@ -412,7 +412,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="74"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1672"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1762"/>
         <source>Speech</source>
         <translation type="unfinished"></translation>
     </message>
@@ -433,7 +433,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="94"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2318"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2421"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
@@ -454,7 +454,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="186"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2241"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2344"/>
         <source>Type</source>
         <translation type="unfinished"></translation>
     </message>
@@ -615,7 +615,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1215"/>
-        <location filename="../src/UI/mainwindow.cpp" line="636"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1644"/>
         <source>Clipboard</source>
         <translation type="unfinished"></translation>
     </message>
@@ -626,7 +626,8 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1251"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1623"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1383"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1713"/>
         <source>Remove</source>
         <translation type="unfinished"></translation>
     </message>
@@ -642,159 +643,190 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1290"/>
-        <source>Apply rules:</source>
+        <source>Profile:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1326"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1307"/>
+        <source>New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1314"/>
+        <source>Rename</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2392"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2400"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2422"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2477"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2485"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2504"/>
+        <source>Load preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1376"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2889"/>
+        <source>Bind current game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1416"/>
         <source>Regex</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1331"/>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1969"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1421"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2072"/>
         <source>Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1336"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1426"/>
         <source>Original content</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1341"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1431"/>
         <source>Replace with</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1370"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1460"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1375"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1465"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1380"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1470"/>
         <source>Architecture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1385"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1475"/>
         <source>Dependencies</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1390"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1480"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1398"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1488"/>
         <source>Open plugins directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1405"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1495"/>
         <source>Reload</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1421"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1511"/>
         <source>Environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1427"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1517"/>
         <source>Interpreter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1447"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1537"/>
         <source>Virtual environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1467"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1557"/>
         <source>Custom interpreter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1476"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1566"/>
         <source>Leave empty to search the system automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1483"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1573"/>
         <source>Browse…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1494"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1584"/>
         <source>Check again</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1501"/>
-        <location filename="../src/UI/mainwindow.cpp" line="340"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1591"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1450"/>
         <source>Create environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1508"/>
-        <location filename="../src/UI/mainwindow.cpp" line="370"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1598"/>
+        <location filename="../src/UI/mainwindow.cpp" line="511"/>
         <source>Install Python</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1528"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1618"/>
         <source>Open directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1535"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1625"/>
         <source>Show log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1552"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1642"/>
         <source>Components</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1564"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1654"/>
         <source>Features that rely on Python install their packages into this environment.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1590"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1680"/>
         <source>Component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1595"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1685"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1815"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1905"/>
         <source>Volume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1864"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1954"/>
         <source>Play a sound when toggling speech with the hotkey</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1889"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1961"/>
+        <source>Offer a ready-made TTS preset for text normalization when one is available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1992"/>
         <source>Status:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1600"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1690"/>
         <source>Packages</source>
         <translation type="unfinished"></translation>
     </message>
@@ -804,285 +836,301 @@ Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1630"/>
-        <location filename="../src/UI/mainwindow.cpp" line="349"/>
-        <location filename="../src/UI/mainwindow.cpp" line="412"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1328"/>
+        <source>Presets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1359"/>
+        <source>Auto-select for games:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1396"/>
+        <source>When a game starts, its profile is selected automatically. Works only in hook mode.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1720"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1459"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1492"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1678"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1768"/>
         <source>Speak text out loud</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1685"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1775"/>
         <source>Engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1703"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1793"/>
         <source>...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1735"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1825"/>
         <source>Voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1769"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1859"/>
         <source>Speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1883"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1986"/>
         <source>Test</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1908"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2011"/>
         <source>Speak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1915"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2018"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1932"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2035"/>
         <source>What to speak</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="1938"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2041"/>
         <source>Text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2062"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2165"/>
         <source>On a new text</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2109"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2212"/>
         <source>Profiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2115"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2218"/>
         <source>Active profile: Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2122"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2225"/>
         <source>Profiles store everything except the Common and Proxy tabs. Save the current settings as a profile, then load it from here whenever you need it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2137"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2240"/>
         <source>New from current…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2147"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2250"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2157"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2260"/>
         <source>Rename…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2167"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="1321"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2270"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2194"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2297"/>
         <source>Use proxy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2211"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2314"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2221"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2324"/>
         <source>User</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2231"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2334"/>
         <source>Password</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2289"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2392"/>
         <source>Copy all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2296"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2399"/>
         <source>Open logs directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2338"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2441"/>
         <source>Free and open-source tool for on-screen text translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2397"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2500"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="303"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1413"/>
         <source>Not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="305"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1415"/>
         <source>Ready</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="306"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1416"/>
         <source>Not created yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="325"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1435"/>
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="325"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1435"/>
         <source>Not installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="339"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1449"/>
         <source>Update environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="349"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1459"/>
         <source>Reinstall</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="770"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1778"/>
         <source>Not running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="773"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1781"/>
         <source>Starting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="777"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1785"/>
         <source>Ready at %1, no voice chosen yet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="778"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1786"/>
         <source>Ready at %1, voice %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="782"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1790"/>
         <source>Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="787"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1795"/>
         <source>Not applied yet — %1 is still in use</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="848"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1856"/>
         <source>The list comes from the service; switch speech on and apply once to read it.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="850"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1858"/>
         <source>The server has not reported its voices yet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="851"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1859"/>
         <source>Open the engine settings to download a voice.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="909"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1917"/>
         <source>Open the engine settings and download a voice first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="371"/>
+        <location filename="../src/UI/mainwindow.cpp" line="512"/>
         <source>Python %1 will be downloaded from python.org (about 30 MB).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="376"/>
+        <location filename="../src/UI/mainwindow.cpp" line="517"/>
         <source>For this program only — installed into its own folder, adds nothing to PATH and leaves the rest of the system alone.
 
 System-wide — an ordinary installation, available to other programs as well.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="380"/>
+        <location filename="../src/UI/mainwindow.cpp" line="521"/>
         <source>For this program only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="381"/>
+        <location filename="../src/UI/mainwindow.cpp" line="522"/>
         <source>System-wide</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="398"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1478"/>
         <source>Install %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="399"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1479"/>
         <source>These packages will be installed from PyPI:
 
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="405"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1485"/>
         <source>They are third-party code under their own licenses.
 Destination: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="420"/>
+        <location filename="../src/UI/mainwindow.cpp" line="538"/>
         <source>Select a Python interpreter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="477"/>
-        <location filename="../src/UI/mainwindow.cpp" line="485"/>
+        <location filename="../src/UI/mainwindow.cpp" line="584"/>
+        <location filename="../src/UI/mainwindow.cpp" line="592"/>
         <source>Remove component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="478"/>
+        <location filename="../src/UI/mainwindow.cpp" line="585"/>
         <source>Everything %1 installed is also being used by another component, so there is nothing here to remove.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="486"/>
+        <location filename="../src/UI/mainwindow.cpp" line="593"/>
         <source>Remove %1?
 
 These packages go: %2
@@ -1091,227 +1139,355 @@ Anything they pulled in with them stays, and so does anything downloaded separat
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="584"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1592"/>
         <source>On this machine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="585"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1593"/>
         <source>Over the internet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="586"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1594"/>
         <source>Your own server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="630"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1638"/>
         <source>Translation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="631"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1639"/>
         <source>Original</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="633"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1641"/>
         <source>Any source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="634"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1642"/>
         <source>Screen (Tesseract)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="635"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1643"/>
         <source>Screen (Ollama Vision)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="639"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1647"/>
         <source>Whichever answers first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="644"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1652"/>
         <source>Manual (hotkey or button)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="646"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1654"/>
         <source>Interrupt the current phrase</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="647"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1655"/>
         <source>Let the current phrase finish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="649"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1657"/>
         <source>Speaks with the settings as applied. Press Apply first to hear a change.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="651"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1659"/>
         <source>Settings for the chosen engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="652"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1660"/>
         <source>Engine settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="664"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1672"/>
         <source>Edge TTS speaks through a Microsoft service rather than on this machine, so every phrase - translated or original - is sent over the internet, and nothing is spoken without a connection. The download itself is a small one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1441"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1327"/>
         <source>Open Original Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1444"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1330"/>
         <source>Open Processed Screencast in New Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1539"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2345"/>
+        <source>Export current profile…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2401"/>
+        <source>Load preset &quot;%1&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2402"/>
+        <source>Load it into a new profile, or add it to the current profile &quot;%1&quot;?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2532"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2545"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2556"/>
+        <source>Export preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2532"/>
+        <source>This profile has no rules to export.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2556"/>
+        <source>The preset could not be written.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2636"/>
+        <source>TTS preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2638"/>
+        <source>It adds text-normalization rules under Text processing → String replacement, where you can also load it yourself later.
+
+Load it into a new profile, or add it to the current profile &quot;%1&quot;?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2130"/>
         <source>Original Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1544"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2135"/>
         <source>Processed Screencast Preview</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1640"/>
+        <location filename="../src/UI/mainwindow.cpp" line="214"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1640"/>
+        <location filename="../src/UI/mainwindow.cpp" line="214"/>
         <source>Inactive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1998"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2148"/>
         <source>Warning</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1998"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2148"/>
         <source>No screencast selected for OCR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2139"/>
-        <source>Everywhere</source>
+        <location filename="../src/UI/mainwindow.cpp" line="2396"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2516"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2632"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2887"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2931"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2995"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3019"/>
+        <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2141"/>
-        <source>Only in %1</source>
+        <location filename="../src/UI/mainwindow.cpp" line="2991"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3015"/>
+        <source>Profile name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2902"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2996"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3020"/>
+        <source>A profile with this name already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="3051"/>
+        <source>Delete profile &quot;%1&quot; and all its rules?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="3788"/>
         <source>Active profile: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2907"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3793"/>
         <source>%1 (active)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2923"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2930"/>
+        <location filename="../src/UI/mainwindow.cpp" line="300"/>
+        <location filename="../src/UI/mainwindow.cpp" line="307"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2403"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2991"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2996"/>
         <source>New profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2924"/>
+        <location filename="../src/UI/mainwindow.cpp" line="301"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2931"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2976"/>
+        <location filename="../src/UI/mainwindow.cpp" line="308"/>
+        <location filename="../src/UI/mainwindow.cpp" line="353"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2949"/>
+        <location filename="../src/UI/mainwindow.cpp" line="326"/>
         <source>Load profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2950"/>
+        <location filename="../src/UI/mainwindow.cpp" line="327"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2967"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2975"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2981"/>
+        <location filename="../src/UI/mainwindow.cpp" line="344"/>
+        <location filename="../src/UI/mainwindow.cpp" line="352"/>
+        <location filename="../src/UI/mainwindow.cpp" line="358"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3015"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3020"/>
         <source>Rename profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2968"/>
+        <location filename="../src/UI/mainwindow.cpp" line="345"/>
         <source>New name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2981"/>
+        <location filename="../src/UI/mainwindow.cpp" line="358"/>
         <source>Rename failed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2994"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3000"/>
+        <location filename="../src/UI/mainwindow.cpp" line="371"/>
+        <location filename="../src/UI/mainwindow.cpp" line="377"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3051"/>
         <source>Delete profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2995"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2341"/>
+        <source>No presets found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2344"/>
+        <source>Load from file…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2346"/>
+        <source>Open presets folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2392"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2422"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2485"/>
+        <source>This preset file could not be read.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2477"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2546"/>
+        <source>Preset files (*.json)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2504"/>
+        <source>The preset could not be copied into the presets folder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2637"/>
+        <source>A ready-made TTS preset &quot;%1&quot; is available.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2404"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2644"/>
+        <source>Add to current</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2645"/>
+        <source>Not now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2804"/>
+        <source>None</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="2890"/>
+        <source>&quot;%1&quot; already auto-selects the profile &quot;%2&quot;. Move it to this profile?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/mainwindow.cpp" line="372"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3001"/>
+        <location filename="../src/UI/mainwindow.cpp" line="378"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3052"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3848"/>
         <source>Restart Required</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3053"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3849"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3055"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3851"/>
         <source>Restart Now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3056"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3852"/>
         <source>Later</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/forms/mainwindow.ui" line="2031"/>
+        <location filename="../src/UI/forms/mainwindow.ui" line="2134"/>
         <source>Mode</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1326,7 +1502,7 @@ Anything they pulled in with them stays, and so does anything downloaded separat
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="643"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1651"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1727,6 +1903,19 @@ Installed voices still work. You can change the repository address, or put model
     </message>
 </context>
 <context>
+    <name>QHotkey</name>
+    <message>
+        <location filename="../3rdparty/QHotkey/qhotkey.cpp" line="294"/>
+        <source>Failed to register %1. Error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../3rdparty/QHotkey/qhotkey.cpp" line="314"/>
+        <source>Failed to unregister %1. Error: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../src/main.cpp" line="148"/>
@@ -1932,11 +2121,6 @@ Use if automatic injection failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.h" line="115"/>
-        <source>Welcome!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/UI/textoutputwindow.cpp" line="50"/>
         <source>Translation history</source>
         <translation type="unfinished"></translation>
@@ -2041,61 +2225,66 @@ Result:
         <source>Margin right</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.h" line="115"/>
+        <source>Welcome!</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TtsEngine</name>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="345"/>
-        <source>No server address given.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="363"/>
-        <source>The Python environment is not ready.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="370"/>
-        <source>No voice selected.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="385"/>
-        <source>No free local port.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="417"/>
-        <source>The %1 server stopped (code %2).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="487"/>
-        <source>No %1 server answered at %2.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="488"/>
-        <source>The %1 server did not answer in time.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/engines/ttsengine.cpp" line="154"/>
+        <location filename="../src/engines/ttsengine.cpp" line="161"/>
         <source>The %1 server is not running.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="225"/>
+        <location filename="../src/engines/ttsengine.cpp" line="232"/>
         <source>The bundled %1 server script is missing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="234"/>
+        <location filename="../src/engines/ttsengine.cpp" line="241"/>
         <source>Cannot write %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/engines/ttsengine.cpp" line="562"/>
+        <location filename="../src/engines/ttsengine.cpp" line="352"/>
+        <source>No server address given.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="370"/>
+        <source>The Python environment is not ready.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="377"/>
+        <source>No voice selected.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="392"/>
+        <source>No free local port.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="424"/>
+        <source>The %1 server stopped (code %2).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="494"/>
+        <source>No %1 server answered at %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="495"/>
+        <source>The %1 server did not answer in time.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/engines/ttsengine.cpp" line="569"/>
         <source>The server returned no audio.</source>
         <translation type="unfinished"></translation>
     </message>
