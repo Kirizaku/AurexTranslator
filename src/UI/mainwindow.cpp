@@ -469,7 +469,7 @@ void MainWindow::on_speechTestButton_clicked()
 
     m_speechPending.clear();
     m_audioPlayer->stop();
-    m_tts->synthesize(text);
+    m_tts->synthesize(replaceText(QStringLiteral("Speech"), text));
 
     refreshSpeechPage();
 }
