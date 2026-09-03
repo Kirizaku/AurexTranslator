@@ -35,7 +35,7 @@ configure_file(
 
 find_package(Qt6 REQUIRED COMPONENTS Core Network Widgets LinguistTools Svg Multimedia)
 find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_package(Qt6 COMPONENTS DBus)
@@ -46,7 +46,13 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     find_program(WAYLAND_SCANNER wayland-scanner)
 endif()
 
-pkg_check_modules(TESSERACT REQUIRED tesseract)
+find_package(Tesseract CONFIG QUIET)
+if(Tesseract_FOUND)
+    set(TESSERACT_TARGET Tesseract::libtesseract)
+else()
+    pkg_check_modules(TESSERACT REQUIRED IMPORTED_TARGET tesseract)
+    set(TESSERACT_TARGET PkgConfig::TESSERACT)
+endif()
 
 set(PROJECT_SOURCES
     src/main.cpp
@@ -224,7 +230,7 @@ target_link_libraries(${PROJECT_NAME}
         opencv_imgcodecs
         QHotkey
 
-        ${TESSERACT_LIBRARIES}
+        ${TESSERACT_TARGET}
         ${LINUX_LIBS}
 )
 
@@ -236,6 +242,5 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE
         ${LIBPIPIPEWIRE_INCLUDE_DIRS}
         ${OPENCV_INCLUDE_DIRS}
-        ${TESSERACT_INCLUDE_DIRS}
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
