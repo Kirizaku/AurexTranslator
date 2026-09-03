@@ -3149,7 +3149,7 @@ void MainWindow::loadConfig()
 
 void MainWindow::loadGeneralSettings(const QJsonObject& general)
 {
-    if (widgetChanged(ui->generalBoxLanguage)) {
+    if (widgetChanged(ui->generalBoxLanguage) && general.contains("language")) {
         m_initLanguage = general["language"].toString();
         int index = ui->generalBoxLanguage->findData(m_initLanguage);
         if (index != -1) {
@@ -3170,17 +3170,17 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
         }
     }
 
-    if (widgetChanged(ui->generalHotkeySelectNewRegionEdit))
+    if (widgetChanged(ui->generalHotkeySelectNewRegionEdit) && general.contains("hotkey_select_region"))
         ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
-    if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit))
+    if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit) && general.contains("hotkey_history_translation"))
         ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
-    if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
+    if (widgetChanged(ui->generalHotkeyManualTranslateEdit) && general.contains("hotkey_manual_translate"))
         ui->generalHotkeyManualTranslateEdit->setKeySequence(QKeySequence(general["hotkey_manual_translate"].toString()));
-    if (widgetChanged(ui->generalHotkeySpeakTextEdit))
+    if (widgetChanged(ui->generalHotkeySpeakTextEdit) && general.contains("hotkey_speak_text"))
         ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
-    if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
+    if (widgetChanged(ui->generalHotkeyStopSpeechEdit) && general.contains("hotkey_stop_speech"))
         ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
-    if (widgetChanged(ui->generalHotkeyToggleSpeechEdit))
+    if (widgetChanged(ui->generalHotkeyToggleSpeechEdit) && general.contains("hotkey_toggle_speech"))
         ui->generalHotkeyToggleSpeechEdit->setKeySequence(QKeySequence(general["hotkey_toggle_speech"].toString()));
 
 #ifdef Q_OS_LINUX
@@ -3212,42 +3212,38 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
 
 void MainWindow::loadOutputSettings(const QJsonObject& output)
 {
-    if (!output.empty()) {
-        if (widgetChanged(ui->outputToggledOriginalScreencast))
-            ui->outputToggledOriginalScreencast->setChecked(output["original_screencast_output"].toBool());
-        if (widgetChanged(ui->outputToggledProcessedScreencast))
-            ui->outputToggledProcessedScreencast->setChecked(output["processed_screencast_output"].toBool());
-        if (widgetChanged(ui->outputToggledScreencast))
-            ui->outputToggledScreencast->setChecked(output["disable_screencast"].toBool());
-        if (widgetChanged(ui->outputGeneralBoxFramerate))
-            ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt());
-    }
+    if (widgetChanged(ui->outputToggledOriginalScreencast))
+        ui->outputToggledOriginalScreencast->setChecked(output["original_screencast_output"].toBool(true));
+    if (widgetChanged(ui->outputToggledProcessedScreencast))
+        ui->outputToggledProcessedScreencast->setChecked(output["processed_screencast_output"].toBool(true));
+    if (widgetChanged(ui->outputToggledScreencast))
+        ui->outputToggledScreencast->setChecked(output["disable_screencast"].toBool(false));
+    if (widgetChanged(ui->outputGeneralBoxFramerate))
+        ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt(2));
 
     QJsonObject processing = output["processing"].toObject();
-    if (!processing.empty()) {
-        if (widgetChanged(ui->outputProcessedToggledBlur))
-            ui->outputProcessedToggledBlur->setChecked(processing["is_blur"].toBool());
-        if (widgetChanged(ui->outputProcessedBlurType))
-            ui->outputProcessedBlurType->setCurrentIndex(processing["blur_type"].toInt());
-        if (widgetChanged(ui->outputProcessedBlurValue))
-            ui->outputProcessedBlurValue->setValue(processing["blur_value"].toInt());
-        if (widgetChanged(ui->outputProcessedBlurSubtract))
-            ui->outputProcessedBlurSubtract->setChecked(processing["is_blurSubtract"].toBool());
-        if (widgetChanged(ui->outputProcessedBlurNormalize))
-            ui->outputProcessedBlurNormalize->setChecked(processing["is_blurNormalize"].toBool());
-        if (widgetChanged(ui->outputProcessedSimpleThresh))
-            ui->outputProcessedSimpleThresh->setChecked(processing["is_simple_thresholding"].toBool());
-        if (widgetChanged(ui->outputProcessedAdaptiveThresh))
-            ui->outputProcessedAdaptiveThresh->setChecked(processing["is_adaptive_thresholding"].toBool());
-        if (widgetChanged(ui->outputProcessedOtsu))
-            ui->outputProcessedOtsu->setChecked(processing["is_otsu_binarization"].toBool());
-        if (widgetChanged(ui->outputProcessedSimpleThresholdingType))
-            ui->outputProcessedSimpleThresholdingType->setCurrentIndex(processing["simple_threshold_type"].toInt());
-        if (widgetChanged(ui->outputProcessedThreshValue))
-            ui->outputProcessedThreshValue->setValue(processing["threshold_value"].toInt());
-        if (widgetChanged(ui->outputProcessedAdaptiveThresholdingType))
-            ui->outputProcessedAdaptiveThresholdingType->setCurrentIndex(processing["adaptive_method"].toInt());
-    }
+    if (widgetChanged(ui->outputProcessedToggledBlur))
+        ui->outputProcessedToggledBlur->setChecked(processing["is_blur"].toBool(false));
+    if (widgetChanged(ui->outputProcessedBlurType))
+        ui->outputProcessedBlurType->setCurrentIndex(processing["blur_type"].toInt(0));
+    if (widgetChanged(ui->outputProcessedBlurValue))
+        ui->outputProcessedBlurValue->setValue(processing["blur_value"].toInt(21));
+    if (widgetChanged(ui->outputProcessedBlurSubtract))
+        ui->outputProcessedBlurSubtract->setChecked(processing["is_blurSubtract"].toBool(true));
+    if (widgetChanged(ui->outputProcessedBlurNormalize))
+        ui->outputProcessedBlurNormalize->setChecked(processing["is_blurNormalize"].toBool(true));
+    if (widgetChanged(ui->outputProcessedSimpleThresh))
+        ui->outputProcessedSimpleThresh->setChecked(processing["is_simple_thresholding"].toBool(true));
+    if (widgetChanged(ui->outputProcessedAdaptiveThresh))
+        ui->outputProcessedAdaptiveThresh->setChecked(processing["is_adaptive_thresholding"].toBool(false));
+    if (widgetChanged(ui->outputProcessedOtsu))
+        ui->outputProcessedOtsu->setChecked(processing["is_otsu_binarization"].toBool(false));
+    if (widgetChanged(ui->outputProcessedSimpleThresholdingType))
+        ui->outputProcessedSimpleThresholdingType->setCurrentIndex(processing["simple_threshold_type"].toInt(0));
+    if (widgetChanged(ui->outputProcessedThreshValue))
+        ui->outputProcessedThreshValue->setValue(processing["threshold_value"].toInt(185));
+    if (widgetChanged(ui->outputProcessedAdaptiveThresholdingType))
+        ui->outputProcessedAdaptiveThresholdingType->setCurrentIndex(processing["adaptive_method"].toInt(0));
 }
 
 void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
@@ -3256,7 +3252,7 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
     if (!translator_online.isEmpty()) {
         QJsonObject google = translator_online["google"].toObject();
         if (widgetChanged(ui->translatorOnlineGoogleToggled))
-            ui->translatorOnlineGoogleToggled->setChecked(google["is_google"].toBool());
+            ui->translatorOnlineGoogleToggled->setChecked(google["is_google"].toBool(false));
 
         m_googleSourceLang = google["google_source_lang"].toString();
         m_googleTargetLang = google["google_target_lang"].toString();
@@ -3273,7 +3269,7 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
     if (!translator_offline.isEmpty()) {
         QJsonObject ollama_translator = translator_offline["ollama"].toObject();
         if (widgetChanged(ui->translatorOfflineOllamaToggled))
-            ui->translatorOfflineOllamaToggled->setChecked(ollama_translator["is_ollama_translator"].toBool());
+            ui->translatorOfflineOllamaToggled->setChecked(ollama_translator["is_ollama_translator"].toBool(false));
 
         QString ollamaUrl = ollama_translator["url"].toString();
         if (ollamaUrl != "") {
@@ -3312,18 +3308,18 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
 
         // OCR
         if (widgetChanged(ui->textProcessingOCREngineToggled))
-            ui->textProcessingOCREngineToggled->setChecked(textProcessing["is_ocr"].toBool());
+            ui->textProcessingOCREngineToggled->setChecked(textProcessing["is_ocr"].toBool(false));
 
         // Tesseract
         QJsonObject tesseract = textProcessing["tesseract"].toObject();
         if (widgetChanged(ui->textProcessingOCREngineTesseractRadio))
-            ui->textProcessingOCREngineTesseractRadio->setChecked(tesseract["is_tesseract"].toBool());
+            ui->textProcessingOCREngineTesseractRadio->setChecked(tesseract["is_tesseract"].toBool(true));
 
         m_tesseractActiveLang = tesseract.value("lang").toString();
         m_tesseractUseSystemTessdata = tesseract["is_systemdata"].toBool();
-        m_tesseractTessdataPath = tesseract["path_tessdata"].toString();
+        m_tesseractTessdataPath = tesseract["path_tessdata"].toString(QStringLiteral("./tessdata"));
         m_tesseractMode = tesseract["mode"].toInt();
-        m_tesseractAutoInterval = tesseract["delay"].toDouble();
+        m_tesseractAutoInterval = tesseract["delay"].toDouble(1);
         m_tesseractSelectedLang = m_tesseractActiveLang;
 
         m_ocrController->setTesseractMode(m_tesseractMode);
@@ -3332,7 +3328,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         // Ollama Vision
         QJsonObject ollama_vision = textProcessing["ollama_vision"].toObject();
         if (widgetChanged(ui->textProcessingOCREngineOllamaVisionRadio))
-            ui->textProcessingOCREngineOllamaVisionRadio->setChecked(ollama_vision["is_vision"].toBool());
+            ui->textProcessingOCREngineOllamaVisionRadio->setChecked(ollama_vision["is_vision"].toBool(false));
 
         m_ollamaVisionPrompt = ollama_vision["prompt"].toString();
         m_ollamaVisionMode = ollama_vision["mode"].toInt(Manual);
@@ -3341,7 +3337,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         // HOOK
         QJsonObject hook = textProcessing["hook"].toObject();
         if (widgetChanged(ui->textProcessingHookCheckBox))
-            ui->textProcessingHookCheckBox->setChecked(hook["is_hook"].toBool());
+            ui->textProcessingHookCheckBox->setChecked(hook["is_hook"].toBool(false));
 
         m_hookMode = static_cast<HookSettingsDialog::HookMode>(hook["hook_mode"].toInt());
         m_currentGameAppPlugin = hook["current_game_app_plugin"].toString();
@@ -3350,7 +3346,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
 
         // Clipboard
         if (widgetChanged(ui->textProcessingClipboardCheckBox)) {
-            bool isClipboard = textProcessing["is_clipboard"].toBool();
+            bool isClipboard = textProcessing["is_clipboard"].toBool(false);
             ui->textProcessingClipboardCheckBox->blockSignals(true);
             ui->textProcessingClipboardCheckBox->setChecked(isClipboard);
             ui->textProcessingClipboardCheckBox->blockSignals(false);
@@ -3390,7 +3386,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
             m_offeredPresetLangs.insert(value.toString());
 
         const QJsonArray jsonArray = textProcessing["text_replacement_table"].toArray();
-        if (widgetChanged(ui->textProcessingTableWidget)) {
+        if (widgetChanged(ui->textProcessingTableWidget) && textProcessing.contains("text_replacement_table")) {
             m_replacementRules.clear();
             for (const QJsonValue &value : jsonArray) {
                 const QJsonObject rowObject = value.toObject();
@@ -3410,25 +3406,22 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
 
 void MainWindow::loadProxySettings(const QJsonObject& proxy)
 {
-    if (!proxy.isEmpty()) {
-        if (widgetChanged(ui->proxyEnabledCheckBox))
-            ui->proxyEnabledCheckBox->setChecked(proxy["is_proxy"].toBool());
-        if (widgetChanged(ui->proxyAddressEdit))
-            ui->proxyAddressEdit->setText(proxy["ip"].toString());
-        if (widgetChanged(ui->proxyPortEdit))
-            ui->proxyPortEdit->setText(proxy["port"].toString());
-        if (widgetChanged(ui->proxyUserEdit))
-            ui->proxyUserEdit->setText(proxy["user"].toString());
-        if (widgetChanged(ui->proxyPasswordEdit))
-            ui->proxyPasswordEdit->setText(proxy["password"].toString());
-        if (proxy["type"] == "http") {
-            if (widgetChanged(ui->proxyTypeHttp))
-                ui->proxyTypeHttp->setChecked(true);
-        } else if (proxy["type"] == "socks") {
-            if (widgetChanged(ui->proxyTypeSocks))
-                ui->proxyTypeSocks->setChecked(true);
-        }
-    }
+    if (widgetChanged(ui->proxyEnabledCheckBox))
+        ui->proxyEnabledCheckBox->setChecked(proxy["is_proxy"].toBool());
+    if (widgetChanged(ui->proxyAddressEdit))
+        ui->proxyAddressEdit->setText(proxy["ip"].toString());
+    if (widgetChanged(ui->proxyPortEdit))
+        ui->proxyPortEdit->setText(proxy["port"].toString());
+    if (widgetChanged(ui->proxyUserEdit))
+        ui->proxyUserEdit->setText(proxy["user"].toString());
+    if (widgetChanged(ui->proxyPasswordEdit))
+        ui->proxyPasswordEdit->setText(proxy["password"].toString());
+
+    const QString type = proxy["type"].toString(QStringLiteral("http"));
+    if (widgetChanged(ui->proxyTypeHttp))
+        ui->proxyTypeHttp->setChecked(type == "http");
+    if (widgetChanged(ui->proxyTypeSocks))
+        ui->proxyTypeSocks->setChecked(type == "socks");
 
     if (ui->proxyEnabledCheckBox->isChecked() && widgetChanged(ui->proxyEnabledCheckBox))
     {

@@ -149,7 +149,7 @@ const QStringList &Config::baseSections() // Global
 void Config::load()
 {
     const QString settingsPath = m_instance->m_configFilePath + kSettingsFile;
-    m_instance->m_isLoaded = QFile::exists(settingsPath);
+    const bool settingsExists = QFile::exists(settingsPath);
 
     QJsonObject root = readJsonFile(settingsPath);
     m_instance->m_settings = root;
@@ -166,13 +166,17 @@ void Config::load()
         meta[kActiveKey] = QString(kDefaultName);
         setMetaObject(meta);
         save();
+        m_instance->m_isLoaded = false;
         return;
     }
 
     const QString active = metaObject().value(kActiveKey).toString(kDefaultName);
+    const bool profileExists = QFile::exists(profilePath(active));
     const QJsonObject profileObj = readJsonFile(profilePath(active));
     for (auto it = profileObj.begin(); it != profileObj.end(); ++it)
         m_instance->m_settings[it.key()] = it.value();
+
+    m_instance->m_isLoaded = settingsExists && profileExists;
 }
 
 void Config::save()
