@@ -2,8 +2,6 @@
 #define XDG_PORTAL_H
 
 #include <QObject>
-#include <QImage>
-#include <QTimer>
 #include <screencast_portal_interface.h>
 
 class OrgFreedesktopPortalScreenCastInterface;
@@ -35,7 +33,7 @@ signals:
     void failedPortal();
 
 private:
-    OrgFreedesktopPortalScreenCastInterface *m_screencast;
+    OrgFreedesktopPortalScreenCastInterface *m_screencast = nullptr;
     uint m_sessionTokenCounter = 0;
     uint m_requestTokenCounter = 0;
     QDBusObjectPath m_screenCastSession;

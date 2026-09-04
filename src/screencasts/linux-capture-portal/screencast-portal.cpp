@@ -67,11 +67,17 @@ void ScreenCastPortal::init(QString setCurrentRestoreToken)
 
 void ScreenCastPortal::stop()
 {
-    QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop",
-                                                          m_screenCastSession.path(),
-                                                          QLatin1String("org.freedesktop.portal.Session"),
-                                                          QLatin1String("Close"));
-    QDBusPendingCall reply = QDBusConnection::sessionBus().asyncCall(message);
+    if (!m_screencast)
+        return;
+
+    if (!m_screenCastSession.path().isEmpty()) {
+        QDBusMessage message = QDBusMessage::createMethodCall("org.freedesktop.portal.Desktop",
+                                                              m_screenCastSession.path(),
+                                                              QLatin1String("org.freedesktop.portal.Session"),
+                                                              QLatin1String("Close"));
+        QDBusConnection::sessionBus().asyncCall(message);
+        m_screenCastSession = QDBusObjectPath();
+    }
 }
 
 void ScreenCastPortal::reload()
