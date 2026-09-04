@@ -1682,6 +1682,7 @@ void MainWindow::initSpeech()
 
     connect(m_audioPlayer, &AudioPlayer::errorOccurred, this, [this](const QString &error) {
         ui->speechStatusLabel->setText(error);
+        refreshSpeechPage();
     });
     connect(m_audioPlayer, &AudioPlayer::playingChanged, this, [this](bool playing) {
         refreshSpeechPage();

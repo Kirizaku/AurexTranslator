@@ -59,6 +59,39 @@ QByteArray duplicateChannel(const QByteArray &mono, int bytesPerSample)
     return stereo;
 }
 
+QByteArray resampleInt16(const QByteArray &samples, int channelCount, int fromRate, int toRate)
+{
+    if (channelCount <= 0 || fromRate <= 0 || toRate <= 0)
+        return samples;
+
+    const int frameBytes = int(sizeof(qint16)) * channelCount;
+    const int srcFrames = samples.size() / frameBytes;
+    if (srcFrames <= 0)
+        return samples;
+
+    const auto *src = reinterpret_cast<const qint16 *>(samples.constData());
+    const int dstFrames = int(qint64(srcFrames) * toRate / fromRate);
+
+    QByteArray resampled;
+    resampled.resize(dstFrames * frameBytes);
+    auto *dst = reinterpret_cast<qint16 *>(resampled.data());
+
+    for (int i = 0; i < dstFrames; ++i) {
+        const double srcPos = double(i) * fromRate / toRate;
+        const int frame0 = int(srcPos);
+        const int frame1 = qMin(frame0 + 1, srcFrames - 1);
+        const double t = srcPos - frame0;
+
+        for (int ch = 0; ch < channelCount; ++ch) {
+            const qint16 s0 = src[frame0 * channelCount + ch];
+            const qint16 s1 = src[frame1 * channelCount + ch];
+            dst[i * channelCount + ch] = static_cast<qint16>(s0 + (s1 - s0) * t);
+        }
+    }
+
+    return resampled;
+}
+
 QByteArray floatToInt16(const QByteArray &samples)
 {
     const int count = samples.size() / int(sizeof(float));
@@ -281,38 +314,22 @@ void AudioPlayer::playPcm(QAudioFormat format, QByteArray pcm)
         return;
     }
 
-    if (format.sampleFormat() == QAudioFormat::Float && !device.isFormatSupported(format)) {
-        QAudioFormat integer = format;
-        integer.setSampleFormat(QAudioFormat::Int16);
+    if (format.sampleFormat() == QAudioFormat::Float) {
+        pcm = floatToInt16(pcm);
+        format.setSampleFormat(QAudioFormat::Int16);
+    }
 
-        if (device.isFormatSupported(integer)) {
-            pcm = floatToInt16(pcm);
-            format = integer;
-        }
+    const QAudioFormat preferred = device.preferredFormat();
+    const int targetRate = preferred.sampleRate() > 0 ? preferred.sampleRate() : format.sampleRate();
+
+    if (format.sampleFormat() == QAudioFormat::Int16 && format.sampleRate() != targetRate) {
+        pcm = resampleInt16(pcm, format.channelCount(), format.sampleRate(), targetRate);
+        format.setSampleRate(targetRate);
     }
 
     if (format.channelCount() == 1) {
-        QAudioFormat stereo = format;
-        stereo.setChannelCount(2);
-
-        if (device.isFormatSupported(stereo)) {
-            pcm = duplicateChannel(pcm, format.bytesPerSample());
-            format = stereo;
-        }
-    }
-
-    if (!device.isFormatSupported(format)) {
-        Log(Logger::Level::Warning,
-            QStringLiteral("[speech] playPcm: %1 rejects %2 Hz, %3 ch, sample format %4")
-                .arg(device.description())
-                .arg(format.sampleRate())
-                .arg(format.channelCount())
-                .arg(static_cast<int>(format.sampleFormat())));
-        setPlaying(false);
-        emit errorOccurred(tr("The device does not support %1 Hz, %2 channels.")
-                               .arg(format.sampleRate())
-                               .arg(format.channelCount()));
-        return;
+        pcm = duplicateChannel(pcm, format.bytesPerSample());
+        format.setChannelCount(2);
     }
 
     m_buffer = new QBuffer(this);
@@ -323,6 +340,12 @@ void AudioPlayer::playPcm(QAudioFormat format, QByteArray pcm)
     m_sink->setVolume(QAudio::convertVolume(m_volume / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale));
 
     connect(m_sink, &QAudioSink::stateChanged, this, [this](QAudio::State state) {
+        if (state == QAudio::StoppedState && m_sink && m_sink->error() != QAudio::NoError) {
+            const int errorCode = static_cast<int>(m_sink->error());
+            Log(Logger::Level::Warning, QStringLiteral("[speech] playPcm: sink error %1").arg(errorCode));
+            emit errorOccurred(tr("Playback failed (error %1).").arg(errorCode));
+        }
+
         if (state == QAudio::IdleState || state == QAudio::StoppedState)
             stop();
     });
