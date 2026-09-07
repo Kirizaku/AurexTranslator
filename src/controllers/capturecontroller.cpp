@@ -202,6 +202,7 @@ void CaptureController::onPortalFailed()
     emit aboutToReconfigure();
 
     if (m_portalScreencast) {
+        m_portalScreencast->stop();
         delete m_portalScreencast;
         m_portalScreencast = nullptr;
     }

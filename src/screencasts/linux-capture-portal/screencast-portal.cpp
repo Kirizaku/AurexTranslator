@@ -55,6 +55,7 @@ void ScreenCastPortal::init(QString setCurrentRestoreToken)
     reply.waitForFinished();
     if (reply.isError()) {
         Log(Logger::Level::Warning, QString("[pipewire] Couldn't get reply: %1").arg(reply.error().message()));
+        emit failedPortal();
     } else {
         QDBusConnection::sessionBus().connect(QString(),
                                             reply.value().path(),
@@ -111,6 +112,7 @@ void ScreenCastPortal::gotCreateSessionResponse(uint response, const QVariantMap
     reply.waitForFinished();
     if (reply.isError()) {
         Log(Logger::Level::Warning, QString("[pipewire] Failed to call ListShortcuts: %1").arg(reply.error().message()));
+        emit failedPortal();
         return;
     }
 
@@ -126,6 +128,7 @@ void ScreenCastPortal::gotSelectSourcesResponse(uint response, const QVariantMap
 {
     if (response != 0) {
         Log(Logger::Level::Warning, QString("[pipewire] Failed to select sources: %1").arg(response));
+        emit failedPortal();
         return;
     }
 
@@ -136,6 +139,7 @@ void ScreenCastPortal::gotSelectSourcesResponse(uint response, const QVariantMap
     reply.waitForFinished();
     if (reply.isError()) {
         Log(Logger::Level::Warning, QString("[pipewire] Failed to call ListShortcuts: %1").arg(reply.error().message()));
+        emit failedPortal();
         return;
     }
 
@@ -151,6 +155,8 @@ void ScreenCastPortal::gotStartResponse(uint response, const QVariantMap &result
 {
     if (response != 0) {
         Log(Logger::Level::Warning, QString("[pipewire] Failed to start: %1").arg(response));
+        emit failedPortal();
+        return;
     }
 
     if (results.contains(QLatin1String("restore_token"))) {
@@ -164,6 +170,7 @@ void ScreenCastPortal::gotStartResponse(uint response, const QVariantMap &result
         reply.waitForFinished();
         if (reply.isError()) {
             Log(Logger::Level::Warning, QString("[pipewire] Failed to call OpenPipeWireRemote: %1").arg(reply.error().message()));
+            emit failedPortal();
             return;
         }
         emit currentNodeId(stream.node_id);
