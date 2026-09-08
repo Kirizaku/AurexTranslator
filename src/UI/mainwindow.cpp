@@ -118,6 +118,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_availableGeometryChanged()
 {
+    if (!m_overlayImage.isNull()) {
+        const QRect newScreenGeometry = m_screen->geometry();
+        QPixmap newPixmap = QPixmap::fromImage(m_overlayImage.copy().scaled(
+            newScreenGeometry.width() * this->devicePixelRatio(),
+            newScreenGeometry.height() * this->devicePixelRatio(),
+            Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        m_overlayWindow->setPixmap(newPixmap);
+
+        qreal pixelRatio = m_overlayWindow->devicePixelRatio();
+        int scaledPixmapWidth = newPixmap.width() / pixelRatio;
+        int scaledPixmapHeight = newPixmap.height() / pixelRatio;
+        int imageX = (newScreenGeometry.width() - scaledPixmapWidth) / 2;
+        int imageY = (newScreenGeometry.height() - scaledPixmapHeight) / 2;
+        m_overlayWindow->rescaleToImageRect(QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight));
+    }
+
     m_outputWindow->move(m_screen->geometry().x() + 50, m_screen->geometry().y() + 50);
     m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
 
@@ -1003,7 +1019,7 @@ void MainWindow::initPlugins()
 void MainWindow::setupCoreConnections()
 {
     // UI base
-    connect(m_screen, &QScreen::availableGeometryChanged, this, &MainWindow::on_availableGeometryChanged);
+    connect(m_screen, &QScreen::geometryChanged, this, &MainWindow::on_availableGeometryChanged);
     connect(ui->listSettingsWidget, &QListWidget::currentRowChanged, ui->settingsPages, &QStackedWidget::setCurrentIndex);
 
     // Blur

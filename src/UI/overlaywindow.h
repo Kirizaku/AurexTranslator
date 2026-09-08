@@ -29,6 +29,7 @@ public:
     bool getIsRectBrushEmpty() const { return m_rectBrush.isEmpty(); }
     void setInnerBrushActive(bool value) { m_innerBrushActive = value; if (!value) m_innerRectBrush.setRect(0,0,0,0); }
     void clearFrame() { this->clear(); }
+    void rescaleToImageRect(const QRect &newImageRect);
 
 signals:
     void currentRoi(QRect currentRect);
@@ -50,6 +51,7 @@ private:
     QColor m_overlayColor = QColor(0, 0, 0, 0);
     QRect m_rectBrush = QRect(0,0,0,0);
     QRect m_originalRect = QRect(0,0,0,0);
+    QRect m_referenceImageRect;
     QPoint m_dragStartPosition = QPoint(-1, -1);
 
     bool m_resizeLeft = false;

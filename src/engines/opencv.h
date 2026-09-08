@@ -84,6 +84,5 @@ private:
 
     void applyBlur(cv::Mat &image);
     void applyThreshold(cv::Mat &image);
-    bool isROIValid(const cv::Rect& roi, const cv::Mat& image);
 };
 #endif // OPENCV_H

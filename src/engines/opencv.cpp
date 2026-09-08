@@ -49,47 +49,42 @@ void OpenCV::setCurrentFrameBuffer(uint32_t height, uint32_t width, void* frame)
             int imgWidth = m_frameOriginal.cols;
             int imgHeight = m_frameOriginal.rows;
 
-            double displayAspect = static_cast<double>(screenWidth) / screenHeight;
-            double imgAspect = static_cast<double>(imgWidth) / imgHeight;
-
-            int effectiveWidth, effectiveHeight;
-            int offsetX = 0, offsetY = 0;
-
-            if (displayAspect > imgAspect) {
-                effectiveHeight = imgHeight;
-                effectiveWidth = static_cast<int>(imgHeight * displayAspect);
-                offsetX = (imgWidth - effectiveWidth) / 2;
-            } else {
-                effectiveWidth = imgWidth;
-                effectiveHeight = static_cast<int>(imgWidth / displayAspect);
-                offsetY = (imgHeight - effectiveHeight) / 2;
-            }
-
-            double scaleX = static_cast<double>(effectiveWidth) / screenWidth;
-            double scaleY = static_cast<double>(effectiveHeight) / screenHeight;
+            double scaleW = static_cast<double>(screenWidth) / imgWidth;
+            double scaleH = static_cast<double>(screenHeight) / imgHeight;
+            double scale = scaleW < scaleH ? scaleW : scaleH;
+            double dispWidth = imgWidth * scale;
+            double dispHeight = imgHeight * scale;
+            double offsetXScreen = (screenWidth - dispWidth) / 2.0;
+            double offsetYScreen = (screenHeight - dispHeight) / 2.0;
 
             cv::Rect roi(
-                static_cast<int>(m_roi.x * scaleX) + offsetX,
-                static_cast<int>(m_roi.y * scaleY) + offsetY,
-                static_cast<int>(m_roi.width * scaleX),
-                static_cast<int>(m_roi.height * scaleY)
-                );
+                static_cast<int>((m_roi.x - offsetXScreen) / scale),
+                static_cast<int>((m_roi.y - offsetYScreen) / scale),
+                static_cast<int>(m_roi.width / scale),
+                static_cast<int>(m_roi.height / scale)
+            );
 
-            if (isROIValid(roi, m_frameOriginal))
+            roi = roi & cv::Rect(0, 0, imgWidth, imgHeight);
+
+            if (roi.width > 0 && roi.height > 0)
             {
-                if (!m_ignoreRoi.empty())
+                if (!m_ignoreRoi.empty() && m_roi.width > 0 && m_roi.height > 0)
                 {
+                    double ifx = static_cast<double>(m_ignoreRoi.x - m_roi.x) / m_roi.width;
+                    double ify = static_cast<double>(m_ignoreRoi.y - m_roi.y) / m_roi.height;
+                    double ifw = static_cast<double>(m_ignoreRoi.width) / m_roi.width;
+                    double ifh = static_cast<double>(m_ignoreRoi.height) / m_roi.height;
+
                     cv::Rect ignoreRoi(
-                        static_cast<int>(m_ignoreRoi.x * scaleX) + offsetX,
-                        static_cast<int>(m_ignoreRoi.y * scaleY) + offsetY,
-                        static_cast<int>(m_ignoreRoi.width * scaleX),
-                        static_cast<int>(m_ignoreRoi.height * scaleY)
+                        roi.x + static_cast<int>(qRound(ifx * roi.width)),
+                        roi.y + static_cast<int>(qRound(ify * roi.height)),
+                        static_cast<int>(qRound(ifw * roi.width)),
+                        static_cast<int>(qRound(ifh * roi.height))
                         );
 
-                    if (ignoreRoi.x >= roi.x &&
-                        ignoreRoi.x + ignoreRoi.width <= roi.x + roi.width &&
-                        ignoreRoi.y >= roi.y &&
-                        ignoreRoi.y + ignoreRoi.height <= roi.y + roi.height)
+                    ignoreRoi = ignoreRoi & roi;
+
+                    if (ignoreRoi.width > 0 && ignoreRoi.height > 0)
                     {
                         cv::rectangle(m_frameOriginal, ignoreRoi, cv::Scalar(0, 0, 0), -1);
                     }
@@ -224,12 +219,3 @@ void OpenCV::applyThreshold(cv::Mat &image)
     }
 }
 
-bool OpenCV::isROIValid(const cv::Rect &roi, const cv::Mat &image)
-{
-    return roi.x >= 0 &&
-           roi.y >= 0 &&
-           roi.x + roi.width <= image.cols &&
-           roi.y + roi.height <= image.rows &&
-           roi.width > 0 &&
-           roi.height > 0;
-}

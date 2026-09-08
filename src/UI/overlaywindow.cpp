@@ -16,6 +16,7 @@
     ******************************************************************************/
 
 #include "overlaywindow.h"
+#include <QApplication>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -32,6 +33,51 @@ OverlayWindow::OverlayWindow(QWidget *parent)
                    );
 }
 
+void OverlayWindow::rescaleToImageRect(const QRect &newImageRect)
+{
+    if (m_rectBrush.isValid() && m_referenceImageRect.isValid()
+        && m_referenceImageRect != newImageRect&& m_referenceImageRect.width() > 0
+        && m_referenceImageRect.height() > 0) {
+
+        const bool hadInner = !m_innerRectBrush.isEmpty() && m_rectBrush.width() > 0 && m_rectBrush.height() > 0;
+        const qreal ifx = hadInner ? qreal(m_innerRectBrush.x() - m_rectBrush.x()) / m_rectBrush.width() : 0;
+        const qreal ify = hadInner ? qreal(m_innerRectBrush.y() - m_rectBrush.y()) / m_rectBrush.height() : 0;
+        const qreal ifw = hadInner ? qreal(m_innerRectBrush.width()) / m_rectBrush.width() : 0;
+        const qreal ifh = hadInner ? qreal(m_innerRectBrush.height()) / m_rectBrush.height() : 0;
+
+        const qreal fx = qreal(m_rectBrush.x() - m_referenceImageRect.x()) / m_referenceImageRect.width();
+        const qreal fy = qreal(m_rectBrush.y() - m_referenceImageRect.y()) / m_referenceImageRect.height();
+        const qreal fw = qreal(m_rectBrush.width()) / m_referenceImageRect.width();
+        const qreal fh = qreal(m_rectBrush.height()) / m_referenceImageRect.height();
+
+        QRect rescaled(newImageRect.x() + qRound(fx * newImageRect.width()),
+                       newImageRect.y() + qRound(fy * newImageRect.height()),
+                       qMax(1, qRound(fw * newImageRect.width())),
+                       qMax(1, qRound(fh * newImageRect.height())));
+
+        m_rectBrush = rescaled.intersected(newImageRect);
+
+        if (m_rectBrush.width() < 1) m_rectBrush.setWidth(1);
+        if (m_rectBrush.height() < 1) m_rectBrush.setHeight(1);
+
+        if (hadInner) {
+            m_innerRectBrush = QRect(
+                m_rectBrush.x() + qRound(ifx * m_rectBrush.width()),
+                m_rectBrush.y() + qRound(ify * m_rectBrush.height()),
+                qMax(1, qRound(ifw * m_rectBrush.width())),
+                qMax(1, qRound(ifh * m_rectBrush.height()))).intersected(m_rectBrush);
+        }
+
+        emit currentRoi(m_rectBrush);
+
+        if (!m_innerRectBrush.isEmpty()) {
+            emit currentInnerRoi(m_innerRectBrush);
+        }
+    }
+
+    m_referenceImageRect = newImageRect;
+}
+
 void OverlayWindow::showEvent(QShowEvent *event)
 {
     activateWindow();
@@ -40,12 +86,11 @@ void OverlayWindow::showEvent(QShowEvent *event)
     int scaledPixmapWidth = pixmap().width() / pixelRatio;
     int scaledPixmapHeight = pixmap().height() / pixelRatio;
 
-    int imageX = (width() - scaledPixmapWidth) / 2;
-    int imageY = (height() - scaledPixmapHeight) / 2;
+    QRect screenGeometry = QApplication::primaryScreen()->geometry();
+    int imageX = (screenGeometry.width() - scaledPixmapWidth) / 2;
+    int imageY = (screenGeometry.height() - scaledPixmapHeight) / 2;
 
-    if (m_rectBrush.isValid() && !QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight).contains(m_rectBrush)) {
-        m_rectBrush = QRect();
-    }
+    rescaleToImageRect(QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight));
 }
 
 void OverlayWindow::updateRectBrush(int imageWidth, int imageHeight)
@@ -192,6 +237,19 @@ void OverlayWindow::mousePressEvent(QMouseEvent *event)
                 m_fixedCorner = m_innerRectBrush.topLeft();
             }
 
+            if (m_resizeLeft && m_resizeRight) {
+                if (qAbs(pos.x() - m_innerRectBrush.left()) <= qAbs(pos.x() - m_innerRectBrush.right()))
+                    m_resizeRight = false;
+                else
+                    m_resizeLeft = false;
+            }
+            if (m_resizeTop && m_resizeBottom) {
+                if (qAbs(pos.y() - m_innerRectBrush.top()) <= qAbs(pos.y() - m_innerRectBrush.bottom()))
+                    m_resizeBottom = false;
+                else
+                    m_resizeTop = false;
+            }
+
             if (m_resizeLeft || m_resizeRight || m_resizeTop || m_resizeBottom) {
                 m_isResizingInner = true;
                 m_dragStartPosition = event->pos();
@@ -237,6 +295,19 @@ void OverlayWindow::mousePressEvent(QMouseEvent *event)
                 m_fixedCorner = m_rectBrush.topLeft();
             }
 
+            if (m_resizeLeft && m_resizeRight) {
+                if (qAbs(pos.x() - m_rectBrush.left()) <= qAbs(pos.x() - m_rectBrush.right()))
+                    m_resizeRight = false;
+                else
+                    m_resizeLeft = false;
+            }
+            if (m_resizeTop && m_resizeBottom) {
+                if (qAbs(pos.y() - m_rectBrush.top()) <= qAbs(pos.y() - m_rectBrush.bottom()))
+                    m_resizeBottom = false;
+                else
+                    m_resizeTop = false;
+            }
+
             if (m_resizeLeft || m_resizeRight || m_resizeTop || m_resizeBottom) {
                 m_isResizing = true;
                 m_dragStartPosition = event->pos();
@@ -274,12 +345,17 @@ void OverlayWindow::mouseMoveEvent(QMouseEvent *event)
                           pixmapPos.y() <= scaledPixmapHeight;
 
     if (m_innerBrushActive && !m_rectBrush.isEmpty()) {
+        QRect parentRect = m_rectBrush;
+
         if (m_isPaintInner) {
             m_selectEnd = event->pos();
             QRect newRect = QRect(m_selectStart, m_selectEnd).normalized();
-            QRect parentRect = m_rectBrush;
+            int left = qBound(parentRect.left(), newRect.left(), parentRect.right());
+            int top = qBound(parentRect.top(), newRect.top(), parentRect.bottom());
+            int right = qBound(parentRect.left(), newRect.right(), parentRect.right());
+            int bottom = qBound(parentRect.top(), newRect.bottom(), parentRect.bottom());
 
-            newRect = newRect.intersected(parentRect);
+            newRect = QRect(QPoint(left, top), QPoint(right, bottom)).normalized();
 
             if (newRect.width() < 1) {
                 newRect.setWidth(1);
@@ -293,7 +369,6 @@ void OverlayWindow::mouseMoveEvent(QMouseEvent *event)
         if (m_isResizingInner) {
             QPoint delta = event->pos() - m_dragStartPosition;
             QRect newRect = m_originalRect;
-            QRect parentRect = m_rectBrush;
 
             if (m_resizeLeft) {
                 newRect.setLeft(qMax(parentRect.left(), qMin(parentRect.right(), m_originalRect.left() + delta.x())));
@@ -319,10 +394,8 @@ void OverlayWindow::mouseMoveEvent(QMouseEvent *event)
 
         if (m_isMovingInner) {
             QPoint newPos = event->pos() - m_dragStartPosition;
-            QRect parentRect = m_rectBrush;
-
-            newPos.setX(qMax(parentRect.left(), qMin(parentRect.right() - m_innerRectBrush.width(), newPos.x())));
-            newPos.setY(qMax(parentRect.top(), qMin(parentRect.bottom() - m_innerRectBrush.height(), newPos.y())));
+            newPos.setX(qMax(parentRect.left(), qMin(parentRect.right() - m_innerRectBrush.width() + 1, newPos.x())));
+            newPos.setY(qMax(parentRect.top(), qMin(parentRect.bottom() - m_innerRectBrush.height() + 1, newPos.y())));
             m_innerRectBrush.moveTopLeft(newPos);
         }
     } else {
