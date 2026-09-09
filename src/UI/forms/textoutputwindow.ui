@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>592</width>
+    <width>600</width>
     <height>180</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string notr="true">OutputWindow</string>
+   <string notr="true">AurexTranslator</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -403,6 +403,9 @@ QPushButton:flat:pressed {
         <property name="toolTip">
          <string>Speak the last text</string>
         </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
         <property name="styleSheet">
          <string notr="true">QPushButton:flat {
     background-color: black;
@@ -475,6 +478,40 @@ QPushButton:flat:pressed {
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="minimizeButton">
+        <property name="mouseTracking">
+         <bool>true</bool>
+        </property>
+        <property name="toolTip">
+         <string>Minimize</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton:flat {
+    background-color: black;
+	padding: 8px 8px;
+}
+
+QPushButton:flat:hover {
+    background-color: #444;
+}
+
+QPushButton:flat:pressed {
+    background-color: #222;
+}</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/3rdparty/icons/square-minus.svg</normaloff>:/icons/3rdparty/icons/square-minus.svg</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="exitButton">

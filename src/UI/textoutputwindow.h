@@ -106,6 +106,7 @@ private slots:
     void on_speechToggleButton_clicked();
     void on_speakLastButton_clicked();
     void on_settingsButton_clicked();
+    void on_minimizeButton_clicked();
     void on_exitButton_clicked();
     void updateMargin();
     void updateText();

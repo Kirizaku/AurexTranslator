@@ -573,6 +573,11 @@ void TextOutputWindow::on_settingsButton_clicked()
     m_contextMenu->exec(ui->toolBar->mapToGlobal(QPoint(ui->toolBar->width(), 0)));
 }
 
+void TextOutputWindow::on_minimizeButton_clicked()
+{
+    showMinimized();
+}
+
 void TextOutputWindow::on_exitButton_clicked()
 {
     close();
