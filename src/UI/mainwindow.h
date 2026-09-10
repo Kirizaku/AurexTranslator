@@ -65,9 +65,6 @@ private slots:
     void on_availableGeometryChanged();
     void on_buttonBox_clicked(QAbstractButton *button);
 
-#ifdef Q_OS_LINUX
-    void on_generalBindShortcut_clicked();
-#endif
     void on_outputGeneralSelect_clicked();
     void on_outputToggledOriginalScreencast_stateChanged(int arg1);
     void on_outputToggledProcessedScreencast_stateChanged(int arg1);
@@ -228,7 +225,6 @@ private:
 
     // Global Shortcuts
     HotkeyController *m_hotkeyController = nullptr;
-    bool m_isShortcuts = false;
 
     // Overlay
     OverlayWindow *m_overlayWindow = nullptr;

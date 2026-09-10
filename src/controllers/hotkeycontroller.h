@@ -46,9 +46,6 @@ public:
     void setSpeakTextShortcut(const QKeySequence &seq);
     void setStopSpeechShortcut(const QKeySequence &seq);
 
-    // Portar backend
-    void bindPortalShortcuts();
-
     Mode mode() const { return m_mode; }
 
 signals:
@@ -59,12 +56,8 @@ signals:
     void speakTextTriggered();
     void stopSpeechTriggered();
 
-    // Portal-only event
-    void shortcutReleased();
-
 private slots:
     void onPortalActivated(const QString &shortcutId);
-    void onPortalDeactivated();
 
 private:
     Mode m_mode = X11;

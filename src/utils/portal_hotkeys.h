@@ -29,18 +29,17 @@ public:
     ~PortalHotkeys();
 
     bool init();
-    void bindShortcuts();
 
 signals:
     void activated(const QString &shortcutId);
-    void deactivated();
 
 private slots:
     void gotGlobalShortcutsCreateSessionResponse(uint res, const QVariantMap& results);
     void handleActivated(const QDBusObjectPath &session_handle, const QString &shortcut_id, qulonglong timestamp, const QVariantMap &options);
-    void handleDeactivated();
 
 private:
+    void bindShortcuts();
+
     OrgFreedesktopPortalGlobalShortcutsInterface *m_portalShortcuts = nullptr;
     QDBusObjectPath m_globalShortcutsSession;
     int m_sessionTokenCounter = 0;

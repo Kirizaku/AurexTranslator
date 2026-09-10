@@ -156,13 +156,6 @@ void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
     loadConfig();
 }
 
-#ifdef Q_OS_LINUX
-void MainWindow::on_generalBindShortcut_clicked()
-{
-    m_hotkeyController->bindPortalShortcuts();
-}
-#endif
-
 void MainWindow::on_outputGeneralSelect_clicked()
 {
     m_captureController->openSourceSelector();
@@ -874,7 +867,7 @@ void MainWindow::setupBaseUI()
     ui->generalLabelHotKey->hide();
     ui->generalRadioHotKey->hide();
     ui->generalRadioHotKeyPortal->hide();
-    ui->generalBindShortcut->hide();
+    ui->generalPortalHotkeysHint->hide();
 #endif
 
     m_changedWidgets = {
@@ -1074,11 +1067,27 @@ void MainWindow::initSubsystems()
     // Ollama Settings
     m_ollamaSettingsDialog = new OllamaSettingsDialog(m_ocrController->ollama(), m_ollamaCurrentModel, m_ollamaModels, this);
 
-    const HotkeyController::Mode hkMode =
 #ifdef Q_OS_LINUX
-        ui->generalRadioHotKey->isChecked() ? HotkeyController::X11 : HotkeyController::Portal;
+    m_initHotKeyMode = ui->generalRadioHotKey->isChecked() ? "x11" : "portal";
+
+    const bool x11Hotkeys = (m_initHotKeyMode == "x11");
+    const HotkeyController::Mode hkMode = x11Hotkeys ? HotkeyController::X11 : HotkeyController::Portal;
+
+    ui->generalHotkeySelectNewRegionCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeySelectNewRegionEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyHistoryTranslationCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyHistoryTranslationEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyManualTranslateCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyManualTranslateEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeySpeakTextCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeySpeakTextEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyStopSpeechCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyStopSpeechEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleSpeechCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleSpeechEdit->setVisible(x11Hotkeys);
+    ui->generalPortalHotkeysHint->setVisible(!x11Hotkeys);
 #else
-        HotkeyController::X11;
+    const HotkeyController::Mode hkMode = HotkeyController::X11;
 #endif
     m_hotkeyController->initialize(hkMode);
 
@@ -1129,9 +1138,6 @@ void MainWindow::initSubsystems()
             this, &MainWindow::speakLastText);
     connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
             this, &MainWindow::on_speechStopButton_clicked);
-    connect(m_hotkeyController, &HotkeyController::shortcutReleased, this, [this] {
-        if (m_isShortcuts) m_isShortcuts = false;
-    });
 
     initScreenCast();
 
@@ -2158,9 +2164,7 @@ void MainWindow::openProcessedPreview()
 
 void MainWindow::captureRegion()
 {
-    if (m_overlayWindow->isHidden() && (!m_isShortcuts || ui->generalRadioHotKey->isChecked())) {
-        m_isShortcuts = true;
-
+    if (m_overlayWindow->isHidden()) {
         if (m_overlayImage.isNull()) {
             DialogUtils::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
             return;
@@ -2172,11 +2176,7 @@ void MainWindow::captureRegion()
 
 void MainWindow::showHistory()
 {
-    if (!m_isShortcuts || ui->generalRadioHotKey->isChecked()) {
-        m_isShortcuts = true;
-
-        emit showHistoryRequested();
-    }
+    emit showHistoryRequested();
 }
 
 void MainWindow::restoreOutputWindowAfterOverlay()
@@ -3205,42 +3205,30 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
         }
     }
 
-    if (widgetChanged(ui->generalHotkeySelectNewRegionEdit) && general.contains("hotkey_select_region"))
-        ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
-    if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit) && general.contains("hotkey_history_translation"))
-        ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
-    if (widgetChanged(ui->generalHotkeyManualTranslateEdit) && general.contains("hotkey_manual_translate"))
-        ui->generalHotkeyManualTranslateEdit->setKeySequence(QKeySequence(general["hotkey_manual_translate"].toString()));
-    if (widgetChanged(ui->generalHotkeySpeakTextEdit) && general.contains("hotkey_speak_text"))
-        ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
-    if (widgetChanged(ui->generalHotkeyStopSpeechEdit) && general.contains("hotkey_stop_speech"))
-        ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
-    if (widgetChanged(ui->generalHotkeyToggleSpeechEdit) && general.contains("hotkey_toggle_speech"))
-        ui->generalHotkeyToggleSpeechEdit->setKeySequence(QKeySequence(general["hotkey_toggle_speech"].toString()));
-
 #ifdef Q_OS_LINUX
     if (!general["hotkeys_type"].toString().isEmpty()) {
-        m_initHotKeyMode = general["hotkeys_type"].toString();
-
-        bool isX11Mode = (m_initHotKeyMode == "x11");
+        bool isX11Config = (general["hotkeys_type"].toString() == "x11");
         if (widgetChanged(ui->generalRadioHotKey))
-            ui->generalRadioHotKey->setChecked(isX11Mode);
+            ui->generalRadioHotKey->setChecked(isX11Config);
         if (widgetChanged(ui->generalRadioHotKeyPortal))
-            ui->generalRadioHotKeyPortal->setChecked(!isX11Mode);
-        if (widgetChanged(ui->generalHotkeySelectNewRegionEdit))
-            ui->generalHotkeySelectNewRegionEdit->setEnabled(isX11Mode);
-        if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit))
-            ui->generalHotkeyHistoryTranslationEdit->setEnabled(isX11Mode);
-        if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
-            ui->generalHotkeyManualTranslateEdit->setEnabled(isX11Mode);
-        if (widgetChanged(ui->generalHotkeySpeakTextEdit))
-            ui->generalHotkeySpeakTextEdit->setEnabled(isX11Mode);
-        if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
-            ui->generalHotkeyStopSpeechEdit->setEnabled(isX11Mode);
-        if (widgetChanged(ui->generalHotkeyToggleSpeechEdit))
-            ui->generalHotkeyToggleSpeechEdit->setEnabled(isX11Mode);
+            ui->generalRadioHotKeyPortal->setChecked(!isX11Config);
+    }
 
-        ui->generalBindShortcut->setEnabled(!isX11Mode);
+    if (m_initHotKeyMode != "portal") {
+#endif
+        if (widgetChanged(ui->generalHotkeySelectNewRegionEdit) && general.contains("hotkey_select_region"))
+            ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
+        if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit) && general.contains("hotkey_history_translation"))
+            ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
+        if (widgetChanged(ui->generalHotkeyManualTranslateEdit) && general.contains("hotkey_manual_translate"))
+            ui->generalHotkeyManualTranslateEdit->setKeySequence(QKeySequence(general["hotkey_manual_translate"].toString()));
+        if (widgetChanged(ui->generalHotkeySpeakTextEdit) && general.contains("hotkey_speak_text"))
+            ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
+        if (widgetChanged(ui->generalHotkeyStopSpeechEdit) && general.contains("hotkey_stop_speech"))
+            ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
+        if (widgetChanged(ui->generalHotkeyToggleSpeechEdit) && general.contains("hotkey_toggle_speech"))
+            ui->generalHotkeyToggleSpeechEdit->setKeySequence(QKeySequence(general["hotkey_toggle_speech"].toString()));
+#ifdef Q_OS_LINUX
     }
 #endif
 }

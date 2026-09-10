@@ -57,8 +57,6 @@ bool PortalHotkeys::init()
 
     connect(m_portalShortcuts, &OrgFreedesktopPortalGlobalShortcutsInterface::Activated,
             this, &PortalHotkeys::handleActivated);
-    connect(m_portalShortcuts, &OrgFreedesktopPortalGlobalShortcutsInterface::Deactivated,
-            this, &PortalHotkeys::handleDeactivated);
 
     return true;
 }
@@ -71,6 +69,8 @@ void PortalHotkeys::gotGlobalShortcutsCreateSessionResponse(uint response, const
     }
 
     m_globalShortcutsSession = QDBusObjectPath(results["session_handle"].toString());
+
+    bindShortcuts();
 }
 
 void PortalHotkeys::bindShortcuts()
@@ -95,9 +95,4 @@ void PortalHotkeys::bindShortcuts()
 void PortalHotkeys::handleActivated(const QDBusObjectPath &session_handle, const QString &shortcut_id, qulonglong timestamp, const QVariantMap &options)
 {
     emit activated(shortcut_id);
-}
-
-void PortalHotkeys::handleDeactivated()
-{
-    emit deactivated();
 }

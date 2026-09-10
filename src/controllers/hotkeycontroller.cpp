@@ -63,8 +63,6 @@ void HotkeyController::initialize(Mode mode)
         m_portalHotKeys->init();
         connect(m_portalHotKeys, &PortalHotkeys::activated,
                 this, &HotkeyController::onPortalActivated);
-        connect(m_portalHotKeys, &PortalHotkeys::deactivated,
-                this, &HotkeyController::onPortalDeactivated);
     }
 #endif
 }
@@ -99,13 +97,6 @@ void HotkeyController::setStopSpeechShortcut(const QKeySequence &seq)
     if (m_stopSpeechHotKey) m_stopSpeechHotKey->setShortcut(seq);
 }
 
-void HotkeyController::bindPortalShortcuts()
-{
-#ifdef Q_OS_LINUX
-    if (m_portalHotKeys) m_portalHotKeys->bindShortcuts();
-#endif
-}
-
 void HotkeyController::onPortalActivated(const QString &shortcutId)
 {
     if (shortcutId == QStringLiteral("CaptureRegion")) {
@@ -121,9 +112,4 @@ void HotkeyController::onPortalActivated(const QString &shortcutId)
     } else if (shortcutId == QStringLiteral("StopSpeech")) {
         emit stopSpeechTriggered();
     }
-}
-
-void HotkeyController::onPortalDeactivated()
-{
-    emit shortcutReleased();
 }
