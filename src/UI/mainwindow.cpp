@@ -139,7 +139,7 @@ void MainWindow::on_availableGeometryChanged()
 
     if (!m_overlayWindow->isHidden()) {
         m_overlayWindow->hide();
-        m_outputWindow->show();
+        restoreOutputWindowAfterOverlay();
     }
 }
 
@@ -719,7 +719,7 @@ void MainWindow::stopScreenCapture()
 
     if (!m_overlayWindow->isHidden()) {
         m_overlayWindow->hide();
-        m_outputWindow->show();
+        restoreOutputWindowAfterOverlay();
     }
 }
 
@@ -842,7 +842,7 @@ void MainWindow::reapplyHookOutput()
 
 void MainWindow::selectNewRegion()
 {
-    if (!m_overlayImage.isNull()) {
+    if (m_overlayWindow->isHidden() && !m_overlayImage.isNull()) {
         m_overlayWindow->setInnerBrushActive(false);
         showOverlayWindow();
     }
@@ -850,7 +850,7 @@ void MainWindow::selectNewRegion()
 
 void MainWindow::selectNewInnerRegion()
 {
-    if (!m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
+    if (m_overlayWindow->isHidden() && !m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
         m_overlayWindow->setInnerBrushActive(true);
         showOverlayWindow();
     }
@@ -1054,7 +1054,7 @@ void MainWindow::initSubsystems()
     m_overlayWindow->raise();
     connect(m_overlayWindow, &OverlayWindow::hideOverlay, this, [this] {
         m_overlayWindow->hide();
-        m_outputWindow->show();
+        restoreOutputWindowAfterOverlay();
     });
 
     // Output Window
@@ -2179,8 +2179,26 @@ void MainWindow::showHistory()
     }
 }
 
+void MainWindow::restoreOutputWindowAfterOverlay()
+{
+    if (m_outputWindowWasMinimized) {
+        m_outputWindow->showMinimized();
+        return;
+    }
+
+    // Forces a real state transition instead of a NoState -> NoState no-op,
+    // otherwise the Window Manager keeps it iconified despite Qt reporting it as shown.
+    m_outputWindow->setWindowState(Qt::WindowMinimized);
+    m_outputWindow->setWindowState(Qt::WindowNoState);
+
+    m_outputWindow->show();
+    m_outputWindow->raise();
+}
+
 void MainWindow::showOverlayWindow()
 {
+    m_outputWindowWasMinimized = m_outputWindow->isMinimized();
+
     QRect primaryScreenGeometry = QApplication::primaryScreen()->geometry();
     m_overlayWindow->setPixmap(QPixmap::fromImage(m_overlayImage.copy().scaled(primaryScreenGeometry.width() * this->devicePixelRatio(), primaryScreenGeometry.height() * this->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
     m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());

@@ -233,8 +233,10 @@ private:
     // Overlay
     OverlayWindow *m_overlayWindow = nullptr;
     QImage m_overlayImage;
+    bool m_outputWindowWasMinimized = false;
     void captureRegion();
     void showHistory();
+    void restoreOutputWindowAfterOverlay();
     void showOverlayWindow();
 
     // Screen Casting
