@@ -77,6 +77,7 @@ void PortalHotkeys::bindShortcuts()
 {
     Shortcuts shortcuts = {
         { QStringLiteral("CaptureRegion"), { { QStringLiteral("description"), QStringLiteral("Capture OCR Region") } } },
+        { QStringLiteral("CaptureInnerRegion"), { { QStringLiteral("description"), QStringLiteral("Select Ignore Region") } } },
         { QStringLiteral("HistoryTranslation"), { { QStringLiteral("description"), QStringLiteral("Show/Hide History Translation") } } },
         { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } },
         { QStringLiteral("ToggleSpeech"), { { QStringLiteral("description"), QStringLiteral("Toggle Speech") } } },

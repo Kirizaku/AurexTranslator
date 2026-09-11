@@ -37,6 +37,10 @@ void HotkeyController::initialize(Mode mode)
         connect(m_captureRegionHotKey, &HotKeys::activated,
                 this, &HotkeyController::captureRegionTriggered);
 
+        m_captureInnerRegionHotKey = new HotKeys(this);
+        connect(m_captureInnerRegionHotKey, &HotKeys::activated,
+                this, &HotkeyController::captureInnerRegionTriggered);
+
         m_showHistoryHotKey = new HotKeys(this);
         connect(m_showHistoryHotKey, &HotKeys::activated,
                 this, &HotkeyController::showHistoryTriggered);
@@ -72,6 +76,11 @@ void HotkeyController::setCaptureRegionShortcut(const QKeySequence &seq)
     if (m_captureRegionHotKey) m_captureRegionHotKey->setShortcut(seq);
 }
 
+void HotkeyController::setCaptureInnerRegionShortcut(const QKeySequence &seq)
+{
+    if (m_captureInnerRegionHotKey) m_captureInnerRegionHotKey->setShortcut(seq);
+}
+
 void HotkeyController::setShowHistoryShortcut(const QKeySequence &seq)
 {
     if (m_showHistoryHotKey) m_showHistoryHotKey->setShortcut(seq);
@@ -101,6 +110,8 @@ void HotkeyController::onPortalActivated(const QString &shortcutId)
 {
     if (shortcutId == QStringLiteral("CaptureRegion")) {
         emit captureRegionTriggered();
+    } else if (shortcutId == QStringLiteral("CaptureInnerRegion")) {
+        emit captureInnerRegionTriggered();
     } else if (shortcutId == QStringLiteral("HistoryTranslation")) {
         emit showHistoryTriggered();
     } else if (shortcutId == QStringLiteral("ManualTranslate")) {

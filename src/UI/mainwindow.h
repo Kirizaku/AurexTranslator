@@ -225,12 +225,12 @@ private:
 
     // Global Shortcuts
     HotkeyController *m_hotkeyController = nullptr;
+    bool hotkeysBlocked() const;
 
     // Overlay
     OverlayWindow *m_overlayWindow = nullptr;
     QImage m_overlayImage;
     bool m_outputWindowWasMinimized = false;
-    void captureRegion();
     void showHistory();
     void restoreOutputWindowAfterOverlay();
     void showOverlayWindow();

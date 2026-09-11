@@ -835,7 +835,11 @@ void MainWindow::reapplyHookOutput()
 
 void MainWindow::selectNewRegion()
 {
-    if (m_overlayWindow->isHidden() && !m_overlayImage.isNull()) {
+    if (m_overlayWindow->isHidden()) {
+        if (m_overlayImage.isNull()) {
+            DialogUtils::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
+            return;
+        }
         m_overlayWindow->setInnerBrushActive(false);
         showOverlayWindow();
     }
@@ -843,7 +847,11 @@ void MainWindow::selectNewRegion()
 
 void MainWindow::selectNewInnerRegion()
 {
-    if (m_overlayWindow->isHidden() && !m_overlayImage.isNull() && !m_overlayWindow->getIsRectBrushEmpty()) {
+    if (m_overlayWindow->isHidden()) {
+        if (m_overlayImage.isNull() || m_overlayWindow->getIsRectBrushEmpty()) {
+            DialogUtils::warning(this, tr("Warning"), tr("Select an OCR region first"));
+            return;
+        }
         m_overlayWindow->setInnerBrushActive(true);
         showOverlayWindow();
     }
@@ -874,6 +882,7 @@ void MainWindow::setupBaseUI()
         ui->generalBoxLanguage,
         ui->generalToggledStartup,
         ui->generalHotkeySelectNewRegionEdit,
+        ui->generalHotkeyInnerRegionEdit,
         ui->generalHotkeyHistoryTranslationEdit,
         ui->generalHotkeyManualTranslateEdit,
         ui->generalHotkeySpeakTextEdit,
@@ -1075,6 +1084,8 @@ void MainWindow::initSubsystems()
 
     ui->generalHotkeySelectNewRegionCaption->setVisible(x11Hotkeys);
     ui->generalHotkeySelectNewRegionEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyInnerRegionCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyInnerRegionEdit->setVisible(x11Hotkeys);
     ui->generalHotkeyHistoryTranslationCaption->setVisible(x11Hotkeys);
     ui->generalHotkeyHistoryTranslationEdit->setVisible(x11Hotkeys);
     ui->generalHotkeyManualTranslateCaption->setVisible(x11Hotkeys);
@@ -1093,6 +1104,7 @@ void MainWindow::initSubsystems()
 
     if (hkMode == HotkeyController::X11) {
         m_hotkeyController->setCaptureRegionShortcut(ui->generalHotkeySelectNewRegionEdit->keySequence());
+        m_hotkeyController->setCaptureInnerRegionShortcut(ui->generalHotkeyInnerRegionEdit->keySequence());
         m_hotkeyController->setShowHistoryShortcut(ui->generalHotkeyHistoryTranslationEdit->keySequence());
         m_hotkeyController->setRetranslateShortcut(ui->generalHotkeyManualTranslateEdit->keySequence());
         m_hotkeyController->setToggleSpeechShortcut(ui->generalHotkeyToggleSpeechEdit->keySequence());
@@ -1101,6 +1113,8 @@ void MainWindow::initSubsystems()
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
+        connect(ui->generalHotkeyInnerRegionEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setCaptureInnerRegionShortcut);
         connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setShowHistoryShortcut);
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged,
@@ -1114,6 +1128,8 @@ void MainWindow::initSubsystems()
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
+        connect(ui->generalHotkeyInnerRegionEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyInnerRegionEdit->clearFocus(); });
         connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeyHistoryTranslationEdit->clearFocus(); });
         connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::editingFinished, this,
@@ -1126,8 +1142,12 @@ void MainWindow::initSubsystems()
                 [this] { ui->generalHotkeyStopSpeechEdit->clearFocus(); });
     }
 
-    connect(m_hotkeyController, &HotkeyController::captureRegionTriggered,
-            this, &MainWindow::captureRegion);
+    connect(m_hotkeyController, &HotkeyController::captureRegionTriggered, this, [this] {
+        if (!hotkeysBlocked()) selectNewRegion();
+    });
+    connect(m_hotkeyController, &HotkeyController::captureInnerRegionTriggered, this, [this] {
+        if (!hotkeysBlocked()) selectNewInnerRegion();
+    });
     connect(m_hotkeyController, &HotkeyController::showHistoryTriggered,
             this, &MainWindow::showHistory);
     connect(m_hotkeyController, &HotkeyController::retranslateTriggered,
@@ -1229,6 +1249,7 @@ void MainWindow::setupSettingsConnections()
     connect(ui->generalBoxLanguage, &QComboBox::currentIndexChanged, this, bind(m_generalChanged, ui->generalBoxLanguage));
     connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, bind(m_generalChanged, ui->generalToggledStartup));
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
+    connect(ui->generalHotkeyInnerRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyInnerRegionEdit));
     connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
     connect(ui->generalHotkeyManualTranslateEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyManualTranslateEdit));
     connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleSpeechEdit));
@@ -2159,23 +2180,25 @@ void MainWindow::openProcessedPreview()
 }
 
 // ===============================================================
+// global shortcuts
+// ===============================================================
+
+bool MainWindow::hotkeysBlocked() const
+{
+    return QApplication::activeModalWidget() != nullptr;
+}
+
+// ===============================================================
 // overlay
 // ===============================================================
 
-void MainWindow::captureRegion()
-{
-    if (m_overlayWindow->isHidden()) {
-        if (m_overlayImage.isNull()) {
-            DialogUtils::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
-            return;
-        }
-        m_overlayWindow->setInnerBrushActive(false);
-        showOverlayWindow();
-    }
-}
-
 void MainWindow::showHistory()
 {
+    if (!m_overlayWindow->isHidden()) {
+        m_overlayWindow->hide();
+        restoreOutputWindowAfterOverlay();
+    }
+
     emit showHistoryRequested();
 }
 
@@ -3218,6 +3241,8 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
 #endif
         if (widgetChanged(ui->generalHotkeySelectNewRegionEdit) && general.contains("hotkey_select_region"))
             ui->generalHotkeySelectNewRegionEdit->setKeySequence(QKeySequence(general["hotkey_select_region"].toString()));
+        if (widgetChanged(ui->generalHotkeyInnerRegionEdit) && general.contains("hotkey_inner_region"))
+            ui->generalHotkeyInnerRegionEdit->setKeySequence(QKeySequence(general["hotkey_inner_region"].toString()));
         if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit) && general.contains("hotkey_history_translation"))
             ui->generalHotkeyHistoryTranslationEdit->setKeySequence(QKeySequence(general["hotkey_history_translation"].toString()));
         if (widgetChanged(ui->generalHotkeyManualTranslateEdit) && general.contains("hotkey_manual_translate"))
@@ -3837,6 +3862,8 @@ void MainWindow::saveConfig()
 #endif
         if (widgetChanged(ui->generalHotkeySelectNewRegionEdit))
             general["hotkey_select_region"] = ui->generalHotkeySelectNewRegionEdit->keySequence().toString();
+        if (widgetChanged(ui->generalHotkeyInnerRegionEdit))
+            general["hotkey_inner_region"] = ui->generalHotkeyInnerRegionEdit->keySequence().toString();
         if (widgetChanged(ui->generalHotkeyHistoryTranslationEdit))
             general["hotkey_history_translation"] = ui->generalHotkeyHistoryTranslationEdit->keySequence().toString();
         if (widgetChanged(ui->generalHotkeyManualTranslateEdit))
