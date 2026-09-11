@@ -2215,11 +2215,9 @@ void MainWindow::restoreOutputWindowAfterOverlay()
 
     // Forces a real state transition instead of a NoState -> NoState no-op,
     // otherwise the Window Manager keeps it iconified despite Qt reporting it as shown.
+    m_outputWindow->show();
     m_outputWindow->setWindowState(Qt::WindowMinimized);
     m_outputWindow->setWindowState(Qt::WindowNoState);
-
-    m_outputWindow->show();
-    m_outputWindow->raise();
 }
 
 void MainWindow::showOverlayWindow()
