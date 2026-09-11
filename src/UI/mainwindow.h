@@ -116,6 +116,7 @@ private slots:
     // ScreenCast
     void startScreenCapture();
     void stopScreenCapture();
+    void clearScreencastPreview();
 
     // Utility Actions
     void setCurrentOutput(const QString &source, const QString &output);

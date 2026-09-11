@@ -699,21 +699,25 @@ void MainWindow::startScreenCapture()
 
 void MainWindow::stopScreenCapture()
 {
-    if (m_opencv) {
-        m_opencv->setIsStopped(true);
-        ui->outputOriginalScreencast->clear();
-        ui->outputProcessedScreencast->clear();
-        m_overlayWindow->clearFrame();
-        m_overlayImage = QImage();
-        emit screenCastFinished();
-    }
-
+    clearScreencastPreview();
     m_captureController->stop();
 
     if (!m_overlayWindow->isHidden()) {
         m_overlayWindow->hide();
         restoreOutputWindowAfterOverlay();
     }
+}
+
+void MainWindow::clearScreencastPreview()
+{
+    if (!m_opencv) return;
+
+    m_opencv->setIsStopped(true);
+    ui->outputOriginalScreencast->clear();
+    ui->outputProcessedScreencast->clear();
+    m_overlayWindow->clearFrame();
+    m_overlayImage = QImage();
+    emit screenCastFinished();
 }
 
 // ===============================================================
@@ -2248,9 +2252,7 @@ void MainWindow::initScreenCast()
             });
 
     // When the controller is about to tear down its backend, stop OpenCV first
-    connect(m_captureController, &CaptureController::aboutToReconfigure, this, [this] {
-        if (m_opencv) m_opencv->setIsStopped(true);
-    });
+    connect(m_captureController, &CaptureController::aboutToReconfigure, this, &MainWindow::clearScreencastPreview);
 
     // After a new backend is producing frames, re-enable OpenCV
     connect(m_captureController, &CaptureController::captureRestarted, this, [this] {

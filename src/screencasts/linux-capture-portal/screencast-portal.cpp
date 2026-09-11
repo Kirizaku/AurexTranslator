@@ -111,7 +111,7 @@ void ScreenCastPortal::gotCreateSessionResponse(uint response, const QVariantMap
 
     reply.waitForFinished();
     if (reply.isError()) {
-        Log(Logger::Level::Warning, QString("[pipewire] Failed to call ListShortcuts: %1").arg(reply.error().message()));
+        Log(Logger::Level::Warning, QString("[pipewire] Failed to call SelectSources: %1").arg(reply.error().message()));
         emit failedPortal();
         return;
     }
@@ -138,7 +138,7 @@ void ScreenCastPortal::gotSelectSourcesResponse(uint response, const QVariantMap
                                      });
     reply.waitForFinished();
     if (reply.isError()) {
-        Log(Logger::Level::Warning, QString("[pipewire] Failed to call ListShortcuts: %1").arg(reply.error().message()));
+        Log(Logger::Level::Warning, QString("[pipewire] Failed to call Start: %1").arg(reply.error().message()));
         emit failedPortal();
         return;
     }
@@ -155,7 +155,6 @@ void ScreenCastPortal::gotStartResponse(uint response, const QVariantMap &result
 {
     if (response != 0) {
         Log(Logger::Level::Warning, QString("[pipewire] Failed to start: %1").arg(response));
-        emit failedPortal();
         return;
     }
 
