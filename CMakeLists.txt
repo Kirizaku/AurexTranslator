@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(aurextranslator VERSION 0.0.7 LANGUAGES C CXX)
+project(aurextranslator VERSION 0.0.8 LANGUAGES C CXX)
 
 find_package(Git QUIET)
 
