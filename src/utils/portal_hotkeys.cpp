@@ -34,6 +34,22 @@ bool PortalHotkeys::init()
     qDBusRegisterMetaType<Shortcuts>();
     qDBusRegisterMetaType<QPair<QString,QVariantMap>>();
 
+    {
+        QDBusInterface registry(QLatin1String("org.freedesktop.portal.Desktop"),
+                                QLatin1String("/org/freedesktop/portal/desktop"),
+                                QLatin1String("org.freedesktop.host.portal.Registry"),
+                                QDBusConnection::sessionBus());
+        if (registry.isValid()) {
+            QDBusReply<void> reply = registry.call(QLatin1String("Register"),
+                                                   QStringLiteral("aurextranslator"),
+                                                   QVariantMap());
+            if (!reply.isValid()) {
+                Log(Logger::Level::Warning,
+                    QString("[shortcuts] Register failed: %1").arg(reply.error().message()));
+            }
+        }
+    }
+
     m_portalShortcuts = new OrgFreedesktopPortalGlobalShortcutsInterface(QLatin1String("org.freedesktop.portal.Desktop"),
                                                                          QLatin1String("/org/freedesktop/portal/desktop"),
                                                                          QDBusConnection::sessionBus(), this);
