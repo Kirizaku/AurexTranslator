@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QMediaDevices>
 #include <QMenu>
 #include <QTimer>
 
@@ -36,8 +37,8 @@
 #include "src/controllers/ocrcontroller.h"
 #include "src/controllers/hookcontroller.h"
 #include "src/controllers/pythoncontroller.h"
-#include "src/engines/audioplayer.h"
-#include "src/utils/notificationsound.h"
+#include "src/audio/audioplayer.h"
+#include "src/audio/notificationsound.h"
 #include "src/engines/pipertts.h"
 #include "src/engines/edgetts.h"
 #include "src/engines/customtts.h"
@@ -933,6 +934,7 @@ void MainWindow::setupBaseUI()
         ui->speechTranslatorCombo,
         ui->speechModeCombo,
         ui->speechOnNewTranslationCombo,
+        ui->speechDeviceCombo,
         ui->speechVolumeSlider
     };
 }
@@ -1340,6 +1342,10 @@ void MainWindow::setupSettingsConnections()
     connect(ui->speechTranslatorCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechTranslatorCombo));
     connect(ui->speechOnNewTranslationCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechOnNewTranslationCombo));
     connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechModeCombo));
+    connect(ui->speechDeviceCombo, &QComboBox::currentIndexChanged, this, bind(m_speechChanged, ui->speechDeviceCombo));
+    connect(ui->speechDeviceCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+        m_audioPlayer->setDeviceName(ui->speechDeviceCombo->currentData().toString());
+    });
     connect(ui->speechVolumeSlider, &QSlider::valueChanged, this, bind(m_speechChanged, ui->speechVolumeSlider));
     connect(ui->speechModeCombo, &QComboBox::currentIndexChanged, this,
             [this](int) { refreshSpeechPage(); });
@@ -1700,6 +1706,10 @@ void MainWindow::initSpeech()
 
     ui->speechOnNewTranslationCombo->addItem(tr("Interrupt the current phrase"), true);
     ui->speechOnNewTranslationCombo->addItem(tr("Let the current phrase finish"), false);
+
+    m_mediaDevices = new QMediaDevices(this);
+    connect(m_mediaDevices, &QMediaDevices::audioOutputsChanged, this, &MainWindow::refreshSpeechDevices);
+    refreshSpeechDevices();
 
     ui->speechTestButton->setToolTip(tr("Speaks with the settings as applied. Press Apply first to hear a change."));
 
@@ -2099,6 +2109,42 @@ bool MainWindow::speechBusy() const
     return (m_speaking && m_speaking->synthesizing())
     || (m_tts && m_tts->synthesizing())
     || m_audioPlayer->isPlaying();
+}
+
+void MainWindow::refreshSpeechDevices()
+{
+    QStringList names;
+    for (const QAudioDevice &device : QMediaDevices::audioOutputs()) {
+        const QString name = device.description();
+
+        if (!name.isEmpty() && !names.contains(name))
+            names << name;
+    }
+
+    if (names == m_speechOutputNames && ui->speechDeviceCombo->count() > 0)
+        return;
+
+    m_speechOutputNames = names;
+    Log(Logger::Level::Info, QStringLiteral("[speech] audio outputs: %1").arg(names.join(QStringLiteral(", "))));
+
+    const QString selected = ui->speechDeviceCombo->currentData().toString();
+    const QSignalBlocker blocker(ui->speechDeviceCombo);
+
+    ui->speechDeviceCombo->clear();
+    ui->speechDeviceCombo->addItem(tr("System default"), QString());
+
+    for (const QString &name : names)
+        ui->speechDeviceCombo->addItem(name, name);
+
+    selectSpeechDevice(selected);
+}
+
+void MainWindow::selectSpeechDevice(const QString &name)
+{
+    const int index = ui->speechDeviceCombo->findData(name);
+    if (index < 0 && !name.isEmpty())
+        Log(Logger::Level::Warning, QStringLiteral("[speech] saved audio device \"%1\" not found, using system default").arg(name));
+    ui->speechDeviceCombo->setCurrentIndex(index >= 0 ? index : 0);
 }
 
 bool MainWindow::speechAcceptsSource(const QString &source) const
@@ -3551,6 +3597,11 @@ void MainWindow::loadSpeechSettings(const QJsonObject& speech)
     if (widgetChanged(ui->speechOfferPresetsCheckBox))
         ui->speechOfferPresetsCheckBox->setChecked(speech.value("offer_tts_presets").toBool(true));
 
+    if (widgetChanged(ui->speechDeviceCombo))
+        selectSpeechDevice(speech.value("device_name").toString());
+
+    m_audioPlayer->setDeviceName(ui->speechDeviceCombo->currentData().toString());
+
     if (widgetChanged(ui->speechVolumeSlider))
         ui->speechVolumeSlider->setValue(speech.value("volume").toInt(100));
 
@@ -4107,6 +4158,9 @@ void MainWindow::saveConfig()
 
         if (widgetChanged(ui->speechOfferPresetsCheckBox))
             speech["offer_tts_presets"] = ui->speechOfferPresetsCheckBox->isChecked();
+
+        if (widgetChanged(ui->speechDeviceCombo))
+            speech["device_name"] = ui->speechDeviceCombo->currentData().toString();
 
         if (widgetChanged(ui->speechVolumeSlider))
             speech["volume"] = ui->speechVolumeSlider->value();

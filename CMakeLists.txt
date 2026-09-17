@@ -90,7 +90,8 @@ set(PROJECT_SOURCES
     src/engines/pipervoicecatalog.h src/engines/pipervoicecatalog.cpp
     src/engines/edgetts.h src/engines/edgetts.cpp
     src/engines/customtts.h src/engines/customtts.cpp
-    src/engines/audioplayer.h src/engines/audioplayer.cpp
+    src/audio/audioplayer.h src/audio/audioplayer.cpp
+    src/audio/notificationsound.cpp src/audio/notificationsound.h
 
     src/utils/config.cpp src/utils/config.h
     src/utils/logger.cpp src/utils/logger.h
@@ -99,7 +100,6 @@ set(PROJECT_SOURCES
     src/utils/plugininterface.h
     src/utils/pluginloader.cpp src/utils/pluginloader.h
     src/utils/metadatareader.cpp src/utils/metadatareader.h
-    src/utils/notificationsound.cpp src/utils/notificationsound.h
     src/utils/dialogutils.h
 
     src/translations/google.cpp src/translations/google.h
@@ -112,6 +112,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         src/screencasts/linux-capture-x11/screencast-x11.cpp src/screencasts/linux-capture-x11/screencast-x11.h
         src/utils/portal_hotkeys.h src/utils/portal_hotkeys.cpp
         src/engines/clipboardportal.h src/engines/clipboardportal.cpp
+        src/audio/pipewiredefaultsinkwatcher.h src/audio/pipewiredefaultsinkwatcher.cpp
     )
 
     qt_add_dbus_interface(PROJECT_SOURCES 3rdparty/org.freedesktop.portal/org.freedesktop.portal.ScreenCast.xml screencast_portal_interface)

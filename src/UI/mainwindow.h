@@ -41,6 +41,7 @@ class HookController;
 class ClipboardController;
 class AudioPlayer;
 class NotificationSound;
+class QMediaDevices;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -168,6 +169,11 @@ private:
     bool m_speechOn = false;
     AudioPlayer *m_audioPlayer = nullptr;
     NotificationSound *m_notificationSound = nullptr;
+    QMediaDevices *m_mediaDevices = nullptr;
+    QStringList m_speechOutputNames;
+
+    void refreshSpeechDevices();
+    void selectSpeechDevice(const QString &name);
 
     TtsEngine *ttsEngine(const QString &id) const;
     void setTtsEngine(TtsEngine *engine);

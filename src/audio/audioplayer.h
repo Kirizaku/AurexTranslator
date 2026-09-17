@@ -19,11 +19,16 @@
 #define AUDIOPLAYER_H
 
 #include <QObject>
+#include <QAudioDevice>
 #include <QAudioFormat>
 
 class QAudioDecoder;
 class QAudioSink;
 class QBuffer;
+
+#ifdef Q_OS_LINUX
+class PipeWireDefaultSinkWatcher;
+#endif
 
 class AudioPlayer : public QObject
 {
@@ -37,6 +42,7 @@ public:
 
     int volume() const { return m_volume; }
     void setVolume(int percent);
+    void setDeviceName(const QString &name);
 
     void play(const QByteArray &audio);
     void stop();
@@ -52,9 +58,18 @@ private:
     void disposeDecoder();
     void playPcm(QAudioFormat format, QByteArray pcm);
     void setPlaying(bool playing);
+    QAudioDevice resolveDevice() const;
+    void createSink(const QAudioDevice &device, const QAudioFormat &format);
+    void switchToDevice(const QAudioDevice &device);
 
+    QString m_deviceName;
+    QString m_activeDeviceDescription;
     QAudioSink *m_sink = nullptr;
     QBuffer *m_buffer = nullptr;
+
+#ifdef Q_OS_LINUX
+    PipeWireDefaultSinkWatcher *m_defaultSinkWatcher = nullptr;
+#endif
 
     QAudioDecoder *m_decoder = nullptr;
     QBuffer *m_source = nullptr;

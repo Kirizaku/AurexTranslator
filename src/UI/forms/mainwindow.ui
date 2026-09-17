@@ -1916,13 +1916,47 @@ font-weight: 700;
                  </layout>
                 </item>
                 <item row="5" column="0">
+                 <widget class="QLabel" name="speechDeviceCaption">
+                  <property name="text">
+                   <string>Audio device</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_speechDevice">
+                  <item>
+                   <widget class="QComboBox" name="speechDeviceCombo">
+                    <property name="sizeAdjustPolicy">
+                     <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+                    </property>
+                    <property name="minimumContentsLength">
+                     <number>30</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_speechDevice">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item row="6" column="0">
                  <widget class="QLabel" name="speechVolumeCaption">
                   <property name="text">
                    <string>Volume</string>
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="1">
+                <item row="6" column="1">
                  <layout class="QHBoxLayout" name="horizontalLayout_speechVolume">
                   <item>
                    <widget class="QSlider" name="speechVolumeSlider">
@@ -1964,14 +1998,14 @@ font-weight: 700;
                   </item>
                  </layout>
                 </item>
-                <item row="6" column="0" colspan="2">
+                <item row="7" column="0" colspan="2">
                  <widget class="QCheckBox" name="speechToggleSoundCheckBox">
                   <property name="text">
                    <string>Play a sound when toggling speech with the hotkey</string>
                   </property>
                  </widget>
                 </item>
-                <item row="7" column="0" colspan="2">
+                <item row="8" column="0" colspan="2">
                  <widget class="QCheckBox" name="speechOfferPresetsCheckBox">
                   <property name="text">
                    <string>Offer a ready-made TTS preset for text normalization when one is available</string>

@@ -18,6 +18,10 @@
 #include "audioplayer.h"
 #include "src/utils/logger.h"
 
+#ifdef Q_OS_LINUX
+#include "src/audio/pipewiredefaultsinkwatcher.h"
+#endif
+
 #include <QAudioDecoder>
 #include <QAudioSink>
 #include <QBuffer>
@@ -112,6 +116,20 @@ QByteArray floatToInt16(const QByteArray &samples)
 AudioPlayer::AudioPlayer(QObject *parent)
     : QObject(parent)
 {
+#ifdef Q_OS_LINUX
+    m_defaultSinkWatcher = new PipeWireDefaultSinkWatcher(this);
+    connect(m_defaultSinkWatcher, &PipeWireDefaultSinkWatcher::defaultSinkChanged, this, [this](const QString &description) {
+        if (!m_playing || !m_deviceName.isEmpty())
+            return;
+
+        for (const QAudioDevice &candidate : QMediaDevices::audioOutputs()) {
+            if (candidate.description() == description) {
+                switchToDevice(candidate);
+                break;
+            }
+        }
+    });
+#endif
 }
 
 AudioPlayer::~AudioPlayer()
@@ -125,6 +143,15 @@ void AudioPlayer::setVolume(int percent)
 
     if (m_sink)
         m_sink->setVolume(QAudio::convertVolume(m_volume / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale));
+}
+
+void AudioPlayer::setDeviceName(const QString &name)
+{
+    if (m_deviceName == name)
+        return;
+    m_deviceName = name;
+
+    switchToDevice(resolveDevice());
 }
 
 void AudioPlayer::play(const QByteArray &audio)
@@ -306,9 +333,9 @@ void AudioPlayer::disposeDecoder()
 
 void AudioPlayer::playPcm(QAudioFormat format, QByteArray pcm)
 {
-    const QAudioDevice device = QMediaDevices::defaultAudioOutput();
+    const QAudioDevice device = resolveDevice();
     if (device.isNull()) {
-        Log(Logger::Level::Warning, QStringLiteral("[speech] playPcm: no default audio output device"));
+        Log(Logger::Level::Warning, QStringLiteral("[speech] playPcm: no audio output device"));
         setPlaying(false);
         emit errorOccurred(tr("No audio output device."));
         return;
@@ -336,19 +363,8 @@ void AudioPlayer::playPcm(QAudioFormat format, QByteArray pcm)
     m_buffer->setData(pcm);
     m_buffer->open(QIODevice::ReadOnly);
 
-    m_sink = new QAudioSink(device, format, this);
+    createSink(device, format);
     m_sink->setVolume(QAudio::convertVolume(m_volume / qreal(100), QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale));
-
-    connect(m_sink, &QAudioSink::stateChanged, this, [this](QAudio::State state) {
-        if (state == QAudio::StoppedState && m_sink && m_sink->error() != QAudio::NoError) {
-            const int errorCode = static_cast<int>(m_sink->error());
-            Log(Logger::Level::Warning, QStringLiteral("[speech] playPcm: sink error %1").arg(errorCode));
-            emit errorOccurred(tr("Playback failed (error %1).").arg(errorCode));
-        }
-
-        if (state == QAudio::IdleState || state == QAudio::StoppedState)
-            stop();
-    });
 
     setPlaying(true);
     m_sink->start(m_buffer);
@@ -361,4 +377,77 @@ void AudioPlayer::setPlaying(bool playing)
 
     m_playing = playing;
     emit playingChanged(playing);
+}
+
+QAudioDevice AudioPlayer::resolveDevice() const
+{
+    const QList<QAudioDevice> outputs = QMediaDevices::audioOutputs();
+    const auto byName = [&outputs](const QString &name) {
+        if (!name.isEmpty()) {
+            for (const QAudioDevice &device : outputs) {
+                if (device.description() == name)
+                    return device;
+            }
+        }
+        return QAudioDevice();
+    };
+
+    if (!m_deviceName.isEmpty()) {
+        const QAudioDevice chosen = byName(m_deviceName);
+        if (!chosen.isNull())
+            return chosen;
+
+        Log(Logger::Level::Warning, QStringLiteral("[speech] audio device \"%1\" is not connected, using the system default").arg(m_deviceName));
+    }
+
+#ifdef Q_OS_LINUX
+    // Qt's default output doesn't follow changes made while the app runs (and Qt 6.2's
+    // GStreamer backend just reports the first device it found), so ask PipeWire directly.
+    // Confirmed broken on Qt 6.2.4 and 6.4.2; a newer Qt on Arch didn't show the bug, but
+    // I still ship builds against the older Qt versions, so keep this regardless
+    const QAudioDevice systemDefault = byName(m_defaultSinkWatcher->currentDescription());
+    if (!systemDefault.isNull())
+        return systemDefault;
+#endif
+
+    return QMediaDevices::defaultAudioOutput();
+}
+
+void AudioPlayer::createSink(const QAudioDevice &device, const QAudioFormat &format)
+{
+    m_activeDeviceDescription = device.description();
+    m_sink = new QAudioSink(device, format, this);
+
+    connect(m_sink, &QAudioSink::stateChanged, this, [this](QAudio::State state) {
+        if (state == QAudio::StoppedState && m_sink && m_sink->error() != QAudio::NoError) {
+            const int errorCode = static_cast<int>(m_sink->error());
+            Log(Logger::Level::Warning, QStringLiteral("[speech] playPcm: sink error %1").arg(errorCode));
+            emit errorOccurred(tr("Playback failed (error %1).").arg(errorCode));
+        }
+
+        if (state == QAudio::IdleState || state == QAudio::StoppedState)
+            stop();
+    });
+}
+
+void AudioPlayer::switchToDevice(const QAudioDevice &device)
+{
+    if (!m_playing || !m_sink || !m_buffer || device.isNull())
+        return;
+
+    if (device.description() == m_activeDeviceDescription)
+        return;
+
+    const QAudioFormat format = m_sink->format();
+    const qreal volume = m_sink->volume();
+
+    QAudioSink *oldSink = m_sink;
+    m_sink = nullptr;
+    oldSink->disconnect(this);
+    oldSink->stop();
+    oldSink->deleteLater();
+
+    createSink(device, format);
+    m_sink->setVolume(volume);
+    m_sink->start(m_buffer);
 }
