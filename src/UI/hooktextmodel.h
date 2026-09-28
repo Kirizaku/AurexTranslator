@@ -69,7 +69,7 @@ public:
     void setDraftSelected(const QString &source, bool on);
     void setDisplayMode(int mode);
     void setBurstMs(int ms);
-    void moveHookPriority(const QString &source, int delta);
+    void moveHookNextTo(const QString &source, const QString &neighbour);
     void applySelection();
     void saveSelection();
     void deleteSaved(const QString &source);

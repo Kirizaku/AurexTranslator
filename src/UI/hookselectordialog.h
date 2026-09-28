@@ -19,12 +19,15 @@
 #define HOOKSELECTORDIALOG_H
 
 #include <QDialog>
+#include <QElapsedTimer>
 #include <QSet>
 
 class HookTextModel;
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLayout;
+class QScrollArea;
 class QVBoxLayout;
 class QPushButton;
 class QSpinBox;
@@ -40,18 +43,25 @@ public:
     void openFresh();
 
 private:
-    void refresh();
-    void refreshScopedSettings();
     void updateGroupButton();
+    void refreshScopedSettings();
+    QStringList visibleOrder() const;
+    void onPreviewsTick();
+    void refresh();
 
     HookTextModel *m_model;
     QVBoxLayout *m_liveList = nullptr;
+    QScrollArea *m_liveScroll = nullptr;
     QVBoxLayout *m_savedList = nullptr;
     QWidget *m_waitWidget = nullptr;
     QComboBox *m_modeCombo = nullptr;
     QSpinBox *m_waitSpin = nullptr;
+    QCheckBox *m_onlySelectedCheck = nullptr;
     QPushButton *m_groupBtn = nullptr;
     QTimer *m_refreshTimer = nullptr;
+    QStringList m_shownOrder;
+    QHash<QString, QLabel*> m_previewLabels;
+    QElapsedTimer m_lastRebuild;
     bool m_addrSaveWarned = false;
     QSet<QString> m_groupPick;
     QString m_filter;

@@ -138,184 +138,199 @@
 <context>
     <name>HookSelectorDialog</name>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="87"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="88"/>
         <source>  [variant %1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="107"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="110"/>
         <source>Hook text selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="135"/>
-        <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="146"/>
-        <source>Search blocks by address or text…</source>
+        <location filename="../src/UI/hookselectordialog.cpp" line="138"/>
+        <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay, and turn on &quot;Selected only&quot; below to see just the ticked ones among many - reordering with ▲ ▼ is only a few clicks once the list is that short. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/UI/hookselectordialog.cpp" line="155"/>
+        <source>Search blocks by address or text…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="163"/>
+        <source>Selected only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="164"/>
+        <source>Show only the blocks you have ticked, instead of every block seen so far. Makes it easier to find and reorder them once there are hundreds.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="172"/>
         <source>Show only the block that changed last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="156"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="173"/>
         <source>Show all ticked blocks together</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="165"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="182"/>
         <source>Wait for other blocks:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="169"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="186"/>
         <source> ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="171"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="188"/>
         <source>When two blocks change at almost the same time, wait this long after the first one before deciding which to show, then show the higher-priority block (set the order with the ▲ ▼ arrows). Increase it if a lower block still flashes before your preferred one; 0 shows whatever changes first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="207"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="225"/>
         <source>Saved addresses (auto-applied when they reappear):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="236"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="344"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="254"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="362"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="237"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="255"/>
         <source>Combine the selected blocks into one: their texts are joined and translated together, shown as a single block. Select at least two first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="248"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="266"/>
         <source>Group blocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="249"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
         <source>Click at least two blocks or groups to highlight and combine them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="259"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="277"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="260"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="278"/>
         <source>Show the current text for the selected blocks now. Without this a block you just selected appears only on its next update.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="266"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="284"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="285"/>
         <source>Remember the selected blocks so they re-apply next launch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="272"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="292"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="290"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="310"/>
         <source>Save selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="273"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="291"/>
         <source>Select at least one specific block to save - an address (Hook:0x...), a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) or a group. The plain &quot;Hook&quot; stream cannot be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="293"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="311"/>
         <source>Hook addresses are runtime memory pointers. In some games they are stable and will be restored on the next launch; in others they change every run and won&apos;t match.
 
 Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="305"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="323"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="307"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="325"/>
         <source>Forget all hook text seen so far and empty the overlay. Saved addresses are kept. Useful after a per-character variant flooded the list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="344"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="396"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="521"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="362"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="462"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="602"/>
         <source>Group (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="374"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="440"/>
         <source>(no hook text yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="379"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="440"/>
+        <source>(nothing ticked yet)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UI/hookselectordialog.cpp" line="445"/>
         <source>Order blocks with ▲ ▼ - the higher one wins when several change at once, and sets the output order when all are shown. Only saved addresses keep their order next time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="418"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="484"/>
         <source>Show this block in the overlay (press Apply to take effect).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="438"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
         <source>Ungroup: split this group back into separate blocks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="448"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="517"/>
         <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="466"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="536"/>
         <source>Higher priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="467"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="537"/>
         <source>Lower priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="497"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="578"/>
         <source>(nothing saved)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="545"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="588"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="626"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="508"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="589"/>
         <source>Forget this saved address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="546"/>
+        <location filename="../src/UI/hookselectordialog.cpp" line="627"/>
         <source>Forget this saved group.</source>
         <translation type="unfinished"></translation>
     </message>

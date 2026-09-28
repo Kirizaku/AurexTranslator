@@ -32,6 +32,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QScrollBar>
 
 namespace {
 
@@ -94,8 +95,10 @@ static void clearLayout(QLayout *layout)
         return;
     QLayoutItem *item;
     while ((item = layout->takeAt(0)) != nullptr) {
-        if (QWidget *w = item->widget())
+        if (QWidget *w = item->widget()) {
+            w->hide();
             w->deleteLater();
+        }
         delete item;
     }
 }
@@ -133,7 +136,9 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
 
     auto *hint = new QLabel(
         tr("Some games show several text blocks at once (for example a choice "
-           "menu). Tick a block's checkbox to show it in the overlay. Click a row "
+           "menu). Tick a block's checkbox to show it in the overlay, and turn on "
+           "\"Selected only\" below to see just the ticked ones among many - reordering "
+           "with ▲ ▼ is only a few clicks once the list is that short. Click a row "
            "to pick it for grouping (highlighted), then press Group to translate "
            "the picked blocks as one."),
         this);
@@ -142,14 +147,26 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
     hint->setObjectName(QStringLiteral("hookMeta"));
     outer->addWidget(hint);
 
-    auto *search = new QLineEdit(this);
+    auto *searchRow = new QWidget(this);
+    auto *searchRowLayout = new QHBoxLayout(searchRow);
+    searchRowLayout->setContentsMargins(0, 0, 0, 0);
+
+    auto *search = new QLineEdit(searchRow);
     search->setPlaceholderText(tr("Search blocks by address or text…"));
     search->setClearButtonEnabled(true);
     connect(search, &QLineEdit::textChanged, this, [this](const QString &t) {
         m_filter = t.trimmed();
         refresh();
     });
-    outer->addWidget(search);
+    searchRowLayout->addWidget(search, 1);
+
+    m_onlySelectedCheck = new QCheckBox(tr("Selected only"), searchRow);
+    m_onlySelectedCheck->setToolTip(tr("Show only the blocks you have ticked, instead of every block seen so far. "
+                                       "Makes it easier to find and reorder them once there are hundreds."));
+    connect(m_onlySelectedCheck, &QCheckBox::toggled, this, [this](bool) { refresh(); });
+    searchRowLayout->addWidget(m_onlySelectedCheck);
+
+    outer->addWidget(searchRow);
 
     m_modeCombo = new QComboBox(this);
     m_modeCombo->addItem(tr("Show only the block that changed last"), HookTextModel::FollowLastChanged);
@@ -189,6 +206,7 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
     liveLayout->setContentsMargins(0, 0, 0, 0);
 
     auto *scroll = new QScrollArea(livePane);
+    m_liveScroll = scroll;
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
     auto *container = new QWidget(scroll);
@@ -315,7 +333,7 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
     m_refreshTimer = new QTimer(this);
     m_refreshTimer->setSingleShot(true);
     m_refreshTimer->setInterval(120);
-    connect(m_refreshTimer, &QTimer::timeout, this, [this] { if (isVisible()) refresh(); });
+    connect(m_refreshTimer, &QTimer::timeout, this, &HookSelectorDialog::onPreviewsTick);
 
     connect(m_model, &HookTextModel::changed, this, [this] { if (isVisible()) refresh(); });
     connect(m_model, &HookTextModel::previewsChanged, this, [this] {
@@ -357,6 +375,45 @@ void HookSelectorDialog::refreshScopedSettings()
     m_waitSpin->setValue(m_model->burstMs());
 }
 
+QStringList HookSelectorDialog::visibleOrder() const
+{
+    const QStringList ordered = m_model->displayOrder();
+    if (!m_onlySelectedCheck || !m_onlySelectedCheck->isChecked())
+        return ordered;
+
+    QStringList filtered;
+    for (const QString &src : ordered)
+        if (m_model->isDraftSelected(src))
+            filtered << src;
+    return filtered;
+}
+
+void HookSelectorDialog::onPreviewsTick()
+{
+    if (!isVisible())
+        return;
+
+    const QStringList ordered = visibleOrder();
+    if (m_filter.isEmpty() && ordered == m_shownOrder) {
+        for (auto it = m_previewLabels.cbegin(); it != m_previewLabels.cend(); ++it) {
+            const QString original = m_model->latestOriginal(it.key());
+            QLabel *label = it.value();
+            if (label->toolTip() != original) {
+                label->setText(original);
+                label->setToolTip(original);
+            }
+        }
+        return;
+    }
+
+    constexpr int kMinRebuildMs = 400;
+    if (m_lastRebuild.isValid() && m_lastRebuild.elapsed() < kMinRebuildMs) {
+        m_refreshTimer->start(kMinRebuildMs - static_cast<int>(m_lastRebuild.elapsed()));
+        return;
+    }
+    refresh();
+}
+
 void HookSelectorDialog::refresh()
 {
     refreshScopedSettings();
@@ -367,11 +424,20 @@ void HookSelectorDialog::refresh()
         m_waitWidget->setVisible(mode == HookTextModel::FollowLastChanged);
 
     if (m_liveList) {
-        clearLayout(m_liveList);
+        QScrollBar *bar = m_liveScroll ? m_liveScroll->verticalScrollBar() : nullptr;
+        const int scrollPos = bar ? bar->value() : 0;
+        QWidget *listWidget = m_liveList->parentWidget();
+        if (listWidget)
+            listWidget->setUpdatesEnabled(false);
 
-        const QStringList ordered = m_model->displayOrder();
+        clearLayout(m_liveList);
+        m_previewLabels.clear();
+
+        const QStringList ordered = visibleOrder();
+        m_shownOrder = ordered;
         if (ordered.isEmpty()) {
-            auto *empty = new QLabel(tr("(no hook text yet)"));
+            auto *empty = new QLabel(m_onlySelectedCheck && m_onlySelectedCheck->isChecked()
+                                     ? tr("(nothing ticked yet)") : tr("(no hook text yet)"));
             empty->setObjectName(QStringLiteral("hookMeta"));
             m_liveList->addWidget(empty);
         } else {
@@ -416,8 +482,11 @@ void HookSelectorDialog::refresh()
                 auto *enable = new QCheckBox(card);
                 enable->setChecked(m_model->isDraftSelected(src));
                 enable->setToolTip(tr("Show this block in the overlay (press Apply to take effect)."));
-                connect(enable, &QCheckBox::toggled, this,
-                        [this, src](bool on) { m_model->setDraftSelected(src, on); });
+                connect(enable, &QCheckBox::toggled, this, [this, src](bool on) {
+                    m_model->setDraftSelected(src, on);
+                    if (m_onlySelectedCheck && m_onlySelectedCheck->isChecked())
+                        refresh();
+                });
                 row->addWidget(enable);
 
                 const int variant = HookTextModel::variantOf(src);
@@ -452,6 +521,7 @@ void HookSelectorDialog::refresh()
                 }
 
                 auto *preview = new QLabel(original, card);
+                m_previewLabels.insert(src, preview);
                 preview->setObjectName(QStringLiteral("hookMeta"));
                 preview->setTextFormat(Qt::PlainText);
                 preview->setWordWrap(false);
@@ -465,10 +535,12 @@ void HookSelectorDialog::refresh()
                 down->setFixedWidth(28);
                 up->setToolTip(tr("Higher priority"));
                 down->setToolTip(tr("Lower priority"));
-                up->setEnabled(i > 0);
-                down->setEnabled(i < ordered.size() - 1);
-                connect(up, &QPushButton::clicked, this, [this, src] { m_model->moveHookPriority(src, -1); });
-                connect(down, &QPushButton::clicked, this, [this, src] { m_model->moveHookPriority(src, +1); });
+                const QString above = i > 0 ? ordered.at(i - 1) : QString();
+                const QString below = i < ordered.size() - 1 ? ordered.at(i + 1) : QString();
+                up->setEnabled(!above.isEmpty());
+                down->setEnabled(!below.isEmpty());
+                connect(up, &QPushButton::clicked, this, [this, src, above] { m_model->moveHookNextTo(src, above); });
+                connect(down, &QPushButton::clicked, this, [this, src, below] { m_model->moveHookNextTo(src, below); });
                 row->addWidget(up);
                 row->addWidget(down);
 
@@ -484,6 +556,15 @@ void HookSelectorDialog::refresh()
 
                 m_liveList->addWidget(card);
             }
+        }
+
+        if (listWidget)
+            listWidget->setUpdatesEnabled(true);
+
+        if (bar) {
+            m_liveList->activate();
+            bar->setValue(scrollPos);
+            QTimer::singleShot(0, this, [bar, scrollPos] { bar->setValue(scrollPos); });
         }
     }
 
@@ -554,4 +635,5 @@ void HookSelectorDialog::refresh()
     }
 
     updateGroupButton();
+    m_lastRebuild.restart();
 }

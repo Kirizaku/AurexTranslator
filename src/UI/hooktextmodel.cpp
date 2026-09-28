@@ -101,20 +101,27 @@ void HookTextModel::noteSource(const QString &source, const QString &original)
     if (!source.startsWith(QStringLiteral("Hook")))
         return;
 
+    const bool isNew = !m_seen.contains(source);
     registerSource(source);
+    const bool textChanged = m_latestOriginal.value(source) != original;
     m_latestOriginal.insert(source, original);
 
+    bool groupChanged = false;
     const QString group = m_memberToGroup.value(source);
     if (group.isEmpty()) {
         m_lastSeq.insert(source, ++m_seqCounter);
         m_lastMs.insert(source, QDateTime::currentMSecsSinceEpoch());
     } else {
         registerSource(group);
-        m_latestOriginal.insert(group, combinedOriginal(group));
+        const QString combined = combinedOriginal(group);
+        groupChanged = m_latestOriginal.value(group) != combined;
+        m_latestOriginal.insert(group, combined);
         m_lastSeq.insert(group, ++m_seqCounter);
         m_lastMs.insert(group, QDateTime::currentMSecsSinceEpoch());
     }
-    emit previewsChanged();
+
+    if (isNew || textChanged || groupChanged)
+        emit previewsChanged();
 }
 
 void HookTextModel::ensureRegistered(const QString &source, const QString &original)
@@ -573,16 +580,19 @@ void HookTextModel::setBurstMs(int ms)
 }
 
 
-void HookTextModel::moveHookPriority(const QString &source, int delta)
+void HookTextModel::moveHookNextTo(const QString &source, const QString &neighbour)
 {
-    QStringList ordered = displayOrder();
-    const int i = ordered.indexOf(source);
-    const int j = i + delta;
-
-    if (i < 0 || j < 0 || j >= ordered.size())
+    if (source == neighbour)
         return;
 
-    ordered.move(i, j);
+    QStringList ordered = displayOrder();
+    const int from = ordered.indexOf(source);
+    const int to = ordered.indexOf(neighbour);
+
+    if (from < 0 || to < 0)
+        return;
+
+    ordered.move(from, to);
 
     for (const QString &s : std::as_const(m_priority))
         if (!ordered.contains(s))
