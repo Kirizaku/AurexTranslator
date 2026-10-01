@@ -29,7 +29,7 @@
 #include "mainwindow.h"
 #include "textprocessingdelegates.h"
 #include "ui_mainwindow.h"
-#include "googlesettingsdialog.h"
+#include "src/UI/engines/googlesettingsdialog.h"
 #include "screencastwindow.h"
 #include "src/controllers/translationcontroller.h"
 #include "src/controllers/hotkeycontroller.h"

@@ -28,52 +28,52 @@
 <context>
     <name>CustomSettingsDialog</name>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="38"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="38"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="45"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="45"/>
         <source>Server address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="54"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="54"/>
         <source>Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="57"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="57"/>
         <source>The server must answer /info, /voices and /synthesize. See the &quot;Custom TTS Server&quot; wiki page for details.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="84"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="84"/>
         <source>Not connected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="87"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="87"/>
         <source>Connecting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="91"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="91"/>
         <source>Ready at %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="92"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="92"/>
         <source>Ready at %1, voice %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="95"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="95"/>
         <source>Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/customsettingsdialog.cpp" line="103"/>
+        <location filename="../src/UI/engines/customsettingsdialog.cpp" line="103"/>
         <source>Status: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -112,12 +112,12 @@
 <context>
     <name>GoogleSettingsDialog</name>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="30"/>
+        <location filename="../src/UI/engines/googlesettingsdialog.cpp" line="30"/>
         <source>Source language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/googlesettingsdialog.cpp" line="34"/>
+        <location filename="../src/UI/engines/googlesettingsdialog.cpp" line="34"/>
         <source>Target language</source>
         <translation type="unfinished"></translation>
     </message>
@@ -138,199 +138,199 @@
 <context>
     <name>HookSelectorDialog</name>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="88"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="88"/>
         <source>  [variant %1]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="110"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="110"/>
         <source>Hook text selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="138"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="138"/>
         <source>Some games show several text blocks at once (for example a choice menu). Tick a block&apos;s checkbox to show it in the overlay, and turn on &quot;Selected only&quot; below to see just the ticked ones among many - reordering with ▲ ▼ is only a few clicks once the list is that short. Click a row to pick it for grouping (highlighted), then press Group to translate the picked blocks as one.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="155"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="155"/>
         <source>Search blocks by address or text…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="163"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="163"/>
         <source>Selected only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="164"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="164"/>
         <source>Show only the blocks you have ticked, instead of every block seen so far. Makes it easier to find and reorder them once there are hundreds.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="172"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="172"/>
         <source>Show only the block that changed last</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="173"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="173"/>
         <source>Show all ticked blocks together</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="182"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="182"/>
         <source>Wait for other blocks:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="186"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="186"/>
         <source> ms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="188"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="188"/>
         <source>When two blocks change at almost the same time, wait this long after the first one before deciding which to show, then show the higher-priority block (set the order with the ▲ ▼ arrows). Increase it if a lower block still flashes before your preferred one; 0 shows whatever changes first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="225"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="225"/>
         <source>Saved addresses (auto-applied when they reappear):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="254"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="362"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="254"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="362"/>
         <source>Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="255"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="255"/>
         <source>Combine the selected blocks into one: their texts are joined and translated together, shown as a single block. Select at least two first.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="266"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="266"/>
         <source>Group blocks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="267"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="267"/>
         <source>Click at least two blocks or groups to highlight and combine them.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="277"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="277"/>
         <source>Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="278"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="278"/>
         <source>Show the current text for the selected blocks now. Without this a block you just selected appears only on its next update.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="284"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="284"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="285"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="285"/>
         <source>Remember the selected blocks so they re-apply next launch.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="290"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="310"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="290"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="310"/>
         <source>Save selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="291"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="291"/>
         <source>Select at least one specific block to save - an address (Hook:0x...), a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) or a group. The plain &quot;Hook&quot; stream cannot be saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="311"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="311"/>
         <source>Hook addresses are runtime memory pointers. In some games they are stable and will be restored on the next launch; in others they change every run and won&apos;t match.
 
 Save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="323"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="323"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="325"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="325"/>
         <source>Forget all hook text seen so far and empty the overlay. Saved addresses are kept. Useful after a per-character variant flooded the list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="362"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="462"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="602"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="362"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="462"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="602"/>
         <source>Group (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="440"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="440"/>
         <source>(no hook text yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="440"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="440"/>
         <source>(nothing ticked yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="445"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="445"/>
         <source>Order blocks with ▲ ▼ - the higher one wins when several change at once, and sets the output order when all are shown. Only saved addresses keep their order next time.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="484"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="484"/>
         <source>Show this block in the overlay (press Apply to take effect).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="507"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="507"/>
         <source>Ungroup: split this group back into separate blocks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="517"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="517"/>
         <source>v%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="536"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="536"/>
         <source>Higher priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="537"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="537"/>
         <source>Lower priority</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="578"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="578"/>
         <source>(nothing saved)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="588"/>
-        <location filename="../src/UI/hookselectordialog.cpp" line="626"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="588"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="626"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="589"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="589"/>
         <source>Forget this saved address.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hookselectordialog.cpp" line="627"/>
+        <location filename="../src/UI/hook/hookselectordialog.cpp" line="627"/>
         <source>Forget this saved group.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -338,53 +338,53 @@ Save anyway?</source>
 <context>
     <name>HookSettingsDialog</name>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="48"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="48"/>
         <source>Game / Application</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="49"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="49"/>
         <source>Engine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="63"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="63"/>
         <source>— Select game/app —</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="74"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="74"/>
         <source>Target:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="80"/>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="197"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="80"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="197"/>
         <source>— Select engine —</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="92"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="92"/>
         <source>Engine:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="94"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="94"/>
         <source>Process</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="97"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="97"/>
         <source>Filter by PID or process name...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="100"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="100"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/hooksettingsdialog.cpp" line="107"/>
+        <location filename="../src/UI/hook/hooksettingsdialog.cpp" line="107"/>
         <source>Process name</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1546,82 +1546,82 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
 <context>
     <name>OllamaSettingsDialog</name>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="40"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="40"/>
         <source>Model</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="51"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="51"/>
         <source>Update list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="59"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="59"/>
         <source>Translation Prompt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="61"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="61"/>
         <source>Translate the following text from Japanese to English. Return **only the translated text** - no explanations, notes, formatting, or original text. Do not add anything else. Text:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="66"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="66"/>
         <source>Vision Prompt</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="68"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="68"/>
         <source>Analyze the image and tell me what text is shown on it. Then, return **only the extracted text** - no explanations, comments, labels, or extra information. Do not add anything else.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="73"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="73"/>
         <source>Vision Mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="74"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="74"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="75"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="75"/>
         <source>Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="85"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="85"/>
         <source>Wait for response</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="88"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="88"/>
         <source>Auto OCR interval (sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="99"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="99"/>
         <source>Warning: Automatic mode heavily utilizes the GPU and may cause high system load. Enabling &quot;Wait for response&quot; reduces GPU load significantly.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="144"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="144"/>
         <source>Server Unavailable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="145"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="145"/>
         <source>Ollama server is unavailable. Please check if the server is running and the URL is correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="153"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="153"/>
         <source>No Models Found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/ollamasettingsdialog.cpp" line="154"/>
+        <location filename="../src/UI/engines/ollamasettingsdialog.cpp" line="154"/>
         <source>Failed to load models or the model list is empty. Please check if models are installed on the server.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1629,154 +1629,154 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
 <context>
     <name>PiperSettingsDialog</name>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="45"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="45"/>
         <source>Install and run Piper for me</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="46"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="46"/>
         <source>Use a Piper server I already run</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="52"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="52"/>
         <source>Check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="63"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="63"/>
         <source>Server address</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="64"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="64"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="66"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="66"/>
         <source>Server</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="78"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="78"/>
         <source>Refresh list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="79"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="79"/>
         <source>Download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="80"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="80"/>
         <source>Cancel download</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="86"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="86"/>
         <source>Open the voices folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="87"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="87"/>
         <source>Models can also be put there by hand: &lt;name&gt;.onnx next to &lt;name&gt;.onnx.json.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="97"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="97"/>
         <source>A prefix that file names are appended to, not a page to open in a browser. It is expected to answer with the file itself, the way HuggingFace does under /resolve/&lt;branch&gt;/.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="100"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="100"/>
         <source>Default</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="107"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="107"/>
         <source>Repository</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="108"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="108"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="109"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="109"/>
         <source>Voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="112"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="112"/>
         <source>Available voices</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="167"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="167"/>
         <source>Could not fetch the voice list: %1
 
 Installed voices still work. You can change the repository address, or put models into the voices folder yourself.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="214"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="214"/>
         <source>The server brings its own voices.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="223"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="223"/>
         <source>Not running</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="226"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="226"/>
         <source>Starting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="229"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="229"/>
         <source>Ready at %1, voice %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="232"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="232"/>
         <source>Failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="253"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="253"/>
         <source>Installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="282"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="282"/>
         <source>%1 — installed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="302"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="302"/>
         <source>This voice is already installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="308"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="308"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="309"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="309"/>
         <source>unknown size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="311"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="311"/>
         <source>Download voice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/pipersettingsdialog.cpp" line="312"/>
+        <location filename="../src/UI/engines/pipersettingsdialog.cpp" line="312"/>
         <source>Download %1 (%2) from HuggingFace?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1810,37 +1810,37 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>ProcessLogWindow</name>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="32"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="32"/>
         <source>Setup log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="48"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="48"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="51"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="51"/>
         <source>Copy log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="52"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="52"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="73"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="73"/>
         <source>--- cancelling ---</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="101"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="101"/>
         <source>Done</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/processlogwindow.cpp" line="101"/>
+        <location filename="../src/UI/widgets/processlogwindow.cpp" line="101"/>
         <source>Failed: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2015,73 +2015,73 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>TesseractSettingsDialog</name>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="51"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="51"/>
         <source>Status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="55"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="55"/>
         <source>Language</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="65"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="65"/>
         <source>Update list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="73"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="73"/>
         <source>Tessdata path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="77"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="77"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="90"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="90"/>
         <source>Use system tessdata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="94"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="94"/>
         <source>Processing mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="95"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="95"/>
         <source>Automatic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="96"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="96"/>
         <source>Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="113"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="113"/>
         <source>Auto OCR interval (sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="218"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="218"/>
         <source>Invalid Tesseract Data Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="219"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="219"/>
         <source>The specified Tesseract data directory does not exist or is invalid.
 Please provide a valid path or try using the system default directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="231"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="231"/>
         <source>No Tesseract available languages found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/UI/tesseractsettingsdialog.cpp" line="232"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="232"/>
         <source>Tesseract could not find any language data in system locations.
 Please install Tesseract language packs or specify a custom &apos;tessdata&apos; directory.</source>
         <translation type="unfinished"></translation>

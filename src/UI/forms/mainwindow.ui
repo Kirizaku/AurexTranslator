@@ -3278,7 +3278,7 @@ Public License instead of this License.  But first, please read
   <customwidget>
    <class>HoverLabel</class>
    <extends>QLabel</extends>
-   <header>hoverlabel.h</header>
+   <header>widgets/hoverlabel.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

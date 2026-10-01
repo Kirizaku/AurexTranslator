@@ -17,7 +17,7 @@
 
 #include "pythoncontroller.h"
 
-#include "src/UI/processlogwindow.h"
+#include "src/UI/widgets/processlogwindow.h"
 #include "src/utils/logger.h"
 
 #include <QWidget>

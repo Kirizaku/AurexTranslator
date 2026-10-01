@@ -26,12 +26,12 @@
 #include "src/utils/pluginloader.h"
 #include "src/engines/opencv.h"
 #include "src/engines/ttsengine.h"
-#include "tesseractsettingsdialog.h"
-#include "ollamasettingsdialog.h"
-#include "hooksettingsdialog.h"
+#include "src/UI/engines/tesseractsettingsdialog.h"
+#include "src/UI/engines/ollamasettingsdialog.h"
+#include "src/UI/hook/hooksettingsdialog.h"
 #include "textoutputwindow.h"
-#include "overlaywindow.h"
-#include "previewwindow.h"
+#include "regionselectorwindow.h"
+#include "src/UI/widgets/previewwindow.h"
 
 class TranslationController;
 class HotkeyController;

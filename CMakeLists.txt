@@ -60,18 +60,18 @@ set(PROJECT_SOURCES
     src/UI/textprocessingdelegates.h
     src/UI/screencastwindow.h src/UI/screencastwindow.cpp src/UI/forms/screencastwindow.ui
     src/UI/textoutputwindow.h src/UI/textoutputwindow.cpp src/UI/forms/textoutputwindow.ui
-    src/UI/hooktextmodel.h src/UI/hooktextmodel.cpp
-    src/UI/hookselectordialog.h src/UI/hookselectordialog.cpp
-    src/UI/overlaywindow.h src/UI/overlaywindow.cpp
-    src/UI/previewwindow.h src/UI/previewwindow.cpp
-    src/UI/hoverlabel.h src/UI/hoverlabel.cpp
-    src/UI/ollamasettingsdialog.h src/UI/ollamasettingsdialog.cpp
-    src/UI/tesseractsettingsdialog.h src/UI/tesseractsettingsdialog.cpp
-    src/UI/googlesettingsdialog.h src/UI/googlesettingsdialog.cpp
-    src/UI/hooksettingsdialog.h src/UI/hooksettingsdialog.cpp
-    src/UI/processlogwindow.h src/UI/processlogwindow.cpp
-    src/UI/pipersettingsdialog.h src/UI/pipersettingsdialog.cpp
-    src/UI/customsettingsdialog.h src/UI/customsettingsdialog.cpp
+    src/UI/regionselectorwindow.h src/UI/regionselectorwindow.cpp
+    src/UI/hook/hooktextmodel.h src/UI/hook/hooktextmodel.cpp
+    src/UI/hook/hookselectordialog.h src/UI/hook/hookselectordialog.cpp
+    src/UI/hook/hooksettingsdialog.h src/UI/hook/hooksettingsdialog.cpp
+    src/UI/widgets/previewwindow.h src/UI/widgets/previewwindow.cpp
+    src/UI/widgets/hoverlabel.h src/UI/widgets/hoverlabel.cpp
+    src/UI/widgets/processlogwindow.h src/UI/widgets/processlogwindow.cpp
+    src/UI/engines/ollamasettingsdialog.h src/UI/engines/ollamasettingsdialog.cpp
+    src/UI/engines/tesseractsettingsdialog.h src/UI/engines/tesseractsettingsdialog.cpp
+    src/UI/engines/googlesettingsdialog.h src/UI/engines/googlesettingsdialog.cpp
+    src/UI/engines/pipersettingsdialog.h src/UI/engines/pipersettingsdialog.cpp
+    src/UI/engines/customsettingsdialog.h src/UI/engines/customsettingsdialog.cpp
 
     src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
     src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp

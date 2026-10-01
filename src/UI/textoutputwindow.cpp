@@ -17,8 +17,8 @@
 
 #include "textoutputwindow.h"
 #include "ui_textoutputwindow.h"
-#include "hooktextmodel.h"
-#include "hookselectordialog.h"
+#include "src/UI/hook/hooktextmodel.h"
+#include "src/UI/hook/hookselectordialog.h"
 
 #include <QMenu>
 #include <QWindow>

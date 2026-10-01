@@ -17,7 +17,7 @@
 
 #include "pipertts.h"
 
-#include "src/UI/pipersettingsdialog.h"
+#include "src/UI/engines/pipersettingsdialog.h"
 #include "pipervoicecatalog.h"
 
 PiperTts::PiperTts(QObject *parent)

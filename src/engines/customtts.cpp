@@ -16,7 +16,7 @@
 ******************************************************************************/
 
 #include "customtts.h"
-#include "src/UI/customsettingsdialog.h"
+#include "src/UI/engines/customsettingsdialog.h"
 
 CustomTts::CustomTts(QObject *parent)
     : TtsEngine(parent)
