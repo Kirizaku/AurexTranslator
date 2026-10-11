@@ -199,18 +199,28 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    MainWindow mainWin;
-    QSystemTrayIcon trayIcon;
-    createTrayIcon(trayIcon, mainWin, app);
+    bool restartAfterExit = false;
+    int exitCode = 0;
+    {
+        MainWindow mainWin;
+        QSystemTrayIcon trayIcon;
+        createTrayIcon(trayIcon, mainWin, app);
 
-    trayIcon.show();
+        trayIcon.show();
 
-    QObject::connect(&mainWin, &MainWindow::restartRequested, [&]() {
-        const QStringList args = qApp->arguments();
+        QObject::connect(&mainWin, &MainWindow::restartRequested, [&]() {
+            restartAfterExit = true;
+            QApplication::quit();
+        });
+
+        exitCode = app.exec();
+    }
+
+    if (restartAfterExit) {
+        const QStringList args = QCoreApplication::arguments();
         lock.unlock();
-        QApplication::quit();
         QProcess::startDetached(args[0], args);
-    });
+    }
 
-    return app.exec();
+    return exitCode;
 }
