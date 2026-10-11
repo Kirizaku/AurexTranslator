@@ -221,6 +221,7 @@ void PluginManager::parseCommonMeta(const QJsonObject &obj, PluginInfo &info)
     info.targetExecutable = target["executable"].toString();
 
     info.textMode = obj["textMode"].toString(QStringLiteral("whole"));
+    info.settings = obj["settings"].toArray();
 }
 
 PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)

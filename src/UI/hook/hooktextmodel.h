@@ -75,6 +75,18 @@ public:
     void deleteSaved(const QString &source);
     void deleteSavedGroup(const QStringList &members);
     void requestClear() { emit clearRequested(); }
+    void requestPluginSettings() { emit pluginSettingsRequested(); }
+    void setPluginSettingsAvailable(bool available)
+    {
+        if (m_pluginSettingsAvailable == available)
+            return;
+        m_pluginSettingsAvailable = available;
+        emit pluginSettingsAvailabilityChanged(available);
+    }
+    bool pluginSettingsAvailable() const { return m_pluginSettingsAvailable; }
+    void requestPluginHooks(const QStringList &sources) { emit pluginHooksRequested(sources); }
+    void setPluginHooksAvailable(bool available) { m_pluginHooksAvailable = available; }
+    bool pluginHooksAvailable() const { return m_pluginHooksAvailable; }
     void syncDraftToApplied() { m_selected = m_applied; }
 
     // Config
@@ -88,6 +100,9 @@ signals:
     void sourcesUnapplied(const QStringList &sources);
     void outputReapplyRequested();
     void clearRequested();
+    void pluginSettingsRequested();
+    void pluginSettingsAvailabilityChanged(bool available);
+    void pluginHooksRequested(const QStringList &sources);
     void staleOutputShouldClear();
 
 private:
@@ -98,6 +113,8 @@ private:
     QHash<QString, int> priorityRank() const;
     void rebuildPriorityMembers() { m_priorityMembers = QSet<QString>(m_priority.cbegin(), m_priority.cend()); }
 
+    bool m_pluginSettingsAvailable = false;
+    bool m_pluginHooksAvailable = false;
     QStringList m_sourceOrder;
     QSet<QString> m_seen;
     QSet<QString> m_priorityMembers;

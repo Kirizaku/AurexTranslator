@@ -30,6 +30,8 @@
 #include "textprocessingdelegates.h"
 #include "ui_mainwindow.h"
 #include "src/UI/engines/googlesettingsdialog.h"
+#include "src/UI/hook/hooktextmodel.h"
+#include "src/UI/hook/pluginsettingsdialog.h"
 #include "screencastwindow.h"
 #include "src/controllers/translationcontroller.h"
 #include "src/controllers/hotkeycontroller.h"
@@ -1195,6 +1197,12 @@ void MainWindow::initSubsystems()
             this, &MainWindow::clearHookState);
     connect(m_outputWindow, &TextOutputWindow::hookClearRequested,
             this, &MainWindow::clearHookState);
+    connect(m_outputWindow, &TextOutputWindow::pluginSettingsRequested,
+            this, &MainWindow::openPluginSettings);
+    connect(m_outputWindow, &TextOutputWindow::pluginHooksRequested,
+            this, &MainWindow::addPluginHooks);
+    connect(m_hookController, &HookController::hookStateChanged,
+            this, &MainWindow::updatePluginSettingsAvailability);
     connect(m_hookController, &HookController::shouldClearInfoMessage,
             m_outputWindow, &TextOutputWindow::clearInfoMessage);
 
@@ -1210,6 +1218,7 @@ void MainWindow::initSubsystems()
     refreshConfigsPage();
 
     m_outputWindow->sethookState(m_hookController->isRunning());
+    updatePluginSettingsAvailability();
     updateSpeedButtonAvailability();
 }
 
@@ -3784,16 +3793,20 @@ void MainWindow::syncPluginConfigs()
     // Only per-character plugins do anything with the flush interval
     const auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
                                  [&](const PluginManager::PluginInfo &i) { return i.name == plugin; });
-    if (it == m_registry.cend() || it->textMode != QLatin1String("per_char"))
+    if (it == m_registry.cend() || (it->textMode != QLatin1String("per_char") && it->settings.isEmpty()))
         return;
 
-    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(target)));
+    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(target), target));
 }
 
-QString MainWindow::buildPluginConfigJson(int flushMs) const
+QString MainWindow::buildPluginConfigJson(int flushMs, const QString &targetKey) const
 {
     QJsonObject root;
     root[QStringLiteral("flush_interval_ms")] = flushMs;
+
+    const QJsonObject settings = storedPluginSettings(targetKey);
+    if (!settings.isEmpty())
+        root[QStringLiteral("settings")] = settings;
     return QString::fromUtf8(QJsonDocument(root).toJson(QJsonDocument::Compact));
 }
 
@@ -3802,7 +3815,8 @@ void MainWindow::pushCurrentPluginConfig()
     const QString plugin = m_hookController->currentRunningPlugin();
     if (plugin.isEmpty())
         return;
-    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(currentHookTargetKey())));
+    const QString target = currentHookTargetKey();
+    m_hookController->setPluginConfig(plugin, buildPluginConfigJson(storedFlushMs(target), target));
 }
 
 // ===============================================================
@@ -3829,7 +3843,7 @@ void MainWindow::openSpeedSettings()
     Config::setValue("plugin_flush_ms", all);
     Config::save();
 
-    m_hookController->setPluginConfig(pluginName, buildPluginConfigJson(chosen));
+    m_hookController->setPluginConfig(pluginName, buildPluginConfigJson(chosen, target));
 }
 
 void MainWindow::updateSpeedButtonAvailability()
@@ -3842,6 +3856,112 @@ void MainWindow::updateSpeedButtonAvailability()
         eligible = it != m_registry.cend() && it->textMode == QLatin1String("per_char");
     }
     m_outputWindow->setSpeedAvailable(eligible);
+}
+
+const PluginManager::PluginInfo *MainWindow::findPlugin(const QString &name) const
+{
+    const auto it = std::find_if(m_registry.cbegin(), m_registry.cend(),
+                                 [&](const PluginManager::PluginInfo &i) { return i.name == name; });
+    return it == m_registry.cend() ? nullptr : &*it;
+}
+
+QJsonObject MainWindow::storedPluginSettings(const QString &targetKey) const
+{
+    return Config::getValue("plugin_settings").toJsonObject().value(targetKey).toObject();
+}
+
+void MainWindow::updatePluginSettingsAvailability()
+{
+    const PluginManager::PluginInfo *info = findPlugin(m_hookController->currentRunningPlugin());
+    m_outputWindow->setPluginSettingsAvailable(info && !info->settings.isEmpty());
+
+    bool hooks = false;
+    if (info) {
+        for (const QJsonValue &value : info->settings)
+            hooks = hooks || value.toObject().value(QStringLiteral("source_map")).isObject();
+    }
+    m_outputWindow->setPluginHooksAvailable(hooks);
+}
+
+void MainWindow::addPluginHooks(const QStringList &sources)
+{
+    const PluginManager::PluginInfo *info = findPlugin(m_hookController->currentRunningPlugin());
+    if (!info)
+        return;
+
+    QString listKey;
+    QJsonObject sourceMap;
+    for (const QJsonValue &value : info->settings) {
+        const QJsonObject entry = value.toObject();
+        if (entry.value(QStringLiteral("source_map")).isObject()) {
+            listKey = entry.value(QStringLiteral("key")).toString();
+            sourceMap = entry.value(QStringLiteral("source_map")).toObject();
+            break;
+        }
+    }
+    if (listKey.isEmpty())
+        return;
+
+    QStringList entries;
+    for (const QString &source : sources) {
+        QString name = HookTextModel::displayLabel(source);
+        if (name.startsWith(QStringLiteral("Hook:")))
+            name.remove(0, 5);
+        
+        name = name.section(QStringLiteral(" <- "), 0, 0);
+
+        const int slash = name.indexOf(QLatin1Char('/'));
+        const QString owner = slash > 0 ? sourceMap.value(name.left(slash)).toString() : QString();
+        const QString method = name.mid(slash + 1).section(QLatin1Char(' '), 0, 0);
+        if (owner.isEmpty() || method.isEmpty())
+            continue;
+
+        const QString hook = owner + QLatin1Char('.') + method;
+        if (!entries.contains(hook))
+            entries << hook;
+    }
+
+    if (entries.isEmpty()) {
+        QMessageBox box(QMessageBox::Information, tr("Add to plugin hooks"),
+            tr("Only blocks of these groups can be added: %1. Blocks of other groups come from the "
+               "plugin's built-in hooks, which are already installed.").arg(sourceMap.keys().join(QStringLiteral(", "))),
+            QMessageBox::Ok, this);
+        box.setWindowFlag(Qt::WindowStaysOnTopHint);
+        box.exec();
+        return;
+    }
+
+    openPluginSettings();
+    if (auto *dialog = findChild<PluginSettingsDialog *>())
+        dialog->addListEntries(listKey, entries);
+}
+
+void MainWindow::openPluginSettings()
+{
+    if (auto *open = findChild<PluginSettingsDialog *>()) {
+        open->raise();
+        open->activateWindow();
+        return;
+    }
+
+    const QString pluginName = m_hookController->currentRunningPlugin();
+    const PluginManager::PluginInfo *info = findPlugin(pluginName);
+    const QString target = currentHookTargetKey();
+    if (!info || info->settings.isEmpty() || target.isEmpty())
+        return;
+
+    const QString title = tr("%1 settings").arg(info->targetTitle.isEmpty() ? info->name : info->targetTitle);
+    auto *dialog = new PluginSettingsDialog(title, info->settings, storedPluginSettings(target), this);
+    connect(dialog, &QDialog::accepted, this, [this, dialog, pluginName, target] {
+        QJsonObject all = Config::getValue("plugin_settings").toJsonObject();
+        all[target] = dialog->values();
+        Config::setValue("plugin_settings", all);
+        Config::save();
+
+        m_hookController->setPluginConfig(pluginName, buildPluginConfigJson(storedFlushMs(target), target));
+        m_hookController->manualInject();
+    });
+    dialog->show();
 }
 
 int MainWindow::storedFlushMs(const QString &targetKey) const

@@ -404,11 +404,16 @@ private:
     QString currentHookTargetKey() const;
     void clearHookState();
     void syncPluginConfigs();
-    QString buildPluginConfigJson(int flushMs) const;
+    QString buildPluginConfigJson(int flushMs, const QString &targetKey) const;
     void pushCurrentPluginConfig();
 
     void openSpeedSettings();
     void updateSpeedButtonAvailability();
+    void openPluginSettings();
+    void addPluginHooks(const QStringList &sources);
+    void updatePluginSettingsAvailability();
+    const PluginManager::PluginInfo *findPlugin(const QString &name) const;
+    QJsonObject storedPluginSettings(const QString &targetKey) const;
     int storedFlushMs(const QString &targetKey) const;
 
     void reapplyProfileSections();

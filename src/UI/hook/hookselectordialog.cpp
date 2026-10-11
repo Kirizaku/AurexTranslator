@@ -31,6 +31,8 @@
 #include <QSplitter>
 #include <QMessageBox>
 #include <QTimer>
+#include <QContextMenuEvent>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QScrollBar>
 
@@ -45,8 +47,14 @@ public:
         setCursor(Qt::PointingHandCursor);
     }
     std::function<void()> onClick;
+    std::function<void(const QPoint &)> onContext;
 
 protected:
+    void contextMenuEvent(QContextMenuEvent *e) override
+    {
+        if (onContext)
+            onContext(e->globalPos());
+    }
 
     void mousePressEvent(QMouseEvent *e) override
     {
@@ -109,7 +117,7 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
 {
     setWindowTitle(tr("Hook text selection"));
     setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-    resize(440, 420);
+    resize(900, 680);
 
     const QPalette pal = palette();
     const QColor accent = pal.color(QPalette::Highlight);
@@ -165,6 +173,12 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
                                        "Makes it easier to find and reorder them once there are hundreds."));
     connect(m_onlySelectedCheck, &QCheckBox::toggled, this, [this](bool) { refresh(); });
     searchRowLayout->addWidget(m_onlySelectedCheck);
+
+    m_pluginSettingsBtn = new QPushButton(tr("Plugin settings..."), searchRow);
+    m_pluginSettingsBtn->setToolTip(tr("Choose which hooks the plugin installs for this game. Applying the choice injects the plugin again."));
+    connect(m_pluginSettingsBtn, &QPushButton::clicked, this, [this] { m_model->requestPluginSettings(); });
+    connect(m_model, &HookTextModel::pluginSettingsAvailabilityChanged, m_pluginSettingsBtn, &QPushButton::setVisible);
+    searchRowLayout->addWidget(m_pluginSettingsBtn);
 
     outer->addWidget(searchRow);
 
@@ -283,41 +297,7 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
 
     auto *saveBtn = new QPushButton(tr("Save"), bar);
     saveBtn->setToolTip(tr("Remember the selected blocks so they re-apply next launch."));
-    connect(saveBtn, &QPushButton::clicked, this, [this] {
-
-        const QStringList savable = m_model->savableSelected();
-        if (savable.isEmpty()) {
-            QMessageBox::information(this, tr("Save selection"),
-                tr("Select at least one specific block to save - an address (Hook:0x...), "
-                   "a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) "
-                   "or a group. The plain \"Hook\" stream cannot be saved."));
-            return;
-        }
-
-        bool anyAddress = false;
-        for (const QString &src : savable) {
-            if (src.contains(QStringLiteral(":0x")))
-                anyAddress = true;
-            else if (m_model->isGroup(src)) {
-                const QStringList members = m_model->groupMembers(src);
-                for (const QString &m : members)
-                    if (m.contains(QStringLiteral(":0x")))
-                        anyAddress = true;
-            }
-        }
-
-        if (anyAddress && !m_addrSaveWarned) {
-            const auto answer = QMessageBox::warning(this, tr("Save selection"),
-                tr("Hook addresses are runtime memory pointers. In some games they "
-                   "are stable and will be restored on the next launch; in others "
-                   "they change every run and won't match.\n\nSave anyway?"),
-                QMessageBox::Save | QMessageBox::Cancel);
-            if (answer != QMessageBox::Save)
-                return;
-            m_addrSaveWarned = true;
-        }
-        m_model->saveSelection();
-    });
+    connect(saveBtn, &QPushButton::clicked, this, &HookSelectorDialog::saveSelected);
     barRow->addWidget(saveBtn);
 
     auto *clearBtn = new QPushButton(tr("Clear"), bar);
@@ -327,6 +307,7 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
 
     connect(clearBtn, &QPushButton::clicked, this, [this] { m_model->requestClear(); });
     barRow->addWidget(clearBtn);
+
 
     outer->addWidget(bar);
 
@@ -345,10 +326,50 @@ HookSelectorDialog::HookSelectorDialog(HookTextModel *model, QWidget *parent)
 void HookSelectorDialog::openFresh()
 {
     m_model->syncDraftToApplied();
+    m_pluginSettingsBtn->setVisible(m_model->pluginSettingsAvailable());
     refresh();
     show();
     raise();
     activateWindow();
+}
+
+void HookSelectorDialog::saveSelected()
+{
+    const QStringList savable = m_model->savableSelected();
+    if (savable.isEmpty()) {
+        QMessageBox::information(this, tr("Save selection"),
+            tr("Select at least one specific block to save - an address (Hook:0x...), "
+               "a variant (Hook:v1, Hook:v2, ...), a named source (Hook:Textbox, ...) "
+               "or a group. The plain \"Hook\" stream cannot be saved."));
+        return;
+    }
+
+    bool anyAddress = false;
+    for (const QString &src : savable) {
+        if (src.contains(QStringLiteral(":0x"))) {
+            anyAddress = true;
+        } else if (m_model->isGroup(src)) {
+            const QStringList members = m_model->groupMembers(src);
+            for (const QString &m : members) {
+                if (m.contains(QStringLiteral(":0x"))) {
+                    anyAddress = true;
+                }
+            }
+        }
+    }
+
+    if (anyAddress && !m_addrSaveWarned) {
+        const auto answer = QMessageBox::warning(this, tr("Save selection"),
+            tr("Hook addresses are runtime memory pointers. In some games they "
+               "are stable and will be restored on the next launch; in others "
+               "they change every run and won't match.\n\nSave anyway?"),
+            QMessageBox::Save | QMessageBox::Cancel);
+        if (answer != QMessageBox::Save)
+            return;
+        
+        m_addrSaveWarned = true;
+    }
+    m_model->saveSelection();
 }
 
 void HookSelectorDialog::updateGroupButton()
@@ -361,6 +382,36 @@ void HookSelectorDialog::updateGroupButton()
 
     m_groupBtn->setText(n > 0 ? tr("Group (%1)").arg(n) : tr("Group"));
     m_groupBtn->setEnabled(n >= 2);
+}
+
+void HookSelectorDialog::showCardMenu(const QString &source, const QPoint &globalPos)
+{
+    QStringList targets;
+    if (m_groupPick.contains(source)) {
+        const QStringList order = m_model->displayOrder();
+        for (const QString &src : order) {
+            if (m_groupPick.contains(src))
+                targets << (m_model->isGroup(src) ? m_model->groupMembers(src) : QStringList{ src });
+        }
+    } else {
+        targets << (m_model->isGroup(source) ? m_model->groupMembers(source) : QStringList{ source });
+    }
+
+    QMenu menu(this);
+    QAction *addHook = m_model->pluginHooksAvailable() ? menu.addAction(tr("Add to plugin hooks")) : nullptr;
+    QAction *save = menu.addAction(tr("Save"));
+
+    const QAction *chosen = menu.exec(globalPos);
+    if (!chosen)
+        return;
+
+    if (chosen == addHook) {
+        m_model->requestPluginHooks(targets);
+    } else if (chosen == save) {
+        m_model->setDraftSelected(source, true);
+        refresh();
+        saveSelected();
+    }
 }
 
 void HookSelectorDialog::refreshScopedSettings()
@@ -553,6 +604,8 @@ void HookSelectorDialog::refresh()
                     setCardPicked(card, m_groupPick.contains(src));
                     updateGroupButton();
                 };
+
+                card->onContext = [this, src](const QPoint &pos) { showCardMenu(src, pos); };
 
                 m_liveList->addWidget(card);
             }

@@ -44,6 +44,8 @@ public:
 
     void sethookState(bool isActive);
     void setSpeedAvailable(bool available);
+    void setPluginSettingsAvailable(bool available);
+    void setPluginHooksAvailable(bool available);
     void setSpeechEnabled(bool enabled);
     void setSpeechBusy(bool busy);
 
@@ -80,6 +82,8 @@ signals:
     void speedSettingsRequested();
     void hookOutputReapplyRequested();
     void hookClearRequested();
+    void pluginSettingsRequested();
+    void pluginHooksRequested(const QStringList &sources);
     void toggleSpeechRequested();
     void speakLastRequested();
     void stopSpeechRequested();

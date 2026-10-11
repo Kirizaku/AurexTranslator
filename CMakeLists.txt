@@ -64,6 +64,7 @@ set(PROJECT_SOURCES
     src/UI/hook/hooktextmodel.h src/UI/hook/hooktextmodel.cpp
     src/UI/hook/hookselectordialog.h src/UI/hook/hookselectordialog.cpp
     src/UI/hook/hooksettingsdialog.h src/UI/hook/hooksettingsdialog.cpp
+    src/UI/hook/pluginsettingsdialog.h src/UI/hook/pluginsettingsdialog.cpp
     src/UI/widgets/previewwindow.h src/UI/widgets/previewwindow.cpp
     src/UI/widgets/hoverlabel.h src/UI/widgets/hoverlabel.cpp
     src/UI/widgets/processlogwindow.h src/UI/widgets/processlogwindow.cpp

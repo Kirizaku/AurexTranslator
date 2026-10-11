@@ -44,6 +44,8 @@ public:
 
 private:
     void updateGroupButton();
+    void saveSelected();
+    void showCardMenu(const QString &source, const QPoint &globalPos);
     void refreshScopedSettings();
     QStringList visibleOrder() const;
     void onPreviewsTick();
@@ -58,6 +60,7 @@ private:
     QSpinBox *m_waitSpin = nullptr;
     QCheckBox *m_onlySelectedCheck = nullptr;
     QPushButton *m_groupBtn = nullptr;
+    QPushButton *m_pluginSettingsBtn = nullptr;
     QTimer *m_refreshTimer = nullptr;
     QStringList m_shownOrder;
     QHash<QString, QLabel*> m_previewLabels;

@@ -67,6 +67,10 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
             this, &TextOutputWindow::hookOutputReapplyRequested);
     connect(m_hookModel, &HookTextModel::clearRequested,
             this, &TextOutputWindow::hookClearRequested);
+    connect(m_hookModel, &HookTextModel::pluginSettingsRequested,
+            this, &TextOutputWindow::pluginSettingsRequested);
+    connect(m_hookModel, &HookTextModel::pluginHooksRequested,
+            this, &TextOutputWindow::pluginHooksRequested);
     connect(m_hookModel, &HookTextModel::staleOutputShouldClear, this, [this] {
         for (int i = m_translationEntries.size() - 1; i >= 0; --i)
             if (m_hookModel->isStale(m_translationEntries[i].source))
@@ -175,6 +179,16 @@ void TextOutputWindow::setSpeedAvailable(bool available)
 {
     m_speedButtonEligible = available;
     ui->speedButton->setVisible(m_hookActive && available);
+}
+
+void TextOutputWindow::setPluginSettingsAvailable(bool available)
+{
+    m_hookModel->setPluginSettingsAvailable(available);
+}
+
+void TextOutputWindow::setPluginHooksAvailable(bool available)
+{
+    m_hookModel->setPluginHooksAvailable(available);
 }
 
 void TextOutputWindow::setSpeechEnabled(bool enabled)

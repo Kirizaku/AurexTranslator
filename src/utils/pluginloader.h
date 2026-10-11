@@ -20,6 +20,7 @@
 
 #include "plugininterface.h"
 
+#include <QJsonArray>
 #include <QObject>
 #include <QMap>
 #include <QPluginLoader>
@@ -44,6 +45,7 @@ public:
         QString targetExecutable;
         QMap<QString, QString> archPaths;
         QString textMode = QStringLiteral("whole");
+        QJsonArray settings;
     };
 
     QList<PluginInfo> scanPlugins();
