@@ -136,6 +136,8 @@ private:
     QCheckBox* m_showSource;
     QCheckBox *m_showOriginalText;
     QCheckBox* m_showTranslatorName;
+    QWidget *m_historyWindow;
+    QSpinBox *m_historyLimit;
     QPlainTextEdit *m_historyTextEdit;
     void createMenus();
 
@@ -154,6 +156,8 @@ private:
     void saveConfig();
 
     QList<QString> m_translationHistory;
+    void trimHistory();
+    void refreshHistoryText();
 
     struct TranslationEntry {
         QString source;

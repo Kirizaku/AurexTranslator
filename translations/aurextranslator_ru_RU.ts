@@ -2214,7 +2214,7 @@ Use if automatic injection failed</source>
     </message>
     <message>
         <location filename="../src/UI/forms/textoutputwindow.ui" line="404"/>
-        <location filename="../src/UI/textoutputwindow.cpp" line="217"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="237"/>
         <source>Speak the last text</source>
         <translation>Озвучить последний текст</translation>
     </message>
@@ -2234,17 +2234,22 @@ Use if automatic injection failed</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="50"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="61"/>
+        <source>History limit</source>
+        <translation>Лимит истории</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/textoutputwindow.cpp" line="66"/>
         <source>Translation history</source>
         <translation>История перевода</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="216"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="236"/>
         <source>Stop speaking</source>
         <translation>Остановить озвучку</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="262"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="281"/>
         <source>Source: %1
 Translator: %2
 Original:
@@ -2259,87 +2264,87 @@ Result:
  %4</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="556"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="591"/>
         <source>Text Output Speed</source>
         <translation>Скорость вывода текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="559"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="594"/>
         <source>Wait time before showing accumulated text</source>
         <translation>Задержка перед выводом текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="729"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="764"/>
         <source>Left</source>
         <translation>По левому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="730"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="765"/>
         <source>Right</source>
         <translation>По правому краю</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="731"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="766"/>
         <source>Center</source>
         <translation>По центру</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="746"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="781"/>
         <source>Show/Hide source</source>
         <translation>Показать/Скрыть источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="750"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="785"/>
         <source>Show/Hide original text</source>
         <translation>Показать/Скрыть исходный текст</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="754"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="789"/>
         <source>Show/Hide translator name</source>
         <translation>Показать/Скрыть имя переводчика</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="759"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="794"/>
         <source>Transparency</source>
         <translation>Прозрачность</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="760"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="795"/>
         <source>Font</source>
         <translation>Шрифт</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="761"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="796"/>
         <source>Font size</source>
         <translation>Размер шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="762"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="797"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="763"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="798"/>
         <source>Text alignment</source>
         <translation>Выравнивание текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="764"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="799"/>
         <source>Margin top</source>
         <translation>Верхний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="765"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="800"/>
         <source>Margin bottom</source>
         <translation>Нижний отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="766"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="801"/>
         <source>Margin left</source>
         <translation>Левый отступ</translation>
     </message>
     <message>
-        <location filename="../src/UI/textoutputwindow.cpp" line="767"/>
+        <location filename="../src/UI/textoutputwindow.cpp" line="802"/>
         <source>Margin right</source>
         <translation>Правый отступ</translation>
     </message>

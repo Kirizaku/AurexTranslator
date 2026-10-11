@@ -47,9 +47,26 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     ui->hookSelectButton->setVisible(false);
     ui->speakLastButton->setVisible(false);
 
-    m_historyTextEdit->setWindowTitle(tr("Translation history"));
     m_historyTextEdit->setReadOnly(true);
-    m_historyTextEdit->resize(640, 360);
+
+    m_historyLimit = new QSpinBox;
+    m_historyLimit->setRange(1, 100);
+    m_historyLimit->setValue(10);
+    connect(m_historyLimit, &QSpinBox::valueChanged, this, &TextOutputWindow::trimHistory);
+
+    auto *limitRow = new QHBoxLayout;
+    limitRow->addWidget(new QLabel(tr("History limit")));
+    limitRow->addWidget(m_historyLimit);
+    limitRow->addStretch();
+
+    m_historyWindow = new QWidget;
+    m_historyWindow->setWindowTitle(tr("Translation history"));
+    m_historyWindow->setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    m_historyWindow->resize(640, 360);
+
+    auto *historyLayout = new QVBoxLayout(m_historyWindow);
+    historyLayout->addLayout(limitRow);
+    historyLayout->addWidget(m_historyTextEdit);
 
     setAttribute(Qt::WA_TranslucentBackground, true);
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint);
@@ -258,20 +275,13 @@ void TextOutputWindow::setTranslationResult(const QString &source, const QString
             m_currentInfoMessage.clear();
         }
 
-        int scrollValue = m_historyTextEdit->verticalScrollBar()->value();
         QString historyItem = QString(tr("Source: %1\nTranslator: %2\nOriginal:\n %3\nResult:\n %4"))
                                   .arg(source)
                                   .arg(translatorName)
                                   .arg(original)
                                   .arg(result);
         m_translationHistory.append(historyItem);
-
-        QString historyText;
-        for (const auto &item : m_translationHistory) {
-            historyText += item + "\n\n";
-        }
-        m_historyTextEdit->setPlainText(historyText);
-        m_historyTextEdit->verticalScrollBar()->setValue(scrollValue);
+        trimHistory();
     }
 
     if (m_pendingHookBatch.remove(source)) {
@@ -391,9 +401,31 @@ void TextOutputWindow::setInfoMessage(const QString &message)
     updateText();
 }
 
+void TextOutputWindow::trimHistory()
+{
+    while (m_translationHistory.size() > m_historyLimit->value())
+        m_translationHistory.removeFirst();
+
+    refreshHistoryText();
+}
+
+void TextOutputWindow::refreshHistoryText()
+{
+    const int scrollValue = m_historyTextEdit->verticalScrollBar()->value();
+
+    QString historyText;
+    for (const auto &item : m_translationHistory)
+        historyText += item + "\n\n";
+
+    m_historyTextEdit->setPlainText(historyText);
+    m_historyTextEdit->verticalScrollBar()->setValue(scrollValue);
+}
+
 void TextOutputWindow::showHistory()
 {
-    m_historyTextEdit->show();
+    m_historyWindow->show();
+    m_historyWindow->raise();
+    m_historyWindow->activateWindow();
 }
 
 bool TextOutputWindow::event(QEvent* event)
@@ -873,6 +905,7 @@ void TextOutputWindow::loadConfig()
     m_marginBottom->setValue(output_window["margin_bottom"].toInt());
     m_marginLeft->setValue(output_window["margin_left"].toInt());
     m_marginRight->setValue(output_window["margin_right"].toInt());
+    m_historyLimit->setValue(output_window["history_limit"].toInt(10));
     m_showSource->setChecked(output_window["is_show_source_name"].toBool());
     m_showOriginalText->setChecked(output_window["is_show_original_text"].toBool());
     m_showTranslatorName->setChecked(output_window["is_show_translator_name"].toBool());
@@ -901,6 +934,7 @@ void TextOutputWindow::saveConfig()
     output_window["margin_bottom"] = m_marginBottom->value();
     output_window["margin_left"] = m_marginLeft->value();
     output_window["margin_right"] = m_marginRight->value();
+    output_window["history_limit"] = m_historyLimit->value();
     output_window["is_show_source_name"] = m_showSource->isChecked();
     output_window["is_show_original_text"] = m_showOriginalText->isChecked();
     output_window["is_show_translator_name"] = m_showTranslatorName->isChecked();
