@@ -406,6 +406,14 @@ Save anyway?</source>
         <source>Process name</source>
         <translation>Имя процесса</translation>
     </message>
+    <message>
+        <source>Injection will ask for a password every time. To turn the prompt off, click &quot;Allow without password&quot; and enter your password once.</source>
+        <translation>Инъекция будет запрашивать пароль каждый раз. Чтобы отключить запрос, нажмите «Разрешить без пароля» и введите пароль один раз.</translation>
+    </message>
+    <message>
+        <source>Allow without password</source>
+        <translation>Разрешить без пароля</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -1585,6 +1593,18 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
         <location filename="../src/UI/mainwindow.cpp" line="1713"/>
         <source>Automatic</source>
         <translation>Автоматический</translation>
+    </message>
+    <message>
+        <source>The injector will get the CAP_SYS_PTRACE capability, so it no longer asks for a password. This is close to root-level access: any program running as your user will be able to use it to attach to other processes.
+
+The permission is removed whenever the plugin is updated and can be granted again here. Continue?</source>
+        <translation>Инжектор получит право CAP_SYS_PTRACE и перестанет запрашивать пароль. Это почти равно root-доступу: любая программа, запущенная от вашего пользователя, сможет использовать его для подключения к другим процессам.
+
+Право снимается при каждом обновлении плагина, его можно выдать заново здесь. Продолжить?</translation>
+    </message>
+    <message>
+        <source>Allow without password</source>
+        <translation>Разрешить без пароля</translation>
     </message>
 </context>
 <context>

@@ -157,14 +157,41 @@ HookSettingsDialog::HookSettingsDialog(HookMode currentMode,
     // Main layout
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     mainLayout->addLayout(radioLayout);
+
     mainLayout->addWidget(m_stack, 1);
-    mainLayout->addWidget(buttonBox);
+#ifdef Q_OS_LINUX
+    m_ptraceLabel = new QLabel(tr("Injection will ask for a password every time. To turn the prompt off, click \"Allow without password\" and enter your password once."), this);
+    m_ptraceLabel->setWordWrap(true);
+    m_ptraceLabel->hide();
+    mainLayout->addWidget(m_ptraceLabel);
+
+    m_ptraceButton = new QPushButton(tr("Allow without password"), this);
+    m_ptraceButton->hide();
+    connect(m_ptraceButton, &QPushButton::clicked, this, &HookSettingsDialog::ptraceGrantRequested);
+#endif
+
+    QHBoxLayout *bottomLayout = new QHBoxLayout;
+#ifdef Q_OS_LINUX
+    bottomLayout->addWidget(m_ptraceButton);
+#endif
+    bottomLayout->addStretch();
+    bottomLayout->addWidget(buttonBox);
+    mainLayout->addLayout(bottomLayout);
     setLayout(mainLayout);
 
     onModeChanged();
 }
 
 HookSettingsDialog::~HookSettingsDialog() {}
+
+#ifdef Q_OS_LINUX
+void HookSettingsDialog::setPtraceStatus(const QString &status)
+{
+    const bool missing = status == QLatin1String("missing");
+    m_ptraceLabel->setVisible(missing);
+    m_ptraceButton->setVisible(missing);
+}
+#endif
 
 HookSettingsDialog::HookMode HookSettingsDialog::getCurrentMode() const
 {

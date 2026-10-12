@@ -264,6 +264,26 @@ void MainWindow::on_textProcessingHookSettingsButton_clicked()
     m_hookSettingsDialog->setWindowModality(Qt::WindowModal);
     m_hookSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
 
+#ifdef Q_OS_LINUX
+    m_hookSettingsDialog->setPtraceStatus(m_hookController->pluginCommand(QStringLiteral("ptrace-status")));
+    connect(m_hookSettingsDialog, &HookSettingsDialog::ptraceGrantRequested, this, [this]() {
+        const QString question = tr("The injector will get the CAP_SYS_PTRACE capability, so it no longer "
+                                    "asks for a password. This is close to root-level access: any program "
+                                    "running as your user will be able to use it to attach to other processes.\n\n"
+                                    "The permission is removed whenever the plugin is updated and can be "
+                                    "granted again here. Continue?");
+        if (QMessageBox::question(m_hookSettingsDialog, tr("Allow without password"), question,
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+            return;
+
+        const QString result = m_hookController->pluginCommand(QStringLiteral("ptrace-grant"));
+        if (result != QLatin1String("ok"))
+            QMessageBox::warning(m_hookSettingsDialog, tr("Allow without password"), result);
+        
+        m_hookSettingsDialog->setPtraceStatus(m_hookController->pluginCommand(QStringLiteral("ptrace-status")));
+    });
+#endif
+
     connect(m_hookSettingsDialog, &QDialog::finished, this, [this](int result) {
         if (result == QDialog::Accepted) {
             m_hookMode = m_hookSettingsDialog->getCurrentMode();

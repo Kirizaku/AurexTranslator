@@ -404,6 +404,14 @@ Save anyway?</source>
         <source>Process name</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Injection will ask for a password every time. To turn the prompt off, click &quot;Allow without password&quot; and enter your password once.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allow without password</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -1571,6 +1579,16 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
     <message>
         <location filename="../src/UI/mainwindow.cpp" line="4066"/>
         <source>Later</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The injector will get the CAP_SYS_PTRACE capability, so it no longer asks for a password. This is close to root-level access: any program running as your user will be able to use it to attach to other processes.
+
+The permission is removed whenever the plugin is updated and can be granted again here. Continue?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Allow without password</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

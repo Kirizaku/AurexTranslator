@@ -144,6 +144,11 @@ void HookController::manualInject()
     startPlugin(*pluginIt);
 }
 
+QString HookController::pluginCommand(const QString &command) const
+{
+    return m_hookPlugin ? m_hookPlugin->execute(command) : QString();
+}
+
 void HookController::stop()
 {
     if (!m_hookPlugin) return;

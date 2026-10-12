@@ -40,6 +40,7 @@ public:
 
     void setPlugin(PluginInterface *plugin);
     bool isPluginLoaded() const { return m_hookPlugin != nullptr; }
+    QString pluginCommand(const QString &command) const;
 
     // Settings
     void setMode(int mode);

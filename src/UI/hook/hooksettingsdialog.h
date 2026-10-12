@@ -25,6 +25,8 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 
+class QLabel;
+
 class HookSettingsDialog : public QDialog
 {
     Q_OBJECT
@@ -53,6 +55,13 @@ public:
 
     void setEngineList(const QStringList &engines, const QString &current = QString());
 
+#ifdef Q_OS_LINUX
+    void setPtraceStatus(const QString &status);
+
+signals:
+    void ptraceGrantRequested();
+#endif
+
 private slots:
     void onModeChanged();
     void onRefreshProcesses();
@@ -66,6 +75,11 @@ private:
     QRadioButton *m_engineRadio = nullptr;
 
     QStackedWidget *m_stack = nullptr;
+
+#ifdef Q_OS_LINUX
+    QLabel *m_ptraceLabel = nullptr;
+    QPushButton *m_ptraceButton = nullptr;
+#endif
 
     // Application
     QComboBox *m_gameListComboBox = nullptr;
