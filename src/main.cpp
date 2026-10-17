@@ -26,6 +26,7 @@
 #include <QSystemTrayIcon>
 #include <QStandardPaths>
 #include <QApplication>
+#include <QIcon>
 
 #ifdef Q_OS_LINUX
 #include <sys/utsname.h>
@@ -154,7 +155,7 @@ namespace
 
     void createTrayIcon(QSystemTrayIcon &trayIcon, MainWindow &mainWin, QApplication &app)
     {
-        trayIcon.setIcon(qApp->style()->standardIcon(QStyle::SP_ComputerIcon));
+        trayIcon.setIcon(qApp->windowIcon());
         trayIcon.setToolTip(APP_NAME);
 
         QMenu* trayMenu = new QMenu(&mainWin);
@@ -190,6 +191,7 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
+    app.setWindowIcon(QIcon(QStringLiteral(":/icons/aurextranslator.svg")));
 
     QString configPath = getAppSettingsPath();
 

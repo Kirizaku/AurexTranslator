@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=AurexTranslator
+Comment=Real-time screen, clipboard and game text translator
+Exec=aurextranslator
+Icon=aurextranslator
+Categories=Utility;Qt;

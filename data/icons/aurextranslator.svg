@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 256 256"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="aurextranslator.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview4"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.8515625"
+     inkscape:cx="151.35234"
+     inkscape:cy="125.44584"
+     inkscape:window-width="2048"
+     inkscape:window-height="1080"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4" />
+  <defs
+     id="defs4">
+    <!-- background -->
+    <linearGradient
+       id="bg"
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#232526"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#414345"
+         id="stop2" />
+    </linearGradient>
+    <!-- letter A -->
+    <linearGradient
+       id="silver"
+       gradientUnits="userSpaceOnUse"
+       x1="36"
+       y1="0"
+       x2="112"
+       y2="0">
+      <stop
+         offset="0"
+         stop-color="#e0e6ee"
+         id="stop3" />
+      <stop
+         offset="1"
+         stop-color="#ffffff"
+         id="stop4" />
+    </linearGradient>
+  </defs>
+  <!-- background plate -->
+  <rect
+     id="background"
+     width="256"
+     height="256"
+     rx="56"
+     fill="url(#bg)" />
+  <!-- letter A: both legs and the crossbar (translate/scale places it) -->
+  <g
+     id="letter-a"
+     transform="translate(4.22 19.44) scale(0.92)"
+     fill="none"
+     stroke="url(#silver)"
+     stroke-width="16"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+    <path
+       id="letter-a-legs"
+       d="M36 170L74 66L112 170" />
+    <path
+       id="letter-a-bar"
+       d="M49 138H99" />
+  </g>
+  <!-- character 文: dot, long bar, left and right strokes -->
+  <g
+     id="glyph"
+     transform="translate(109.3 67.1) scale(1.45)"
+     fill="none"
+     stroke="#ffd166"
+     stroke-width="9"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+    <path
+       id="glyph-dot"
+       d="M46 8v10" />
+    <path
+       id="glyph-bar"
+       d="M 16,23.862069 H 76" />
+    <path
+       id="glyph-left"
+       d="M24 24c4 26 20 44 44 52" />
+    <path
+       id="glyph-right"
+       d="M68 24c-4 26-20 44-44 52" />
+  </g>
+</svg>

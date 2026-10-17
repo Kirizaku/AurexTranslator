@@ -202,6 +202,10 @@ qt_add_executable(${PROJECT_NAME}
     ${RESOURCES}
 )
 
+if(WIN32)
+    target_sources(${PROJECT_NAME} PRIVATE data/windows/aurextranslator.rc)
+endif()
+
 qt_add_translations(${CMAKE_PROJECT_NAME}
   TS_FILES
     translations/${PROJECT_NAME}_en_US.ts
