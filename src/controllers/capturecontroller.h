@@ -30,6 +30,7 @@ class Pipewire;
 class ScreenCastPortal;
 #endif
 class ScreenCast;
+class ScreenCastOverlay;
 class ScreenCastWindow;
 
 class CaptureController : public QObject
@@ -44,6 +45,7 @@ public:
     //   if Portal fails (e.g. running under bare X11 session)
     // - Windows: ScreenCast (DXGI/GDI)
     void initialize(const QString &restoreToken);
+    void setOverlayMode(bool enabled);
 
     void setCaptureDesktop(bool isDesktop);
     void setDisplayIndex(int index);
@@ -90,8 +92,10 @@ private:
     ScreenCastPortal *m_portalScreencast = nullptr;
 #endif
     ScreenCast *m_screenCapture = nullptr;
+    ScreenCastOverlay *m_overlayCapture = nullptr;
     ScreenCastWindow *m_screenCastWindow = nullptr;
 
+    bool m_overlayMode = false;
     bool m_isCaptureDesktop = true;
     int m_currentDisplay = 0;
 #ifdef Q_OS_WIN

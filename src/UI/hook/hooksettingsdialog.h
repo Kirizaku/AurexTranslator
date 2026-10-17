@@ -18,13 +18,10 @@
 #include <QDialog>
 #include <QComboBox>
 #include <QRadioButton>
-#include <QLineEdit>
-#include <QTreeView>
 #include <QStackedWidget>
 #include <QPushButton>
-#include <QSortFilterProxyModel>
-#include <QStandardItemModel>
 
+class ProcessPickerWidget;
 class QLabel;
 
 class HookSettingsDialog : public QDialog
@@ -64,13 +61,9 @@ signals:
 
 private slots:
     void onModeChanged();
-    void onRefreshProcesses();
-    void onFilterTextChanged(const QString &text);
     void onEngineChanged();
 
 private:
-    void loadProcesses();
-
     QRadioButton *m_gameAppRadio = nullptr;
     QRadioButton *m_engineRadio = nullptr;
 
@@ -86,11 +79,8 @@ private:
 
     // Engine
     QComboBox *m_engineComboBox = nullptr;
-    QLineEdit *m_searchEdit = nullptr;
-    QTreeView *m_processView = nullptr;
-    QStandardItemModel *m_processModel = nullptr;
-    QSortFilterProxyModel *m_processProxy = nullptr;
-    QPushButton *m_refreshButton = nullptr;
+    ProcessPickerWidget *m_processPicker = nullptr;
+    bool m_processesLoaded = false;
 };
 
 #endif // HOOKSETTINGSDIALOG_H

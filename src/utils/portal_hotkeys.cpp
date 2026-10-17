@@ -98,7 +98,9 @@ void PortalHotkeys::bindShortcuts()
         { QStringLiteral("ManualTranslate"), { { QStringLiteral("description"), QStringLiteral("Manual Translate") } } },
         { QStringLiteral("ToggleSpeech"), { { QStringLiteral("description"), QStringLiteral("Toggle Speech") } } },
         { QStringLiteral("SpeakText"), { { QStringLiteral("description"), QStringLiteral("Speak the Last Text") } } },
-        { QStringLiteral("StopSpeech"), { { QStringLiteral("description"), QStringLiteral("Stop Speaking") } } }
+        { QStringLiteral("StopSpeech"), { { QStringLiteral("description"), QStringLiteral("Stop Speaking") } } },
+        { QStringLiteral("ToggleOutputWindow"), { { QStringLiteral("description"), QStringLiteral("Show/Hide Translation Window") } } },
+        { QStringLiteral("ToggleOverlay"), { { QStringLiteral("description"), QStringLiteral("Show/Hide In-game Overlay") } } }
     };
 
     auto reply = m_portalShortcuts->BindShortcuts(m_globalShortcutsSession, shortcuts, 0, {{ "handle_token", QString("hk%1").arg(m_requestTokenCounter += 1) }} );

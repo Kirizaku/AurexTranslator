@@ -46,13 +46,7 @@ QList<PluginManager::PluginInfo> PluginManager::scanPlugins()
     Log(Logger::Level::Info, QStringLiteral("[plugin-loader] Scanning for plugins"));
 
     auto processFile = [&](const QString& path) {
-        PluginInfo info;
-        QPluginLoader loader(path);
-        if (!loader.metaData().isEmpty()) {
-            info = getQtPluginMeta(path);
-        } else {
-            info = getCppPluginMeta(path);
-        }
+        PluginInfo info = readPluginMeta(path);
 
         if (info.name.isEmpty()) {
             Log(Logger::Level::Warning,
@@ -224,6 +218,15 @@ void PluginManager::parseCommonMeta(const QJsonObject &obj, PluginInfo &info)
     info.settings = obj["settings"].toArray();
 }
 
+PluginManager::PluginInfo PluginManager::readPluginMeta(const QString &path)
+{
+    QPluginLoader loader(path);
+    if (!loader.metaData().isEmpty())
+        return getQtPluginMeta(path);
+    
+    return getCppPluginMeta(path);
+}
+
 PluginManager::PluginInfo PluginManager::getQtPluginMeta(const QString &path)
 {
     PluginInfo info;
@@ -269,6 +272,59 @@ QString PluginManager::getFileArch(const QString &path)
     }
 
     return QString();
+}
+
+void PluginManager::syncSeedPlugins()
+{
+    const QString cwdSeed = QDir::current().filePath(QStringLiteral("at-plugins-install"));
+
+    if (!QDir(cwdSeed).exists())
+        return;
+
+    const QString destDir = Config::getConfigDirPath() + QStringLiteral("plugins/");
+
+    if (!QDir().mkpath(destDir)) {
+        return;
+    }
+
+    syncSeedDir(cwdSeed, destDir);
+}
+
+void PluginManager::syncSeedDir(const QString &seedDir, const QString &destDir)
+{
+    QDir seed(seedDir);
+    const QStringList files = seed.entryList({"*.dll", "*.so"}, QDir::Files);
+    for (const QString &file : files)
+        syncPluginFile(seed.absoluteFilePath(file), destDir + file);
+
+    QDir seedBin(seedDir + QStringLiteral("/bin"));
+    if (!seedBin.exists()) return;
+
+    const QString destBinDir = destDir + QStringLiteral("bin/");
+    QDir().mkpath(destBinDir);
+    const QFileInfoList entries = seedBin.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+    for (const QFileInfo &entry : entries)
+        syncPluginFile(entry.absoluteFilePath(), destBinDir + entry.fileName());
+}
+
+void PluginManager::syncPluginFile(const QString &srcPath, const QString &dstPath)
+{
+    if (QFileInfo::exists(dstPath)) {
+        const PluginInfo srcInfo = readPluginMeta(srcPath);
+        const PluginInfo dstInfo = readPluginMeta(dstPath);
+        if (srcInfo.version.isEmpty() || dstInfo.version.isEmpty()) return;
+        if (!isVersionLess(dstInfo.version, srcInfo.version)) return;
+    }
+
+    QFile::remove(dstPath);
+    if (!QFile::copy(srcPath, dstPath)) {
+        Log(Logger::Level::Warning, QStringLiteral("[plugin-loader] Failed to copy seed plugin: %1").arg(srcPath));
+        return;
+    }
+#ifdef Q_OS_LINUX
+    QFile::setPermissions(dstPath, QFile::permissions(srcPath));
+#endif
+    Log(Logger::Level::Info, QStringLiteral("[plugin-loader] Updated from seed: %1").arg(QFileInfo(dstPath).fileName()));
 }
 
 QMap<QString, QStringList> PluginManager::validateDependencies(const QList<PluginInfo>& plugins)

@@ -43,7 +43,9 @@ ScreenCastWindow::~ScreenCastWindow()
 void ScreenCastWindow::setCurrentOriginalFrame(const QImage &frame)
 {
     if (!frame.isNull()) {
-        ui->preview->setPixmap(QPixmap::fromImage(frame).scaled(ui->preview->size(), Qt::KeepAspectRatio));
+        QImage image = frame;
+        image.setDevicePixelRatio(devicePixelRatio());
+        ui->preview->setPixmap(QPixmap::fromImage(image).scaled(ui->preview->size() * devicePixelRatio(), Qt::KeepAspectRatio));
     }
 }
 

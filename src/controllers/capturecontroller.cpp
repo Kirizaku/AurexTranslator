@@ -19,6 +19,7 @@
 
 #include "src/utils/logger.h"
 #include "src/UI/screencastwindow.h"
+#include "src/screencasts/overlay-capture/screencast-overlay.h"
 
 #ifdef Q_OS_LINUX
 #include "src/screencasts/linux-capture-portal/screencast-pipewire.h"
@@ -27,6 +28,8 @@
 #else
 #include "src/screencasts/win-capture/screencast-win.h"
 #endif
+
+#include <QCoreApplication>
 
 CaptureController::CaptureController(QObject *parent)
     : QObject(parent) {}
@@ -48,6 +51,11 @@ CaptureController::~CaptureController()
         m_screenCapture->stop();
         delete m_screenCapture;
         m_screenCapture = nullptr;
+    }
+    if (m_overlayCapture) {
+        m_overlayCapture->stop();
+        delete m_overlayCapture;
+        m_overlayCapture = nullptr;
     }
     if (m_screenCastWindow) {
         delete m_screenCastWindow;
@@ -79,6 +87,24 @@ void CaptureController::initialize(const QString &restoreToken)
 #else
     initFallbackBackend();
 #endif
+}
+
+void CaptureController::setOverlayMode(bool enabled)
+{
+    if (m_overlayMode == enabled) return;
+
+    if (enabled && !m_overlayCapture) {
+        m_overlayCapture = new ScreenCastOverlay();
+        if (!m_framerate.isEmpty()) m_overlayCapture->setCurrentFramerate(m_framerate);
+        connect(m_overlayCapture, &ScreenCastOverlay::currentFrameBuffer,
+                this, &CaptureController::frameBufferReady);
+    }
+
+    emit aboutToReconfigure();
+    stop();
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    m_overlayMode = enabled;
 }
 
 void CaptureController::setCaptureDesktop(bool isDesktop)
@@ -120,10 +146,16 @@ void CaptureController::setFramerate(const QString &framerate)
     if (m_pipewire) m_pipewire->setCurrentFramerate(framerate);
 #endif
     if (m_screenCapture) m_screenCapture->setCurrentFramerate(framerate);
+    if (m_overlayCapture) m_overlayCapture->setCurrentFramerate(framerate);
 }
 
 void CaptureController::start()
 {
+    if (m_overlayMode) {
+        m_overlayCapture->init();
+        m_overlayCapture->start();
+        return;
+    }
 #ifdef Q_OS_LINUX
     if (m_portalScreencast) {
         m_portalScreencast->init(m_restoreToken);
@@ -138,6 +170,10 @@ void CaptureController::start()
 
 void CaptureController::stop()
 {
+    if (m_overlayMode) {
+        m_overlayCapture->stop();
+        return;
+    }
 #ifdef Q_OS_LINUX
     if (m_pipewire) m_pipewire->stop();
     if (m_portalScreencast) m_portalScreencast->stop();
@@ -148,6 +184,11 @@ void CaptureController::stop()
 
 void CaptureController::notifyFrameProcessed()
 {
+    if (m_overlayMode) {
+        m_overlayCapture->setIsProcessed(true);
+        m_overlayCapture->wakeWaitCondition();
+        return;
+    }
 #ifdef Q_OS_LINUX
     if (m_pipewire) {
         m_pipewire->setIsProcessed(true);

@@ -37,6 +37,7 @@
 #include "src/UI/mainwindow.h"
 #include "src/utils/logger.h"
 #include "src/utils/config.h"
+#include "src/utils/pluginloader.h"
 #include "src/data.h"
 
 namespace
@@ -183,6 +184,8 @@ int main(int argc, char *argv[])
     Config::instance()->initInstance(configPath);
     Config::load();
 
+    PluginManager::syncSeedPlugins();
+
     logSystemInfo();
 
     QTranslator translator;
@@ -205,6 +208,7 @@ int main(int argc, char *argv[])
         MainWindow mainWin;
         QSystemTrayIcon trayIcon;
         createTrayIcon(trayIcon, mainWin, app);
+        mainWin.setTrayIcon(&trayIcon);
 
         trayIcon.show();
 

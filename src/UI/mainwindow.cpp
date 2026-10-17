@@ -15,18 +15,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
+#include <QCheckBox>
 #include <QClipboard>
+#include <QColorDialog>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMediaDevices>
 #include <QMenu>
+#include <QStandardItemModel>
+#include <QSystemTrayIcon>
 #include <QTimer>
+
+#ifdef Q_OS_WIN
+#include <Windows.h>
+#include <TlHelp32.h>
+#endif
 
 #include "src/controllers/clipboardcontroller.h"
 
 #include "mainwindow.h"
+#include "ui_overlaysettingsdialog.h"
 #include "textprocessingdelegates.h"
 #include "ui_mainwindow.h"
 #include "src/UI/engines/googlesettingsdialog.h"
@@ -38,6 +48,7 @@
 #include "src/controllers/capturecontroller.h"
 #include "src/controllers/ocrcontroller.h"
 #include "src/controllers/hookcontroller.h"
+#include "src/controllers/overlaycontroller.h"
 #include "src/controllers/pythoncontroller.h"
 #include "src/audio/audioplayer.h"
 #include "src/audio/notificationsound.h"
@@ -54,7 +65,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::MainWindow)
     , m_screen(QGuiApplication::primaryScreen())
-    , m_overlayWindow(new OverlayWindow())
+    , m_regionSelector(new RegionSelectorWindow())
+    , m_overlaySettingsDialog(new OverlaySettingsDialog(this))
+    , m_overlayGameSwitcherDialog(new OverlayGameSwitcherDialog(this))
     , m_outputWindow(new TextOutputWindow())
     , m_manager(new QNetworkAccessManager(this))
     , m_opencv(new OpenCV(this))
@@ -64,7 +77,9 @@ MainWindow::MainWindow(QWidget *parent)
     , m_captureController(new CaptureController(this))
     , m_ocrController(new OcrController(m_manager, this))
     , m_hookController(new HookController(this))
+    , m_overlayController(new OverlayController(this))
 {
+    qApp->installEventFilter(this);
     setupBaseUI();
     initPlugins();
     initPythonController();
@@ -75,10 +90,18 @@ MainWindow::MainWindow(QWidget *parent)
     initClipboardController();
     setupSettingsConnections();
 
+    m_overlaySubsystemsReady = true;
+    m_overlayController->ensureKnownGamesLoaded();
+    updateOverlayGameManagement();
+
     connect(m_translationController, &TranslationController::translationReady,
             m_outputWindow, &TextOutputWindow::setTranslationResult);
     connect(m_translationController, &TranslationController::originalReady,
             m_outputWindow, &TextOutputWindow::setOriginalText);
+    connect(m_translationController, &TranslationController::translationReady,
+            m_overlayController, &OverlayController::setTranslationResult);
+    connect(m_translationController, &TranslationController::originalReady,
+            m_overlayController, &OverlayController::setOriginalText);
 
     m_hookBurstTimer = new QTimer(this);
     m_hookBurstTimer->setSingleShot(true);
@@ -87,6 +110,40 @@ MainWindow::MainWindow(QWidget *parent)
     loadLogMessages();
     setupFinalUI();
     activateProfileForHook();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (m_quitting) {
+        event->accept();
+        return;
+    }
+
+    event->ignore();
+    hide();
+
+    if (m_trayIcon && ui->generalShowTrayCloseNotification->isChecked() && !m_outputWindow->isVisible()) {
+        m_trayIcon->showMessage(tr("%1 is closed to tray").arg(APP_NAME),
+                                tr("This behavior can be changed in the settings. You won't be reminded again."),
+                                QSystemTrayIcon::Information, 5000);
+
+        ui->generalShowTrayCloseNotification->blockSignals(true);
+        ui->generalShowTrayCloseNotification->setChecked(false);
+        ui->generalShowTrayCloseNotification->blockSignals(false);
+
+        QJsonObject general = Config::getValue("general").toJsonObject();
+        general["show_tray_close_notification"] = false;
+        Config::setValue("general", general);
+        Config::save();
+    }
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == qApp && event->type() == QEvent::Quit)
+        m_quitting = true;
+
+    return QWidget::eventFilter(watched, event);
 }
 
 MainWindow::~MainWindow()
@@ -103,14 +160,19 @@ MainWindow::~MainWindow()
         m_hookController->stop();
     }
 
+    if (m_overlayController) {
+        m_overlayController->unloadAllGames();
+    }
+
+    if (m_hookController) {
+        m_hookController->pluginCommand(QStringLiteral("wait-stopped"));
+    }
+
     if (m_audioPlayer) { m_audioPlayer->stop(); }
     for (TtsEngine *engine : m_ttsEngines) { engine->stop(); }
 
-    if (m_overlayWindow) { delete m_overlayWindow; }
+    if (m_regionSelector) { delete m_regionSelector; }
     if (m_outputWindow) { delete m_outputWindow; }
-
-    Logger::instance()->destroyInstance();
-    Config::instance()->destroyInstance();
 
     delete ui;
 }
@@ -121,28 +183,28 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_availableGeometryChanged()
 {
-    if (!m_overlayImage.isNull()) {
+    if (!m_lastFrame.isNull()) {
         const QRect newScreenGeometry = m_screen->geometry();
-        QPixmap newPixmap = QPixmap::fromImage(m_overlayImage.copy().scaled(
+        QPixmap newPixmap = QPixmap::fromImage(m_lastFrame.copy().scaled(
             newScreenGeometry.width() * this->devicePixelRatio(),
             newScreenGeometry.height() * this->devicePixelRatio(),
             Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        m_overlayWindow->setPixmap(newPixmap);
+        m_regionSelector->setPixmap(newPixmap);
 
-        qreal pixelRatio = m_overlayWindow->devicePixelRatio();
+        qreal pixelRatio = m_regionSelector->devicePixelRatio();
         int scaledPixmapWidth = newPixmap.width() / pixelRatio;
         int scaledPixmapHeight = newPixmap.height() / pixelRatio;
         int imageX = (newScreenGeometry.width() - scaledPixmapWidth) / 2;
         int imageY = (newScreenGeometry.height() - scaledPixmapHeight) / 2;
-        m_overlayWindow->rescaleToImageRect(QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight));
+        m_regionSelector->rescaleToImageRect(QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight));
     }
 
     m_outputWindow->move(m_screen->geometry().x() + 50, m_screen->geometry().y() + 50);
-    m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
+    m_regionSelector->move(m_screen->geometry().x(), m_screen->geometry().y());
 
-    if (!m_overlayWindow->isHidden()) {
-        m_overlayWindow->hide();
-        restoreOutputWindowAfterOverlay();
+    if (!m_regionSelector->isHidden()) {
+        m_regionSelector->hide();
+        restoreOutputWindowAfterRegionSelection();
     }
 }
 
@@ -161,7 +223,27 @@ void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
 
 void MainWindow::on_outputGeneralSelect_clicked()
 {
+    if (ui->outputModeOverlayRadio->isChecked()) {
+        openOverlayGameSwitcher();
+        return;
+    }
+
     m_captureController->openSourceSelector();
+
+    ui->outputOriginalScreencast->clear();
+    ui->outputProcessedScreencast->clear();
+}
+
+void MainWindow::on_outputChooseGameForText_clicked()
+{
+    openOverlayGameSwitcher();
+}
+
+void MainWindow::openOverlayGameSwitcher()
+{
+    m_overlayGameSwitcherDialog->show();
+    m_overlayGameSwitcherDialog->raise();
+    m_overlayGameSwitcherDialog->activateWindow();
 }
 
 void MainWindow::on_outputToggledOriginalScreencast_stateChanged(int arg1)
@@ -176,16 +258,82 @@ void MainWindow::on_outputToggledProcessedScreencast_stateChanged(int arg1)
     ui->outputProcessedScreencastLabel->setVisible(arg1 == Qt::Checked);
 }
 
+void MainWindow::updateOutputGeneralSelectEnabled()
+{
+    ui->outputGeneralSelect->setEnabled(!ui->outputToggledScreencast->isChecked());
+}
+
+bool MainWindow::overlayCaptureWantsGame() const
+{
+    return ui->outputModeOverlayRadio->isChecked() && !ui->outputToggledScreencast->isChecked();
+}
+
+bool MainWindow::overlayGameManagementNeeded() const
+{
+    return overlayCaptureWantsGame() || ui->outputTextInGameOverlay->isChecked();
+}
+
+void MainWindow::updateOverlayGameManagement()
+{
+    if (!m_overlaySubsystemsReady) return;
+
+    const bool needed = overlayGameManagementNeeded();
+    ui->outputChooseGameForText->setEnabled(ui->outputTextInGameOverlay->isChecked());
+    m_overlayController->setFrameCaptureAllowed(overlayCaptureWantsGame());
+
+#ifdef Q_OS_WIN
+    if (needed == m_overlayGameManagementActive) return;
+    m_overlayGameManagementActive = needed;
+    if (needed) {
+        m_overlayController->restorePersistedGames();
+        maybeSuggestVulkanSupportSetup();
+    } else {
+        m_overlayController->unloadAllGames();
+    }
+#elif defined(Q_OS_LINUX)
+    if (needed == m_overlayController->isRunning()) return; 
+    if (needed) {
+        maybeSuggestVulkanSupportSetup();
+        pushOverlayStyleToController();
+        m_overlayController->setShowOriginal(m_overlaySettingsDialog->ui->overlayShowOriginalCheck->isChecked());
+        m_overlayController->setShowSource(m_overlaySettingsDialog->ui->overlayShowSourceCheck->isChecked());
+        m_overlayController->setShowTranslatorName(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck->isChecked());
+        m_overlayController->start();
+    } else {
+        m_overlayController->stop();
+    }
+#endif
+}
+
 void MainWindow::on_outputToggledScreencast_stateChanged(int arg1)
 {
     bool enabled = (arg1 == Qt::Checked);
-    ui->outputGeneralSelect->setEnabled(!enabled);
+    updateOutputGeneralSelectEnabled();
 
     if (enabled) {
         stopScreenCapture();
     } else {
         startScreenCapture();
     }
+
+    updateSwitcherPreviewMessage();
+    updateOverlayGameManagement();
+}
+
+void MainWindow::on_outputTextExternalWindowMode_currentIndexChanged(int index)
+{
+    const bool hidden = (index == 2);
+    const bool panelOnly = (index == 1);
+    m_outputWindow->setVisible(!hidden);
+    m_outputWindow->setPanelOnlyMode(panelOnly);
+    if (!hidden) m_lastVisibleOutputWindowMode = index;
+}
+
+void MainWindow::on_outputTextInGameOverlay_stateChanged(int arg1)
+{
+    const bool enabled = (arg1 == Qt::Checked);
+    updateOverlayGameManagement();
+    m_overlayController->setTextDisplayEnabled(enabled);
 }
 
 void MainWindow::on_outputProcessedOtsu_stateChanged(int arg1)
@@ -422,12 +570,21 @@ void MainWindow::on_pluginsReloadButton_clicked()
             m_hookController->stop();
             m_hookController->setPlugin(nullptr);
         }
+        m_overlayController->unloadAllGames();
+        m_overlayController->setPlugin(nullptr);
         m_pluginManager->unloadPlugins();
         m_hookGameAppPluginList.clear();
         ui->textProcessingHookCheckBox->setProperty("changed", true);
 
         initPlugins();
         loadHookPluginSettings();
+        updateOverlayModeAvailability();
+
+#ifdef Q_OS_WIN
+        if (m_overlayGameManagementActive)
+            m_overlayController->restorePersistedGames();
+#endif
+        updateOverlayGameManagement();
     }
 }
 
@@ -682,18 +839,30 @@ void MainWindow::on_proxyEnabledCheckBox_stateChanged(int arg1)
 
 void MainWindow::setCurrentOriginalFrame(const QImage &frame)
 {
-    m_overlayImage = frame.copy();
-    m_overlayImage.setDevicePixelRatio(this->devicePixelRatio());
+    const bool stale = ui->outputModeOverlayRadio->isChecked() && !m_overlayHasActiveGame;
 
-    if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
-        ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_overlayImage).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
+    if (!stale) {
+        m_lastFrame = frame.copy();
+        m_lastFrame.setDevicePixelRatio(this->devicePixelRatio());
+
+        if (ui->listSettingsWidget->currentRow() == 1 && !frame.isNull()) {
+            ui->outputOriginalScreencast->setPixmap(QPixmap::fromImage(m_lastFrame).scaled(ui->outputOriginalScreencast->size() * this->devicePixelRatio(), Qt::KeepAspectRatio));
+        }
     }
 
     m_captureController->notifyFrameProcessed();
 }
 
+void MainWindow::forwardFrameToSwitcherPreview(const QImage &frame)
+{
+    if (ui->outputModeOverlayRadio->isChecked())
+        m_overlayGameSwitcherDialog->setPreviewFrame(frame);
+}
+
 void MainWindow::setCurrentProcessedFrame(const QImage &frame)
 {
+    if (ui->outputModeOverlayRadio->isChecked() && !m_overlayHasActiveGame) return;
+
     QImage image = frame;
     image.setDevicePixelRatio(this->devicePixelRatio());
 
@@ -725,9 +894,11 @@ void MainWindow::stopScreenCapture()
     clearScreencastPreview();
     m_captureController->stop();
 
-    if (!m_overlayWindow->isHidden()) {
-        m_overlayWindow->hide();
-        restoreOutputWindowAfterOverlay();
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    if (!m_regionSelector->isHidden()) {
+        m_regionSelector->hide();
+        restoreOutputWindowAfterRegionSelection();
     }
 }
 
@@ -736,11 +907,29 @@ void MainWindow::clearScreencastPreview()
     if (!m_opencv) return;
 
     m_opencv->setIsStopped(true);
+    clearPreviewFrames();
+    emit screenCastFinished();
+}
+
+void MainWindow::clearPreviewFrames()
+{
     ui->outputOriginalScreencast->clear();
     ui->outputProcessedScreencast->clear();
-    m_overlayWindow->clearFrame();
-    m_overlayImage = QImage();
-    emit screenCastFinished();
+    m_regionSelector->clearFrame();
+    m_lastFrame = QImage();
+    updateSwitcherPreviewMessage();
+}
+
+void MainWindow::updateSwitcherPreviewMessage()
+{
+    if (!m_overlayHasActiveGame)
+        m_overlayGameSwitcherDialog->clearPreview();
+    else if (!ui->outputModeOverlayRadio->isChecked())
+        m_overlayGameSwitcherDialog->setPreviewMessage(tr("Select the Overlay capture source to see a preview"));
+    else if (ui->outputToggledScreencast->isChecked())
+        m_overlayGameSwitcherDialog->setPreviewMessage(tr("Preview is off: capture is disabled"));
+    else
+        m_overlayGameSwitcherDialog->setPreviewMessage(tr("Waiting for a frame..."));
 }
 
 // ===============================================================
@@ -808,7 +997,7 @@ void MainWindow::openOllamaSettings()
 
 void MainWindow::retranslateText()
 {
-    if (!m_overlayWindow->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
+    if (!m_regionSelector->getIsRectBrushEmpty() && ui->textProcessingOCREngineToggled->isChecked()) {
         m_ocrController->triggerManual();
     }
 
@@ -862,25 +1051,25 @@ void MainWindow::reapplyHookOutput()
 
 void MainWindow::selectNewRegion()
 {
-    if (m_overlayWindow->isHidden()) {
-        if (m_overlayImage.isNull()) {
+    if (m_regionSelector->isHidden()) {
+        if (m_lastFrame.isNull()) {
             DialogUtils::warning(this, tr("Warning"), tr("No screencast selected for OCR"));
             return;
         }
-        m_overlayWindow->setInnerBrushActive(false);
-        showOverlayWindow();
+        m_regionSelector->setInnerBrushActive(false);
+        showRegionSelector();
     }
 }
 
 void MainWindow::selectNewInnerRegion()
 {
-    if (m_overlayWindow->isHidden()) {
-        if (m_overlayImage.isNull() || m_overlayWindow->getIsRectBrushEmpty()) {
+    if (m_regionSelector->isHidden()) {
+        if (m_lastFrame.isNull() || m_regionSelector->getIsRectBrushEmpty()) {
             DialogUtils::warning(this, tr("Warning"), tr("Select an OCR region first"));
             return;
         }
-        m_overlayWindow->setInnerBrushActive(true);
-        showOverlayWindow();
+        m_regionSelector->setInnerBrushActive(true);
+        showRegionSelector();
     }
 }
 
@@ -891,6 +1080,16 @@ void MainWindow::selectNewInnerRegion()
 void MainWindow::setupBaseUI()
 {
     ui->setupUi(this);
+
+    auto *outputModeGroup = new QButtonGroup(this);
+    outputModeGroup->addButton(ui->outputModeScreencastRadio);
+    outputModeGroup->addButton(ui->outputModeOverlayRadio);
+    ui->outputModeScreencastRadio->setChecked(true);
+
+    auto *thresholdMethodGroup = new QButtonGroup(this);
+    thresholdMethodGroup->addButton(ui->outputProcessedSimpleThresh);
+    thresholdMethodGroup->addButton(ui->outputProcessedAdaptiveThresh);
+
     ui->aboutLabel->setText("<span style=\"font-size: 18pt; font-weight: 700;\">" + QString::fromStdString(APP_NAME) + "</span>");
     ui->aboutVersion->setText(QString("v%1").arg(APP_VERSION));
     ui->aboutCopyrightLabel->setText(QString::fromStdString("Copyright (c) ") + QString::fromStdString(COPYRIGHT_YEARS) + QString::fromStdString(" Daniil Nabiulin"));
@@ -908,6 +1107,7 @@ void MainWindow::setupBaseUI()
     m_changedWidgets = {
         ui->generalBoxLanguage,
         ui->generalToggledStartup,
+        ui->generalShowTrayCloseNotification,
         ui->generalHotkeySelectNewRegionEdit,
         ui->generalHotkeyInnerRegionEdit,
         ui->generalHotkeyHistoryTranslationEdit,
@@ -915,6 +1115,8 @@ void MainWindow::setupBaseUI()
         ui->generalHotkeySpeakTextEdit,
         ui->generalHotkeyStopSpeechEdit,
         ui->generalHotkeyToggleSpeechEdit,
+        ui->generalHotkeyToggleOutputEdit,
+        ui->generalHotkeyToggleOverlayEdit,
         ui->generalRadioHotKey,
         ui->generalRadioHotKeyPortal,
         ui->outputToggledOriginalScreencast,
@@ -932,6 +1134,30 @@ void MainWindow::setupBaseUI()
         ui->outputProcessedSimpleThresholdingType,
         ui->outputProcessedThreshValue,
         ui->outputProcessedAdaptiveThresholdingType,
+        ui->outputModeScreencastRadio,
+        ui->outputModeOverlayRadio,
+        ui->outputTextExternalWindowMode,
+        ui->outputTextInGameOverlay,
+        m_overlaySettingsDialog->ui->overlayTextColorButton,
+        m_overlaySettingsDialog->ui->overlayBgColorButton,
+        m_overlaySettingsDialog->ui->overlayFontSizeManualRadio,
+        m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio,
+        m_overlaySettingsDialog->ui->overlayFontSizeSpin,
+        m_overlaySettingsDialog->ui->overlayCornerRadiusSpin,
+        m_overlaySettingsDialog->ui->overlayAlignmentCombo,
+        m_overlaySettingsDialog->ui->overlayMarginTopSpin,
+        m_overlaySettingsDialog->ui->overlayMarginBottomSpin,
+        m_overlaySettingsDialog->ui->overlayMarginLeftSpin,
+        m_overlaySettingsDialog->ui->overlayMarginRightSpin,
+        m_overlaySettingsDialog->ui->overlayFontFileEdit,
+        m_overlaySettingsDialog->ui->overlayZoneModeCombo,
+        m_overlaySettingsDialog->ui->overlayZoneXSpin,
+        m_overlaySettingsDialog->ui->overlayZoneYSpin,
+        m_overlaySettingsDialog->ui->overlayZoneWSpin,
+        m_overlaySettingsDialog->ui->overlayZoneHSpin,
+        m_overlaySettingsDialog->ui->overlayShowOriginalCheck,
+        m_overlaySettingsDialog->ui->overlayShowSourceCheck,
+        m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck,
         ui->translatorOnlineGoogleToggled,
         ui->translatorOfflineOllamaToggled,
         ui->textProcessingOCREngineToggled,
@@ -979,24 +1205,22 @@ void MainWindow::initPlugins()
                                          [](const PluginManager::PluginInfo &i) { return i.name == "libat-injector"; });
 
     if (injectorIt != m_registry.end() && !dependencyErrors.contains("libat-injector")) {
-        if (m_hookController->isPluginLoaded()) {
+        QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
+        PluginInterface *hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
+
+        if (hookPlugin) {
+            m_hookController->setPlugin(hookPlugin);
+            m_overlayController->setPlugin(hookPlugin);
             hookPluginReady = true;
         } else {
-            QObject* pluginObj = m_pluginManager->getPlugin("libat-injector");
-            PluginInterface *hookPlugin = qobject_cast<PluginInterface*>(pluginObj);
-
-            if (hookPlugin) {
-                m_hookController->setPlugin(hookPlugin);
-                hookPluginReady = true;
-            } else {
-                Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
-                m_registry.erase(injectorIt);
-                dependencyErrors = m_pluginManager->validateDependencies(m_registry);
-            }
+            Log(Logger::Level::Warning, "[Hook] Failed to load plugin 'libat-injector'");
+            m_registry.erase(injectorIt);
+            dependencyErrors = m_pluginManager->validateDependencies(m_registry);
         }
     }
 
     m_hookController->setRegistry(m_registry);
+    m_overlayController->setRegistry(m_registry);
 
     ui->pluginsTableWidget->setRowCount(m_registry.size());
     int row = 0;
@@ -1013,11 +1237,14 @@ void MainWindow::initPlugins()
         QTableWidgetItem *depsItem = new QTableWidgetItem(depsText);
         if (hasErrors) depsItem->setForeground(QBrush(Qt::red));
 
+        QTableWidgetItem *descItem = new QTableWidgetItem(p.description);
+        descItem->setToolTip(p.description);
+
         ui->pluginsTableWidget->setItem(row, 0, new QTableWidgetItem(p.name));
         ui->pluginsTableWidget->setItem(row, 1, new QTableWidgetItem(p.version));
         ui->pluginsTableWidget->setItem(row, 2, archItem);
         ui->pluginsTableWidget->setItem(row, 3, depsItem);
-        ui->pluginsTableWidget->setItem(row, 4, new QTableWidgetItem(p.description));
+        ui->pluginsTableWidget->setItem(row, 4, descItem);
         ++row;
 
         if (p.type == "hook" && (p.category == "game" || p.category == "application")) {
@@ -1035,11 +1262,16 @@ void MainWindow::initPlugins()
     }
 
     ui->textProcessingHookRow->setVisible(hookPluginReady);
-    ui->textProcessingHookCheckBox->setEnabled(hookPluginReady && dependencyErrors.isEmpty());
+    ui->textProcessingHookCheckBox->setEnabled(hookPluginReady);
 
     // Auto select for games
     ui->textProcessingBindingRow->setVisible(hookPluginReady);
     ui->textProcessingBindingHelp->setVisible(hookPluginReady);
+
+    m_overlayPluginAvailable = std::any_of(m_registry.cbegin(), m_registry.cend(),
+        [](const PluginManager::PluginInfo &i) {
+            return i.name == "libat-overlay" || i.name == "libat-overlay-vulkan";
+        });
 
     // Push the current target's plugin config again: a reload dropped whatever
     // the plugin had been told before
@@ -1081,14 +1313,15 @@ void MainWindow::loadApplicationConfig()
 void MainWindow::initSubsystems()
 {
     // Overlay Window
-    m_overlayWindow->raise();
-    connect(m_overlayWindow, &OverlayWindow::hideOverlay, this, [this] {
-        m_overlayWindow->hide();
-        restoreOutputWindowAfterOverlay();
+    m_regionSelector->raise();
+    connect(m_regionSelector, &RegionSelectorWindow::hideRequested, this, [this] {
+        m_regionSelector->hide();
+        restoreOutputWindowAfterRegionSelection();
     });
 
     // Output Window
-    m_outputWindow->show();
+    m_outputWindow->setVisible(ui->outputTextExternalWindowMode->currentIndex() != 2);
+    m_outputWindow->setPanelOnlyMode(ui->outputTextExternalWindowMode->currentIndex() == 1);
     connect(this, &MainWindow::showHistoryRequested, m_outputWindow, &TextOutputWindow::showHistory);
     connect(m_outputWindow, &TextOutputWindow::retranslateRequested, this, &MainWindow::retranslateText);
     connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
@@ -1124,6 +1357,10 @@ void MainWindow::initSubsystems()
     ui->generalHotkeyStopSpeechEdit->setVisible(x11Hotkeys);
     ui->generalHotkeyToggleSpeechCaption->setVisible(x11Hotkeys);
     ui->generalHotkeyToggleSpeechEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleOutputCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleOutputEdit->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleOverlayCaption->setVisible(x11Hotkeys);
+    ui->generalHotkeyToggleOverlayEdit->setVisible(x11Hotkeys);
     ui->generalPortalHotkeysHint->setVisible(!x11Hotkeys);
 #else
     const HotkeyController::Mode hkMode = HotkeyController::X11;
@@ -1138,6 +1375,8 @@ void MainWindow::initSubsystems()
         m_hotkeyController->setToggleSpeechShortcut(ui->generalHotkeyToggleSpeechEdit->keySequence());
         m_hotkeyController->setSpeakTextShortcut(ui->generalHotkeySpeakTextEdit->keySequence());
         m_hotkeyController->setStopSpeechShortcut(ui->generalHotkeyStopSpeechEdit->keySequence());
+        m_hotkeyController->setToggleOutputWindowShortcut(ui->generalHotkeyToggleOutputEdit->keySequence());
+        m_hotkeyController->setToggleOverlayShortcut(ui->generalHotkeyToggleOverlayEdit->keySequence());
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setCaptureRegionShortcut);
@@ -1153,6 +1392,10 @@ void MainWindow::initSubsystems()
                 m_hotkeyController, &HotkeyController::setSpeakTextShortcut);
         connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged,
                 m_hotkeyController, &HotkeyController::setStopSpeechShortcut);
+        connect(ui->generalHotkeyToggleOutputEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setToggleOutputWindowShortcut);
+        connect(ui->generalHotkeyToggleOverlayEdit, &QKeySequenceEdit::keySequenceChanged,
+                m_hotkeyController, &HotkeyController::setToggleOverlayShortcut);
 
         connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeySelectNewRegionEdit->clearFocus(); });
@@ -1168,6 +1411,10 @@ void MainWindow::initSubsystems()
                 [this] { ui->generalHotkeySpeakTextEdit->clearFocus(); });
         connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::editingFinished, this,
                 [this] { ui->generalHotkeyStopSpeechEdit->clearFocus(); });
+        connect(ui->generalHotkeyToggleOutputEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyToggleOutputEdit->clearFocus(); });
+        connect(ui->generalHotkeyToggleOverlayEdit, &QKeySequenceEdit::editingFinished, this,
+                [this] { ui->generalHotkeyToggleOverlayEdit->clearFocus(); });
     }
 
     connect(m_hotkeyController, &HotkeyController::captureRegionTriggered, this, [this] {
@@ -1186,6 +1433,19 @@ void MainWindow::initSubsystems()
             this, &MainWindow::speakLastText);
     connect(m_hotkeyController, &HotkeyController::stopSpeechTriggered,
             this, &MainWindow::on_speechStopButton_clicked);
+    connect(m_hotkeyController, &HotkeyController::toggleOutputWindowTriggered,
+            this, &MainWindow::toggleOutputWindow);
+    connect(m_hotkeyController, &HotkeyController::toggleOverlayTriggered, this, [this] {
+        m_overlayController->setHiddenByHotkey(!m_overlayController->isHiddenByHotkey());
+    });
+
+    connect(m_overlaySettingsDialog->ui->overlayVisibleCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_overlayController->setHiddenByHotkey(checked);
+    });
+    connect(m_overlayController, &OverlayController::hiddenChanged, this, [this](bool hidden) {
+        const QSignalBlocker blocker(m_overlaySettingsDialog->ui->overlayVisibleCheck);
+        m_overlaySettingsDialog->ui->overlayVisibleCheck->setChecked(hidden);
+    });
 
     initScreenCast();
 
@@ -1195,6 +1455,7 @@ void MainWindow::initSubsystems()
     connect(m_ocrController, &OcrController::engineDeactivated, m_outputWindow,
             [this](const QString &source) {
                 m_outputWindow->clearResultsBySource(source);
+                m_overlayController->clearResultsBySource(source);
             });
 
     connect(m_hookController, &HookController::textReceived,
@@ -1225,6 +1486,121 @@ void MainWindow::initSubsystems()
             this, &MainWindow::updatePluginSettingsAvailability);
     connect(m_hookController, &HookController::shouldClearInfoMessage,
             m_outputWindow, &TextOutputWindow::clearInfoMessage);
+
+    connect(m_overlayController, &OverlayController::infoMessage, this, [](const QString &message) {
+        Log(Logger::Level::Info, message);
+    });
+    connect(m_overlayController, &OverlayController::sourceDisconnected, this, [this] {
+        if (ui->outputModeOverlayRadio->isChecked()) clearPreviewFrames();
+    });
+
+    connect(ui->outputModeOverlayRadio, &QRadioButton::toggled, this, [this](bool checked) {
+        if (!m_loadingOutputMode) {
+            if (checked)
+                m_disableCaptureScreencast = ui->outputToggledScreencast->isChecked();
+            else
+                m_disableCaptureOverlay = ui->outputToggledScreencast->isChecked();
+        }
+
+        clearPreviewFrames();
+        m_captureController->setOverlayMode(checked);
+
+        const bool disable = checked ? m_disableCaptureOverlay : m_disableCaptureScreencast;
+        {
+            const QSignalBlocker blocker(ui->outputToggledScreencast);
+            ui->outputToggledScreencast->setChecked(disable);
+        }
+        on_outputToggledScreencast_stateChanged(disable ? Qt::Checked : Qt::Unchecked);
+    });
+    connect(m_overlaySettingsDialog, &OverlaySettingsDialog::previewRequested, this, [this] {
+        m_overlayController->setPreviewActive(true);
+    });
+    connect(m_overlaySettingsDialog, &OverlaySettingsDialog::previewFinished, this, [this] {
+        m_overlayController->setPreviewActive(false);
+    });
+    connect(m_overlaySettingsDialog->ui->overlayTextColorButton, &QPushButton::clicked, this, &MainWindow::pickOverlayTextColor);
+    connect(m_overlaySettingsDialog->ui->overlayBgColorButton, &QPushButton::clicked, this, &MainWindow::pickOverlayBgColor);
+    connect(m_overlaySettingsDialog->ui->overlayTransparencySlider, &QSlider::valueChanged, this, &MainWindow::onOverlayTransparencyChanged);
+    connect(m_overlaySettingsDialog->ui->overlayZoneModeCombo, &QComboBox::currentIndexChanged, this, &MainWindow::onOverlayZoneModeChanged);
+    connect(m_overlaySettingsDialog->ui->overlayFontSizeSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio, &QRadioButton::toggled, this, [this](bool checked) {
+        m_overlaySettingsDialog->ui->overlayFontSizeSpin->setEnabled(!checked);
+        pushOverlayStyleToController();
+    });
+    connect(m_overlaySettingsDialog->ui->overlayCornerRadiusSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayAlignmentCombo, &QComboBox::currentIndexChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayMarginTopSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayMarginBottomSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayMarginLeftSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayMarginRightSpin, &QSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayFontFileEdit, &QLineEdit::textChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayFontFileBrowseButton, &QPushButton::clicked, this, [this] {
+        const QString path = QFileDialog::getOpenFileName(this, tr("Select a font file"),
+                                                           m_overlaySettingsDialog->ui->overlayFontFileEdit->text(),
+                                                           tr("Font files (*.ttf *.otf *.ttc)"));
+        if (!path.isEmpty()) m_overlaySettingsDialog->ui->overlayFontFileEdit->setText(path);
+    });
+    connect(m_overlaySettingsDialog->ui->overlayZoneXSpin, &QDoubleSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayZoneYSpin, &QDoubleSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayZoneWSpin, &QDoubleSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayZoneHSpin, &QDoubleSpinBox::valueChanged, this, [this] { pushOverlayStyleToController(); });
+    connect(m_overlaySettingsDialog->ui->overlayShowOriginalCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_overlayController->setShowOriginal(checked);
+    });
+    connect(m_overlaySettingsDialog->ui->overlayShowSourceCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_overlayController->setShowSource(checked);
+    });
+    connect(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_overlayController->setShowTranslatorName(checked);
+    });
+    connect(ui->overlayInstallButton, &QPushButton::clicked, this, &MainWindow::onOverlayInstallClicked);
+    connect(ui->overlayUninstallButton, &QPushButton::clicked, this, &MainWindow::onOverlayUninstallClicked);
+    connect(ui->overlayConfigureStyleButton, &QPushButton::clicked, this, [this] {
+        m_overlaySettingsDialog->show();
+        m_overlaySettingsDialog->raise();
+        m_overlaySettingsDialog->activateWindow();
+    });
+    connect(m_overlayController, &OverlayController::gameListChanged,
+            m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::setGameList);
+    connect(m_overlayController, &OverlayController::activeGameChanged,
+            m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::setActiveGame);
+    connect(m_overlayController, &OverlayController::activeGameChanged, this, [this](const QString &exe, quint32) {
+        m_overlayHasActiveGame = !exe.isEmpty();
+        if (exe.isEmpty()) {
+            ui->outputOriginalScreencast->clear();
+            ui->outputProcessedScreencast->clear();
+            m_lastFrame = QImage();
+        }
+        updateSwitcherPreviewMessage();
+    });
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameSelected,
+            m_overlayController, &OverlayController::setActiveGame);
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::launchHelpRequested, this, [this] {
+        showOverlayLaunchHelp(tr("Launch the game through the at-overlay wrapper so its hook connects here automatically:"));
+    });
+#ifdef Q_OS_WIN
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameAddRequested,
+            this, &MainWindow::onOverlayGameAddRequested);
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameRemoveRequested,
+            m_overlayController, &OverlayController::removeGame);
+    connect(m_overlayController, &OverlayController::managedGamesChanged,
+            m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::setManagedGames);
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameSwitchRequested,
+            this, &MainWindow::onOverlayGameSwitchRequested, Qt::QueuedConnection);
+    connect(m_overlayController, &OverlayController::knownGamesChanged,
+            m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::setKnownGames);
+#endif
+
+    updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayTextColorButton, m_overlayTextColor);
+    updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayBgColorButton, m_overlayBgColor);
+    syncOverlayTransparencySlider();
+    ui->overlayUninstallButton->setEnabled(m_overlayController->isVulkanLayerRegistered());
+
+    updateOverlayModeAvailability();
+
+#ifdef Q_OS_WIN
+    ui->overlayInstallLabel->setText(tr("Vulkan layer"));
+#endif
 
     connect(ui->configsListWidget, &QListWidget::itemSelectionChanged, this, [this] {
         QListWidgetItem *sel = ui->configsListWidget->currentItem();
@@ -1283,6 +1659,7 @@ void MainWindow::setupSettingsConnections()
     // General
     connect(ui->generalBoxLanguage, &QComboBox::currentIndexChanged, this, bind(m_generalChanged, ui->generalBoxLanguage));
     connect(ui->generalToggledStartup, &QCheckBox::stateChanged, this, bind(m_generalChanged, ui->generalToggledStartup));
+    connect(ui->generalShowTrayCloseNotification, &QCheckBox::stateChanged, this, bind(m_generalChanged, ui->generalShowTrayCloseNotification));
     connect(ui->generalHotkeySelectNewRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySelectNewRegionEdit));
     connect(ui->generalHotkeyInnerRegionEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyInnerRegionEdit));
     connect(ui->generalHotkeyHistoryTranslationEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyHistoryTranslationEdit));
@@ -1290,6 +1667,8 @@ void MainWindow::setupSettingsConnections()
     connect(ui->generalHotkeyToggleSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleSpeechEdit));
     connect(ui->generalHotkeySpeakTextEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeySpeakTextEdit));
     connect(ui->generalHotkeyStopSpeechEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyStopSpeechEdit));
+    connect(ui->generalHotkeyToggleOutputEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleOutputEdit));
+    connect(ui->generalHotkeyToggleOverlayEdit, &QKeySequenceEdit::keySequenceChanged, this, bind(m_generalChanged, ui->generalHotkeyToggleOverlayEdit));
     connect(ui->generalRadioHotKey, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKey));
     connect(ui->generalRadioHotKeyPortal, &QRadioButton::toggled, this, bind(m_generalChanged, ui->generalRadioHotKeyPortal));
 
@@ -1297,6 +1676,8 @@ void MainWindow::setupSettingsConnections()
     connect(ui->outputToggledOriginalScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledOriginalScreencast));
     connect(ui->outputToggledProcessedScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledProcessedScreencast));
     connect(ui->outputToggledScreencast, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputToggledScreencast));
+    connect(ui->outputTextExternalWindowMode, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputTextExternalWindowMode));
+    connect(ui->outputTextInGameOverlay, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputTextInGameOverlay));
     connect(ui->outputGeneralBoxFramerate, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputGeneralBoxFramerate));
     connect(ui->outputProcessedToggledBlur, &QCheckBox::stateChanged, this, bind(m_outputChanged, ui->outputProcessedToggledBlur));
     connect(ui->outputProcessedBlurType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedBlurType));
@@ -1309,6 +1690,27 @@ void MainWindow::setupSettingsConnections()
     connect(ui->outputProcessedSimpleThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedSimpleThresholdingType));
     connect(ui->outputProcessedThreshValue, &QSlider::valueChanged, this, bind(m_outputChanged, ui->outputProcessedThreshValue));
     connect(ui->outputProcessedAdaptiveThresholdingType, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, ui->outputProcessedAdaptiveThresholdingType));
+
+    // Output - Overlay
+    connect(ui->outputModeScreencastRadio, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputModeScreencastRadio));
+    connect(ui->outputModeOverlayRadio, &QRadioButton::toggled, this, bind(m_outputChanged, ui->outputModeOverlayRadio));
+    connect(m_overlaySettingsDialog->ui->overlayFontSizeSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayFontSizeSpin));
+    connect(m_overlaySettingsDialog->ui->overlayFontSizeManualRadio, &QRadioButton::toggled, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayFontSizeManualRadio));
+    connect(m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio, &QRadioButton::toggled, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio));
+    connect(m_overlaySettingsDialog->ui->overlayCornerRadiusSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayCornerRadiusSpin));
+    connect(m_overlaySettingsDialog->ui->overlayAlignmentCombo, &QComboBox::currentIndexChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayAlignmentCombo));
+    connect(m_overlaySettingsDialog->ui->overlayMarginTopSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayMarginTopSpin));
+    connect(m_overlaySettingsDialog->ui->overlayMarginBottomSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayMarginBottomSpin));
+    connect(m_overlaySettingsDialog->ui->overlayMarginLeftSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayMarginLeftSpin));
+    connect(m_overlaySettingsDialog->ui->overlayMarginRightSpin, &QSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayMarginRightSpin));
+    connect(m_overlaySettingsDialog->ui->overlayFontFileEdit, &QLineEdit::textChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayFontFileEdit));
+    connect(m_overlaySettingsDialog->ui->overlayZoneXSpin, &QDoubleSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayZoneXSpin));
+    connect(m_overlaySettingsDialog->ui->overlayZoneYSpin, &QDoubleSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayZoneYSpin));
+    connect(m_overlaySettingsDialog->ui->overlayZoneWSpin, &QDoubleSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayZoneWSpin));
+    connect(m_overlaySettingsDialog->ui->overlayZoneHSpin, &QDoubleSpinBox::valueChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayZoneHSpin));
+    connect(m_overlaySettingsDialog->ui->overlayShowOriginalCheck, &QCheckBox::stateChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayShowOriginalCheck));
+    connect(m_overlaySettingsDialog->ui->overlayShowSourceCheck, &QCheckBox::stateChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayShowSourceCheck));
+    connect(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck, &QCheckBox::stateChanged, this, bind(m_outputChanged, m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck));
 
     // Translator
     connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOnlineGoogleToggled));
@@ -2273,21 +2675,29 @@ bool MainWindow::hotkeysBlocked() const
 
 void MainWindow::showHistory()
 {
-    if (!m_overlayWindow->isHidden()) {
-        m_overlayWindow->hide();
-        restoreOutputWindowAfterOverlay();
+    if (!m_regionSelector->isHidden()) {
+        m_regionSelector->hide();
+        restoreOutputWindowAfterRegionSelection();
     }
 
     emit showHistoryRequested();
 }
 
-void MainWindow::restoreOutputWindowAfterOverlay()
+void MainWindow::toggleOutputWindow()
 {
-    if (m_outputWindowWasMinimized) {
-        m_outputWindow->showMinimized();
+    if (ui->outputTextExternalWindowMode->currentIndex() == 2) {
+        ui->outputTextExternalWindowMode->setCurrentIndex(m_lastVisibleOutputWindowMode);
         return;
     }
+    if (m_outputWindow->isHidden() || m_outputWindow->isMinimized()) {
+        showOutputWindowForced();
+    } else {
+        m_outputWindow->showMinimized();
+    }
+}
 
+void MainWindow::showOutputWindowForced()
+{
     // Forces a real state transition instead of a NoState -> NoState no-op,
     // otherwise the Window Manager keeps it iconified despite Qt reporting it as shown.
     m_outputWindow->show();
@@ -2295,15 +2705,24 @@ void MainWindow::restoreOutputWindowAfterOverlay()
     m_outputWindow->setWindowState(Qt::WindowNoState);
 }
 
-void MainWindow::showOverlayWindow()
+void MainWindow::restoreOutputWindowAfterRegionSelection()
+{
+    if (m_outputWindowWasMinimized) {
+        m_outputWindow->showMinimized();
+        return;
+    }
+    showOutputWindowForced();
+}
+
+void MainWindow::showRegionSelector()
 {
     m_outputWindowWasMinimized = m_outputWindow->isMinimized();
 
     QRect primaryScreenGeometry = QApplication::primaryScreen()->geometry();
-    m_overlayWindow->setPixmap(QPixmap::fromImage(m_overlayImage.copy().scaled(primaryScreenGeometry.width() * this->devicePixelRatio(), primaryScreenGeometry.height() * this->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
-    m_overlayWindow->move(m_screen->geometry().x(), m_screen->geometry().y());
+    m_regionSelector->setPixmap(QPixmap::fromImage(m_lastFrame.copy().scaled(primaryScreenGeometry.width() * this->devicePixelRatio(), primaryScreenGeometry.height() * this->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+    m_regionSelector->move(m_screen->geometry().x(), m_screen->geometry().y());
     m_outputWindow->hide();
-    m_overlayWindow->showFullScreen();
+    m_regionSelector->showFullScreen();
 }
 
 // ===============================================================
@@ -2341,8 +2760,12 @@ void MainWindow::initScreenCast()
     connect(m_opencv, &OpenCV::currentOriginalFrame, this, &MainWindow::setCurrentOriginalFrame);
     connect(m_opencv, &OpenCV::currentProcessedFrame, this, &MainWindow::setCurrentProcessedFrame);
     connect(m_opencv, &OpenCV::currentProcessedMat, this, &MainWindow::setCurrentProcessedMat);
-    connect(m_overlayWindow, &OverlayWindow::currentRoi, m_opencv, &OpenCV::setCurrentRoi);
-    connect(m_overlayWindow, &OverlayWindow::currentInnerRoi, m_opencv, &OpenCV::setCurrentIgnoreRoi);
+    connect(m_regionSelector, &RegionSelectorWindow::currentRoi, m_opencv, &OpenCV::setCurrentRoi);
+    connect(m_regionSelector, &RegionSelectorWindow::currentRoi, this, [this] {
+        // In "Follow OCR zone" mode the panel follows the new zone
+        if (m_overlaySettingsDialog->ui->overlayZoneModeCombo->currentIndex() == 0) pushOverlayStyleToController();
+    });
+    connect(m_regionSelector, &RegionSelectorWindow::currentInnerRoi, m_opencv, &OpenCV::setCurrentIgnoreRoi);
 
     // Target config (loaded earlier into m_isCaptureDesktop / m_currentDisplay / m_currentWindow)
     m_captureController->setCaptureDesktop(m_isCaptureDesktop);
@@ -2365,6 +2788,13 @@ void MainWindow::initScreenCast()
         }
     };
     wireScreenCastWindow();
+
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::switcherShown, this, [this] {
+        connect(m_opencv, &OpenCV::currentOriginalFrame, this, &MainWindow::forwardFrameToSwitcherPreview);
+    });
+    connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::switcherHidden, this, [this] {
+        disconnect(m_opencv, &OpenCV::currentOriginalFrame, this, &MainWindow::forwardFrameToSwitcherPreview);
+    });
 
 #ifdef Q_OS_LINUX
     // If Portal fails at runtime, the controller swaps to ScreenCast backend
@@ -3303,6 +3733,9 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
         }
     }
 
+    if (widgetChanged(ui->generalShowTrayCloseNotification))
+        ui->generalShowTrayCloseNotification->setChecked(general["show_tray_close_notification"].toBool(true));
+
 #ifdef Q_OS_LINUX
     if (!general["hotkeys_type"].toString().isEmpty()) {
         bool isX11Config = (general["hotkeys_type"].toString() == "x11");
@@ -3326,6 +3759,10 @@ void MainWindow::loadGeneralSettings(const QJsonObject& general)
             ui->generalHotkeySpeakTextEdit->setKeySequence(QKeySequence(general["hotkey_speak_text"].toString()));
         if (widgetChanged(ui->generalHotkeyStopSpeechEdit) && general.contains("hotkey_stop_speech"))
             ui->generalHotkeyStopSpeechEdit->setKeySequence(QKeySequence(general["hotkey_stop_speech"].toString()));
+        if (widgetChanged(ui->generalHotkeyToggleOutputEdit) && general.contains("hotkey_toggle_output"))
+            ui->generalHotkeyToggleOutputEdit->setKeySequence(QKeySequence(general["hotkey_toggle_output"].toString()));
+        if (widgetChanged(ui->generalHotkeyToggleOverlayEdit) && general.contains("hotkey_toggle_overlay"))
+            ui->generalHotkeyToggleOverlayEdit->setKeySequence(QKeySequence(general["hotkey_toggle_overlay"].toString()));
         if (widgetChanged(ui->generalHotkeyToggleSpeechEdit) && general.contains("hotkey_toggle_speech"))
             ui->generalHotkeyToggleSpeechEdit->setKeySequence(QKeySequence(general["hotkey_toggle_speech"].toString()));
 #ifdef Q_OS_LINUX
@@ -3339,10 +3776,85 @@ void MainWindow::loadOutputSettings(const QJsonObject& output)
         ui->outputToggledOriginalScreencast->setChecked(output["original_screencast_output"].toBool(true));
     if (widgetChanged(ui->outputToggledProcessedScreencast))
         ui->outputToggledProcessedScreencast->setChecked(output["processed_screencast_output"].toBool(true));
-    if (widgetChanged(ui->outputToggledScreencast))
-        ui->outputToggledScreencast->setChecked(output["disable_screencast"].toBool(false));
     if (widgetChanged(ui->outputGeneralBoxFramerate))
         ui->outputGeneralBoxFramerate->setCurrentIndex(output["framerate_index"].toInt(2));
+
+    m_disableCaptureScreencast = output["disable_screencast"].toBool(false);
+    m_disableCaptureOverlay = output["disable_capture_overlay"].toBool(false);
+
+    bool isOverlayMode = ui->outputModeOverlayRadio->isChecked();
+    if (widgetChanged(ui->outputModeOverlayRadio)) {
+        isOverlayMode = output["mode"].toInt(0) == 1;
+        m_loadingOutputMode = true;
+        ui->outputModeOverlayRadio->setChecked(isOverlayMode);
+        ui->outputModeScreencastRadio->setChecked(!isOverlayMode);
+        m_loadingOutputMode = false;
+    }
+    if (widgetChanged(ui->outputToggledScreencast))
+        ui->outputToggledScreencast->setChecked(isOverlayMode ? m_disableCaptureOverlay : m_disableCaptureScreencast);
+
+    if (widgetChanged(ui->outputTextExternalWindowMode)) {
+        int mode = output["text_external_window_mode"].toInt(0);
+        ui->outputTextExternalWindowMode->setCurrentIndex(qBound(0, mode, 2));
+    }
+    if (widgetChanged(ui->outputTextInGameOverlay))
+        ui->outputTextInGameOverlay->setChecked(output["text_in_game_overlay"].toBool(false));
+
+    QJsonObject overlay = output["overlay"].toObject();
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayTextColorButton)) {
+        m_overlayTextColor = QColor(overlay["text_color"].toString(QStringLiteral("#ffffffff")));
+        updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayTextColorButton, m_overlayTextColor);
+    }
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayBgColorButton)) {
+        m_overlayBgColor = QColor(overlay["bg_color"].toString(QStringLiteral("#ff000000")));
+        updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayBgColorButton, m_overlayBgColor);
+        syncOverlayTransparencySlider();
+    }
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneModeCombo))
+        m_overlaySettingsDialog->ui->overlayZoneModeCombo->setCurrentIndex(overlay["position_mode"].toInt(1));
+    onOverlayZoneModeChanged(m_overlaySettingsDialog->ui->overlayZoneModeCombo->currentIndex());
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio)) {
+        const bool autoSize = overlay["font_size_auto"].toBool(false);
+        m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio->setChecked(autoSize);
+        m_overlaySettingsDialog->ui->overlayFontSizeManualRadio->setChecked(!autoSize);
+        m_overlaySettingsDialog->ui->overlayFontSizeSpin->setEnabled(!autoSize);
+    }
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontSizeSpin))
+        m_overlaySettingsDialog->ui->overlayFontSizeSpin->setValue(overlay["font_size"].toInt(22));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayCornerRadiusSpin))
+        m_overlaySettingsDialog->ui->overlayCornerRadiusSpin->setValue(overlay["corner_radius"].toInt(8));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayAlignmentCombo))
+        m_overlaySettingsDialog->ui->overlayAlignmentCombo->setCurrentIndex(overlay["text_alignment"].toInt(1));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginTopSpin))
+        m_overlaySettingsDialog->ui->overlayMarginTopSpin->setValue(overlay["margin_top"].toInt(9));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginBottomSpin))
+        m_overlaySettingsDialog->ui->overlayMarginBottomSpin->setValue(overlay["margin_bottom"].toInt(9));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginLeftSpin))
+        m_overlaySettingsDialog->ui->overlayMarginLeftSpin->setValue(overlay["margin_left"].toInt(9));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginRightSpin))
+        m_overlaySettingsDialog->ui->overlayMarginRightSpin->setValue(overlay["margin_right"].toInt(9));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontFileEdit))
+        m_overlaySettingsDialog->ui->overlayFontFileEdit->setText(overlay["font_file"].toString());
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneXSpin))
+        m_overlaySettingsDialog->ui->overlayZoneXSpin->setValue(overlay["zone_x"].toDouble(0.5));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneYSpin))
+        m_overlaySettingsDialog->ui->overlayZoneYSpin->setValue(overlay["zone_y"].toDouble(0.88));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneWSpin))
+        m_overlaySettingsDialog->ui->overlayZoneWSpin->setValue(overlay["zone_w"].toDouble(0.8));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneHSpin))
+        m_overlaySettingsDialog->ui->overlayZoneHSpin->setValue(overlay["zone_h"].toDouble(0.5));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowOriginalCheck))
+        m_overlaySettingsDialog->ui->overlayShowOriginalCheck->setChecked(overlay["show_original"].toBool(false));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowSourceCheck))
+        m_overlaySettingsDialog->ui->overlayShowSourceCheck->setChecked(overlay["show_source"].toBool(false));
+    if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck))
+        m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck->setChecked(overlay["show_translator_name"].toBool(false));
+
+    m_captureController->setOverlayMode(ui->outputModeOverlayRadio->isChecked());
+    pushOverlayStyleToController();
+    m_overlayController->setShowOriginal(m_overlaySettingsDialog->ui->overlayShowOriginalCheck->isChecked());
+    m_overlayController->setShowSource(m_overlaySettingsDialog->ui->overlayShowSourceCheck->isChecked());
+    m_overlayController->setShowTranslatorName(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck->isChecked());
 
     QJsonObject processing = output["processing"].toObject();
     if (widgetChanged(ui->outputProcessedToggledBlur))
@@ -3386,6 +3898,7 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
 
     if (!ui->translatorOnlineGoogleToggled->isChecked() && widgetChanged(ui->translatorOnlineGoogleToggled)) {
         m_outputWindow->clearResultsByTranslator("Google");
+        m_overlayController->clearResultsByTranslator("Google");
     }
 
     QJsonObject translator_offline = translator["translator_offline"].toObject();
@@ -3412,6 +3925,7 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
 
     if (!ui->translatorOfflineOllamaToggled->isChecked() && widgetChanged(ui->translatorOfflineOllamaToggled)) {
         m_outputWindow->clearResultsByTranslator("Ollama");
+        m_overlayController->clearResultsByTranslator("Ollama");
     }
 
     // A translator just switched on has nothing to work with until the next text
@@ -3480,6 +3994,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
                 } else {
                     m_clipboardController->stop();
                     m_outputWindow->clearResultsBySource(QStringLiteral("Clipboard"));
+                    m_overlayController->clearResultsBySource(QStringLiteral("Clipboard"));
                 }
             }
         }
@@ -3772,6 +4287,369 @@ void MainWindow::syncHookControllerTargets()
 }
 
 // ===============================================================
+// overlay mode
+// ===============================================================
+
+void MainWindow::updateOverlayColorButton(QPushButton *button, const QColor &color)
+{
+    button->setStyleSheet(QString("background-color: %1;").arg(color.name(QColor::HexArgb)));
+}
+
+void MainWindow::pushOverlayStyleToController()
+{
+    float zoneX = (float)m_overlaySettingsDialog->ui->overlayZoneXSpin->value();
+    float zoneY = (float)m_overlaySettingsDialog->ui->overlayZoneYSpin->value();
+    float zoneW = (float)m_overlaySettingsDialog->ui->overlayZoneWSpin->value();
+    float zoneH = (float)m_overlaySettingsDialog->ui->overlayZoneHSpin->value();
+
+    if (m_overlaySettingsDialog->ui->overlayZoneModeCombo->currentIndex() == 0) {
+        const QRectF roi = m_opencv->normalizedRoi(m_lastFrame.width(), m_lastFrame.height());
+        if (!roi.isEmpty()) {
+            zoneX = (float)roi.center().x();
+            zoneY = (float)roi.bottom();
+            zoneW = (float)roi.width();
+            zoneH = (float)roi.height();
+        }
+    }
+
+    static const Qt::Alignment kAlignments[] = { Qt::AlignLeft, Qt::AlignHCenter, Qt::AlignRight };
+    const int alignIndex = qBound(0, m_overlaySettingsDialog->ui->overlayAlignmentCombo->currentIndex(), 2);
+
+    m_overlayController->setStyle(m_overlayTextColor, m_overlayBgColor,
+                                  (float)m_overlaySettingsDialog->ui->overlayFontSizeSpin->value(),
+                                  zoneX, zoneY, zoneW, zoneH,
+                                  m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio->isChecked(),
+                                  m_overlaySettingsDialog->ui->overlayCornerRadiusSpin->value(),
+                                  kAlignments[alignIndex],
+                                  m_overlaySettingsDialog->ui->overlayMarginTopSpin->value(),
+                                  m_overlaySettingsDialog->ui->overlayMarginBottomSpin->value(),
+                                  m_overlaySettingsDialog->ui->overlayMarginLeftSpin->value(),
+                                  m_overlaySettingsDialog->ui->overlayMarginRightSpin->value());
+
+    m_overlayController->setFontPath(m_overlaySettingsDialog->ui->overlayFontFileEdit->text());
+}
+
+void MainWindow::pickOverlayTextColor()
+{
+    QColor c = QColorDialog::getColor(m_overlayTextColor, this, tr("Text color"), QColorDialog::ShowAlphaChannel);
+    if (!c.isValid()) return;
+    m_overlayTextColor = c;
+    updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayTextColorButton, c);
+    m_overlaySettingsDialog->ui->overlayTextColorButton->setProperty("changed", true);
+    m_outputChanged = true;
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+    pushOverlayStyleToController();
+}
+
+void MainWindow::pickOverlayBgColor()
+{
+    QColor c = QColorDialog::getColor(m_overlayBgColor, this, tr("Background color"), QColorDialog::ShowAlphaChannel);
+    if (!c.isValid()) return;
+    m_overlayBgColor = c;
+    updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayBgColorButton, c);
+    syncOverlayTransparencySlider();
+    m_overlaySettingsDialog->ui->overlayBgColorButton->setProperty("changed", true);
+    m_outputChanged = true;
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+    pushOverlayStyleToController();
+}
+
+void MainWindow::onOverlayTransparencyChanged(int value)
+{
+    m_overlaySettingsDialog->ui->overlayTransparencyValueLabel->setText(QStringLiteral("%1%").arg(value));
+    m_overlayBgColor.setAlpha(qRound(value * 255.0 / 100.0));
+    updateOverlayColorButton(m_overlaySettingsDialog->ui->overlayBgColorButton, m_overlayBgColor);
+    m_overlaySettingsDialog->ui->overlayBgColorButton->setProperty("changed", true);
+    m_outputChanged = true;
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+    pushOverlayStyleToController();
+}
+
+void MainWindow::syncOverlayTransparencySlider()
+{
+    const int pct = qRound(m_overlayBgColor.alpha() * 100.0 / 255.0);
+    const QSignalBlocker blocker(m_overlaySettingsDialog->ui->overlayTransparencySlider);
+    m_overlaySettingsDialog->ui->overlayTransparencySlider->setValue(pct);
+    m_overlaySettingsDialog->ui->overlayTransparencyValueLabel->setText(QStringLiteral("%1%").arg(pct));
+}
+
+void MainWindow::onOverlayZoneModeChanged(int index)
+{
+    const bool custom = (index != 0);
+    m_overlaySettingsDialog->ui->overlayZoneXSpin->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneXSlider->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneYSpin->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneYSlider->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneWSpin->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneWSlider->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneHSpin->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneHSlider->setEnabled(custom);
+    m_overlaySettingsDialog->ui->overlayZoneModeCombo->setProperty("changed", true);
+
+    m_outputChanged = true;
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
+    pushOverlayStyleToController();
+}
+
+void MainWindow::onOverlayInstallClicked()
+{
+#ifdef Q_OS_WIN
+    const bool confirm = true;
+    const QString confirmText = tr("This registers the Vulkan implicit layer for every Vulkan "
+                                   "process on the system (Global mode). It stays idle except "
+                                   "for games you actually add. Continue?");
+#else
+    const bool confirm = !m_overlayController->isVulkanLayerRegistered();
+    const QString confirmText = tr("This installs a Vulkan layer and a launcher script for Vulkan and OpenGL games. Continue?");
+#endif
+    if (confirm && QMessageBox::question(this, tr("Install overlay support"), confirmText,
+                                         QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes) {
+        return;
+    }
+
+    installOverlaySupport();
+}
+
+void MainWindow::installOverlaySupport()
+{
+    bool ok = false;
+    const QString status = m_overlayController->installVulkanSupport(&ok);
+    ui->overlayUninstallButton->setEnabled(m_overlayController->isVulkanLayerRegistered());
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Overlay setup"), status);
+        return;
+    }
+
+#ifdef Q_OS_WIN
+    QMessageBox box(QMessageBox::Information, tr("Overlay setup"), status, QMessageBox::Close, this);
+    box.setInformativeText(
+        tr("<ol>"
+           "<li>Enable Overlay capture (with \"Disable capture\" unchecked), "
+           "or check \"In-game overlay\", in Output settings.</li>"
+           "<li>Click \"Add game...\" and pick the running process.</li>"
+           "</ol>"
+           "<p>This loads the overlay into every Vulkan process on "
+           "the system, but only draws anything for games you've actually "
+           "added.</p>"));
+    box.exec();
+#else
+    showOverlayLaunchHelp(status);
+#endif
+}
+
+void MainWindow::onOverlayUninstallClicked()
+{
+#ifdef Q_OS_WIN
+    const QString question = tr("This unregisters the Vulkan implicit layer. "
+                                "Games will no longer pick it up until it's "
+                                "installed again. Continue?");
+#else
+    const QString question = tr("This removes the Vulkan layer and the launcher script. "
+                                "Games will no longer get the overlay until it's "
+                                "installed again. Continue?");
+#endif
+    if (QMessageBox::question(this,
+                              tr("Uninstall overlay support"),
+                              question,
+                              QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes) {
+        return;
+    }
+
+    const QString status = m_overlayController->uninstallVulkanSupport();
+    ui->overlayUninstallButton->setEnabled(m_overlayController->isVulkanLayerRegistered());
+    QMessageBox::information(this, tr("Overlay setup"), status);
+}
+
+#ifdef Q_OS_WIN
+void MainWindow::onOverlayGameAddRequested(const QString &exe)
+{
+    if (confirmOverlayManagementAllowed(tr("Add Game")))
+        m_overlayController->addGame(exe);
+}
+
+void MainWindow::onOverlayGameSwitchRequested(const QString &exe)
+{
+    if (confirmOverlayManagementAllowed(tr("Switch Game")))
+        m_overlayController->switchToGame(exe);
+}
+
+bool MainWindow::confirmOverlayManagementAllowed(const QString &title)
+{
+    if (overlayGameManagementNeeded()) return true;
+    QMessageBox::information(this, title,
+                             tr("Enable Overlay capture (with \"Disable capture\" unchecked), "
+                                "or check \"In-game overlay\", in Output settings first."));
+    return false;
+}
+#endif
+
+void MainWindow::maybeSuggestVulkanSupportSetup()
+{
+    const bool promptDisabled = Config::getValue("output").toJsonObject().value("skip_vulkan_layer_prompt").toBool(false);
+    if (m_vulkanSetupSuggestedThisRun || promptDisabled || m_overlayController->isVulkanLayerRegistered())
+        return;
+
+    m_vulkanSetupSuggestedThisRun = true;
+    suggestVulkanSupportSetup();
+}
+
+void MainWindow::suggestVulkanSupportSetup()
+{
+#ifdef Q_OS_WIN
+    const QString title = tr("Set Up Vulkan Overlay");
+    const QString question = tr("Vulkan overlay support isn't set up yet. This registers the "
+                                "Vulkan implicit layer for every Vulkan process on the "
+                                "system. It stays idle except for games you actually add. "
+                                "Continue?\n\n"
+                                "You can also set it up later: Output settings > In-game overlay > "
+                                "Vulkan/OpenGL launcher > Install.");
+#else
+    const QString title = tr("Set Up In-Game Overlay");
+    const QString question = tr("In-game overlay support isn't set up yet. This installs a Vulkan "
+                                "layer and a launcher script for Vulkan and OpenGL games. "
+                                "Continue?\n\n"
+                                "You can also set it up later: Output settings > In-game overlay > "
+                                "Vulkan/OpenGL launcher > Install.");
+#endif
+    QMessageBox prompt(QMessageBox::Question,
+                       title,
+                       question,
+                       QMessageBox::Yes | QMessageBox::No, this);
+    prompt.setDefaultButton(QMessageBox::Yes);
+    prompt.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    auto *dontAskAgain = new QCheckBox(tr("Don't show this again"), &prompt);
+    prompt.setCheckBox(dontAskAgain);
+
+    if (prompt.exec() != QMessageBox::Yes) {
+        if (dontAskAgain->isChecked()) {
+            QJsonObject output = Config::getValue("output").toJsonObject();
+            output["skip_vulkan_layer_prompt"] = true;
+            Config::setValue("output", output);
+            Config::save();
+        }
+        return;
+    }
+
+    bool ok = false;
+    const QString status = m_overlayController->installVulkanSupport(&ok);
+    if (!ok) {
+        QMessageBox::warning(this, title, status);
+        return;
+    }
+    ui->overlayUninstallButton->setEnabled(m_overlayController->isVulkanLayerRegistered());
+
+#ifdef Q_OS_WIN
+    QMessageBox::information(this,
+                             title,
+                             tr("Vulkan overlay support is now set up. Restart any Vulkan "
+                                "game that's already running for the layer to take effect - "
+                                "one launched from now on will be picked up automatically."));
+#else
+    showOverlayLaunchHelp(status);
+#endif
+}
+
+void MainWindow::showOverlayLaunchHelp(const QString &intro)
+{
+    const QString launcher = m_overlayController->launcherPath();
+
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("How to launch a game with the overlay"));
+    dialog.setWindowFlag(Qt::WindowStaysOnTopHint, true);
+    dialog.setMinimumWidth(480);
+
+    auto *layout = new QVBoxLayout(&dialog);
+
+    if (!launcher.isEmpty()) {
+        auto *introLabel = new QLabel(intro, &dialog);
+        introLabel->setWordWrap(true);
+        layout->addWidget(introLabel);
+    }
+
+    bool installRequested = false;
+    QPushButton *installButton = nullptr;
+    if (launcher.isEmpty()) {
+        const QString text = m_overlayController->isVulkanLayerRegistered()
+            ? tr("The launcher script couldn't be created because the overlay "
+                 "launcher plugin isn't deployed. The Vulkan layer is registered, "
+                 "but it only activates for games started with AT_OVERLAY_ENABLE=1.")
+            : tr("Overlay support isn't installed yet. Install it to get the launch command.");
+        auto *missingLabel = new QLabel(text, &dialog);
+        missingLabel->setWordWrap(true);
+        layout->addWidget(missingLabel);
+
+        if (!m_overlayController->isVulkanLayerRegistered()) {
+            installButton = new QPushButton(tr("Install"), &dialog);
+            connect(installButton, &QPushButton::clicked, &dialog, [&dialog, &installRequested] {
+                installRequested = true;
+                dialog.accept();
+            });
+        }
+    } else {
+        auto addExample = [&](const QString &labelText, const QString &command) {
+            layout->addWidget(new QLabel(labelText, &dialog));
+            auto *edit = new QLineEdit(command, &dialog);
+            edit->setReadOnly(true);
+            auto *row = new QHBoxLayout();
+            row->addWidget(edit);
+            auto *copyButton = new QPushButton(tr("Copy"), &dialog);
+            connect(copyButton, &QPushButton::clicked, &dialog, [edit] {
+                QGuiApplication::clipboard()->setText(edit->text());
+            });
+            row->addWidget(copyButton);
+            layout->addLayout(row);
+        };
+
+        addExample(tr("Steam (Launch Options):"), QStringLiteral("%1 %command%").arg(launcher));
+        addExample(tr("Another launcher/shortcut (replace with the game's own path):"), QStringLiteral("%1 /path/to/game").arg(launcher));
+    }
+
+    auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+
+    auto *bottomRow = new QHBoxLayout;
+    if (installButton)
+        bottomRow->addWidget(installButton);
+    bottomRow->addStretch();
+    bottomRow->addWidget(buttonBox);
+    layout->addLayout(bottomRow);
+
+    constexpr int kDialogWidth = 600;
+    dialog.resize(kDialogWidth, qMax(dialog.sizeHint().height(), layout->totalHeightForWidth(kDialogWidth)));
+
+    dialog.exec();
+
+    if (installRequested)
+        installOverlaySupport();
+}
+
+void MainWindow::updateOverlayModeAvailability()
+{
+    if (!m_overlayPluginAvailable && ui->outputModeOverlayRadio->isChecked()) {
+        ui->outputModeScreencastRadio->setChecked(true);
+    }
+    if (!m_overlayPluginAvailable && ui->outputTextInGameOverlay->isChecked()) {
+        ui->outputTextInGameOverlay->setChecked(false);
+    }
+    ui->outputModeLabel->setVisible(m_overlayPluginAvailable);
+    ui->outputModeScreencastRadio->setVisible(m_overlayPluginAvailable);
+    ui->outputModeOverlayRadio->setVisible(m_overlayPluginAvailable);
+    if (m_overlayPluginAvailable) {
+        ui->outputGeneralSelect->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+        if (ui->outputModeLayout->indexOf(ui->outputModeSpacer) == -1)
+            ui->outputModeLayout->addItem(ui->outputModeSpacer);
+    } else {
+        ui->outputGeneralSelect->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        ui->outputModeLayout->removeItem(ui->outputModeSpacer);
+    }
+    ui->outputTextInGameOverlay->setVisible(m_overlayPluginAvailable);
+    ui->outputChooseGameForText->setVisible(m_overlayPluginAvailable);
+    ui->tabWidget_2->setTabVisible(ui->tabWidget_2->indexOf(ui->tabOverlayStyle), m_overlayPluginAvailable);
+}
+
+// ===============================================================
 // hook state
 // ===============================================================
 
@@ -3801,6 +4679,7 @@ void MainWindow::clearHookState()
     m_hookBurstBuffer.clear();
     m_currentHookTexts.clear();
     m_outputWindow->clearResultsBySource(QStringLiteral("Hook"));
+    m_overlayController->clearResultsBySource(QStringLiteral("Hook"));
 }
 
 void MainWindow::syncPluginConfigs()
@@ -4043,6 +4922,8 @@ void MainWindow::saveConfig()
             general["language"] = ui->generalBoxLanguage->currentData().toString();
         if (widgetChanged(ui->generalToggledStartup))
             general["settings_startup"] = ui->generalToggledStartup->isChecked();
+        if (widgetChanged(ui->generalShowTrayCloseNotification))
+            general["show_tray_close_notification"] = ui->generalShowTrayCloseNotification->isChecked();
 
 #ifdef Q_OS_LINUX
         if (ui->generalRadioHotKey->isChecked() && widgetChanged(ui->generalRadioHotKey)) {
@@ -4064,6 +4945,10 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->generalHotkeyStopSpeechEdit))
             general["hotkey_stop_speech"] = ui->generalHotkeyStopSpeechEdit->keySequence().toString();
             general["hotkey_toggle_speech"] = ui->generalHotkeyToggleSpeechEdit->keySequence().toString();
+        if (widgetChanged(ui->generalHotkeyToggleOutputEdit))
+            general["hotkey_toggle_output"] = ui->generalHotkeyToggleOutputEdit->keySequence().toString();
+        if (widgetChanged(ui->generalHotkeyToggleOverlayEdit))
+            general["hotkey_toggle_overlay"] = ui->generalHotkeyToggleOverlayEdit->keySequence().toString();
         Config::setValue("general", general);
 
 #ifdef Q_OS_LINUX
@@ -4105,10 +4990,65 @@ void MainWindow::saveConfig()
             output["original_screencast_output"] = ui->outputToggledOriginalScreencast->isChecked();
         if (widgetChanged(ui->outputToggledProcessedScreencast))
             output["processed_screencast_output"] = ui->outputToggledProcessedScreencast->isChecked();
-        if (widgetChanged(ui->outputToggledScreencast))
-            output["disable_screencast"] = ui->outputToggledScreencast->isChecked();
+        if (widgetChanged(ui->outputToggledScreencast)) {
+            if (ui->outputModeOverlayRadio->isChecked())
+                m_disableCaptureOverlay = ui->outputToggledScreencast->isChecked();
+            else
+                m_disableCaptureScreencast = ui->outputToggledScreencast->isChecked();
+            output["disable_screencast"] = m_disableCaptureScreencast;
+            output["disable_capture_overlay"] = m_disableCaptureOverlay;
+        }
         if (widgetChanged(ui->outputGeneralBoxFramerate))
             output["framerate_index"] = ui->outputGeneralBoxFramerate->currentIndex();
+
+        if (widgetChanged(ui->outputModeOverlayRadio))
+            output["mode"] = ui->outputModeOverlayRadio->isChecked() ? 1 : 0;
+
+        if (widgetChanged(ui->outputTextExternalWindowMode))
+            output["text_external_window_mode"] = ui->outputTextExternalWindowMode->currentIndex();
+        if (widgetChanged(ui->outputTextInGameOverlay))
+            output["text_in_game_overlay"] = ui->outputTextInGameOverlay->isChecked();
+
+        QJsonObject overlay = output.value("overlay").toObject();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayTextColorButton))
+            overlay["text_color"] = m_overlayTextColor.name(QColor::HexArgb);
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayBgColorButton))
+            overlay["bg_color"] = m_overlayBgColor.name(QColor::HexArgb);
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneModeCombo))
+            overlay["position_mode"] = m_overlaySettingsDialog->ui->overlayZoneModeCombo->currentIndex();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio))
+            overlay["font_size_auto"] = m_overlaySettingsDialog->ui->overlayFontSizeAutoRadio->isChecked();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontSizeSpin))
+            overlay["font_size"] = m_overlaySettingsDialog->ui->overlayFontSizeSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayCornerRadiusSpin))
+            overlay["corner_radius"] = m_overlaySettingsDialog->ui->overlayCornerRadiusSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayAlignmentCombo))
+            overlay["text_alignment"] = m_overlaySettingsDialog->ui->overlayAlignmentCombo->currentIndex();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginTopSpin))
+            overlay["margin_top"] = m_overlaySettingsDialog->ui->overlayMarginTopSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginBottomSpin))
+            overlay["margin_bottom"] = m_overlaySettingsDialog->ui->overlayMarginBottomSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginLeftSpin))
+            overlay["margin_left"] = m_overlaySettingsDialog->ui->overlayMarginLeftSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayMarginRightSpin))
+            overlay["margin_right"] = m_overlaySettingsDialog->ui->overlayMarginRightSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayFontFileEdit))
+            overlay["font_file"] = m_overlaySettingsDialog->ui->overlayFontFileEdit->text();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneXSpin))
+            overlay["zone_x"] = m_overlaySettingsDialog->ui->overlayZoneXSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneYSpin))
+            overlay["zone_y"] = m_overlaySettingsDialog->ui->overlayZoneYSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneWSpin))
+            overlay["zone_w"] = m_overlaySettingsDialog->ui->overlayZoneWSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayZoneHSpin))
+            overlay["zone_h"] = m_overlaySettingsDialog->ui->overlayZoneHSpin->value();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowOriginalCheck))
+            overlay["show_original"] = m_overlaySettingsDialog->ui->overlayShowOriginalCheck->isChecked();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowSourceCheck))
+            overlay["show_source"] = m_overlaySettingsDialog->ui->overlayShowSourceCheck->isChecked();
+        if (widgetChanged(m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck))
+            overlay["show_translator_name"] = m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck->isChecked();
+        output["overlay"] = overlay;
 
         // Processing
         QJsonObject processing = output.value("processing").toObject();

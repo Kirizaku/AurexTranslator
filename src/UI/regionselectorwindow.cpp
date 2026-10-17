@@ -20,7 +20,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-OverlayWindow::OverlayWindow(QWidget *parent)
+RegionSelectorWindow::RegionSelectorWindow(QWidget *parent)
     : QLabel{parent}
 {
     setMouseTracking(true);
@@ -33,7 +33,7 @@ OverlayWindow::OverlayWindow(QWidget *parent)
                    );
 }
 
-void OverlayWindow::rescaleToImageRect(const QRect &newImageRect)
+void RegionSelectorWindow::rescaleToImageRect(const QRect &newImageRect)
 {
     if (m_rectBrush.isValid() && m_referenceImageRect.isValid()
         && m_referenceImageRect != newImageRect&& m_referenceImageRect.width() > 0
@@ -78,7 +78,7 @@ void OverlayWindow::rescaleToImageRect(const QRect &newImageRect)
     m_referenceImageRect = newImageRect;
 }
 
-void OverlayWindow::showEvent(QShowEvent *event)
+void RegionSelectorWindow::showEvent(QShowEvent *event)
 {
     activateWindow();
 
@@ -93,7 +93,7 @@ void OverlayWindow::showEvent(QShowEvent *event)
     rescaleToImageRect(QRect(imageX, imageY, scaledPixmapWidth, scaledPixmapHeight));
 }
 
-void OverlayWindow::updateRectBrush(int imageWidth, int imageHeight)
+void RegionSelectorWindow::updateRectBrush(int imageWidth, int imageHeight)
 {
     if (!m_rectBrush.isEmpty()) {
         int imageX = (width() - imageWidth) / 2;
@@ -136,7 +136,7 @@ void OverlayWindow::updateRectBrush(int imageWidth, int imageHeight)
     update();
 }
 
-void OverlayWindow::paintEvent(QPaintEvent* event)
+void RegionSelectorWindow::paintEvent(QPaintEvent* event)
 {
     QLabel::paintEvent(event);
     QPainter painter(this);
@@ -201,7 +201,7 @@ void OverlayWindow::paintEvent(QPaintEvent* event)
     }
 }
 
-void OverlayWindow::mousePressEvent(QMouseEvent *event)
+void RegionSelectorWindow::mousePressEvent(QMouseEvent *event)
 {
     QLabel::mousePressEvent(event);
 
@@ -329,7 +329,7 @@ void OverlayWindow::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void OverlayWindow::mouseMoveEvent(QMouseEvent *event)
+void RegionSelectorWindow::mouseMoveEvent(QMouseEvent *event)
 {
     qreal pixelRatio = this->devicePixelRatio();
     int scaledPixmapWidth = pixmap().width() / pixelRatio;
@@ -455,7 +455,7 @@ void OverlayWindow::mouseMoveEvent(QMouseEvent *event)
     update();
 }
 
-void OverlayWindow::mouseReleaseEvent(QMouseEvent *event)
+void RegionSelectorWindow::mouseReleaseEvent(QMouseEvent *event)
 {
     if (m_innerBrushActive) {
         m_isPaintInner = false;
@@ -473,16 +473,16 @@ void OverlayWindow::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void OverlayWindow::keyPressEvent(QKeyEvent *event)
+void RegionSelectorWindow::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape) {
-        emit hideOverlay();
+        emit hideRequested();
     } else {
         QWidget::keyPressEvent(event);
     }
 }
 
-void OverlayWindow::updateCursorShape(const QPoint& pos)
+void RegionSelectorWindow::updateCursorShape(const QPoint& pos)
 {
     const int margin = 10;
 

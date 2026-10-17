@@ -65,6 +65,10 @@ set(PROJECT_SOURCES
     src/UI/hook/hookselectordialog.h src/UI/hook/hookselectordialog.cpp
     src/UI/hook/hooksettingsdialog.h src/UI/hook/hooksettingsdialog.cpp
     src/UI/hook/pluginsettingsdialog.h src/UI/hook/pluginsettingsdialog.cpp
+    src/UI/overlay/overlaysettingsdialog.h src/UI/overlay/overlaysettingsdialog.cpp src/UI/forms/overlaysettingsdialog.ui
+    src/UI/overlay/overlaygameswitcherdialog.h src/UI/overlay/overlaygameswitcherdialog.cpp
+    src/UI/overlay/overlayprocesspickerdialog.h src/UI/overlay/overlayprocesspickerdialog.cpp
+    src/UI/widgets/processpickerwidget.h src/UI/widgets/processpickerwidget.cpp
     src/UI/widgets/previewwindow.h src/UI/widgets/previewwindow.cpp
     src/UI/widgets/hoverlabel.h src/UI/widgets/hoverlabel.cpp
     src/UI/widgets/processlogwindow.h src/UI/widgets/processlogwindow.cpp
@@ -77,8 +81,11 @@ set(PROJECT_SOURCES
     src/controllers/translationcontroller.h src/controllers/translationcontroller.cpp
     src/controllers/hotkeycontroller.h src/controllers/hotkeycontroller.cpp
     src/controllers/capturecontroller.h src/controllers/capturecontroller.cpp
+    src/screencasts/overlay-capture/screencast-overlay.h src/screencasts/overlay-capture/screencast-overlay.cpp
     src/controllers/ocrcontroller.h src/controllers/ocrcontroller.cpp
     src/controllers/hookcontroller.h src/controllers/hookcontroller.cpp
+    src/controllers/overlaycontroller.h src/controllers/overlaycontroller.cpp
+    src/controllers/overlaycaptureserver.h src/controllers/overlaycaptureserver.cpp
     src/controllers/clipboardcontroller.h src/controllers/clipboardcontroller.cpp
     src/controllers/pythoncontroller.h src/controllers/pythoncontroller.cpp
 

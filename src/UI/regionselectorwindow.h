@@ -15,17 +15,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-#ifndef OVERLAYWINDOW_H
-#define OVERLAYWINDOW_H
+#ifndef REGIONSELECTORWINDOW_H
+#define REGIONSELECTORWINDOW_H
 
 #include <QLabel>
 
-class OverlayWindow : public QLabel
+class RegionSelectorWindow : public QLabel
 {
     Q_OBJECT
 
 public:
-    explicit OverlayWindow(QWidget *parent = nullptr);
+    explicit RegionSelectorWindow(QWidget *parent = nullptr);
     bool getIsRectBrushEmpty() const { return m_rectBrush.isEmpty(); }
     void setInnerBrushActive(bool value) { m_innerBrushActive = value; if (!value) m_innerRectBrush.setRect(0,0,0,0); }
     void clearFrame() { this->clear(); }
@@ -34,7 +34,7 @@ public:
 signals:
     void currentRoi(QRect currentRect);
     void currentInnerRoi(QRect currentInnerRect);
-    void hideOverlay();
+    void hideRequested();
 
 public slots:
     void updateRectBrush(int width, int height);
@@ -73,4 +73,4 @@ private:
     void updateCursorShape(const QPoint& pos);
 };
 
-#endif // OVERLAYWINDOW_H
+#endif // REGIONSELECTORWINDOW_H

@@ -16,24 +16,15 @@
 ******************************************************************************/
 
 #include "hooksettingsdialog.h"
-
+#include <QPushButton>
 #include <QLabel>
+#include "src/UI/widgets/processpickerwidget.h"
+
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QHeaderView>
-#include <QMessageBox>
 #include <QGroupBox>
-#include <QRegularExpression>
-
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <tlhelp32.h>
-#else
-#include <QDir>
-#include <QFile>
-#endif
 
 HookSettingsDialog::HookSettingsDialog(HookMode currentMode,
                                        const QMap<QString, QString> &gameAppList,
@@ -93,42 +84,10 @@ HookSettingsDialog::HookSettingsDialog(HookMode currentMode,
 
     QGroupBox *processBox = new QGroupBox(tr("Process"), enginePage);
 
-    m_searchEdit = new QLineEdit(processBox);
-    m_searchEdit->setPlaceholderText(tr("Filter by PID or process name..."));
-    m_searchEdit->setClearButtonEnabled(true);
-
-    m_refreshButton = new QPushButton(tr("Refresh"), processBox);
-
-    QHBoxLayout *searchLayout = new QHBoxLayout;
-    searchLayout->addWidget(m_searchEdit, 1);
-    searchLayout->addWidget(m_refreshButton);
-
-    m_processModel = new QStandardItemModel(0, 2, this);
-    m_processModel->setHorizontalHeaderLabels({("PID"), tr("Process name")});
-
-    m_processProxy = new QSortFilterProxyModel(this);
-    m_processProxy->setSourceModel(m_processModel);
-    m_processProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    m_processProxy->setFilterKeyColumn(-1);
-
-    m_processView = new QTreeView(processBox);
-    m_processView->setModel(m_processProxy);
-    m_processView->setRootIsDecorated(false);
-    m_processView->setAlternatingRowColors(true);
-    m_processView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_processView->setSelectionMode(QAbstractItemView::SingleSelection);
-    m_processView->setSortingEnabled(true);
-    m_processView->setUniformRowHeights(true);
-    m_processView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    m_processView->header()->setSectionResizeMode(1, QHeaderView::Stretch);
-    m_processView->sortByColumn(1, Qt::AscendingOrder);
+    m_processPicker = new ProcessPickerWidget(processBox);
 
     QVBoxLayout *processLayout = new QVBoxLayout(processBox);
-    processLayout->addLayout(searchLayout);
-    processLayout->addWidget(m_processView, 1);
-
-    connect(m_refreshButton, &QPushButton::clicked, this, &HookSettingsDialog::onRefreshProcesses);
-    connect(m_searchEdit, &QLineEdit::textChanged, this, &HookSettingsDialog::onFilterTextChanged);
+    processLayout->addWidget(m_processPicker, 1);
 
     processBox->setEnabled(false);
     processBox->setObjectName("processBox");
@@ -210,11 +169,7 @@ QString HookSettingsDialog::getSelectedEngine() const
 
 QString HookSettingsDialog::getSelectedProcessName() const
 {
-    const QModelIndex idx = m_processView->currentIndex();
-    if (!idx.isValid())
-        return QString();
-    const QModelIndex nameIdx = m_processProxy->index(idx.row(), 1, idx.parent());
-    return m_processProxy->data(nameIdx, Qt::DisplayRole).toString();
+    return m_processPicker->selectedProcessName();
 }
 
 void HookSettingsDialog::setEngineList(const QStringList &engines, const QString &current)
@@ -251,84 +206,9 @@ void HookSettingsDialog::onEngineChanged()
         box->setEnabled(hasEngine);
 
     if (hasEngine) {
-        if (m_processModel->rowCount() == 0)
-            loadProcesses();
-    } else {
-        m_processModel->removeRows(0, m_processModel->rowCount());
-    }
-}
-
-void HookSettingsDialog::onRefreshProcesses()
-{
-    loadProcesses();
-}
-
-void HookSettingsDialog::onFilterTextChanged(const QString &text)
-{
-    m_processProxy->setFilterRegularExpression(
-        QRegularExpression(QRegularExpression::escape(text),
-                           QRegularExpression::CaseInsensitiveOption));
-}
-
-void HookSettingsDialog::loadProcesses()
-{
-    m_processModel->removeRows(0, m_processModel->rowCount());
-
-#ifdef Q_OS_WIN
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (snapshot == INVALID_HANDLE_VALUE)
-        return;
-
-    PROCESSENTRY32W entry;
-    entry.dwSize = sizeof(entry);
-
-    if (Process32FirstW(snapshot, &entry)) {
-        do {
-            auto *pidItem  = new QStandardItem;
-            auto *nameItem = new QStandardItem;
-
-            const qint64 pid = static_cast<qint64>(entry.th32ProcessID);
-            pidItem->setData(pid, Qt::EditRole);
-            pidItem->setData(pid, Qt::DisplayRole);
-            pidItem->setEditable(false);
-            pidItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-            nameItem->setText(QString::fromWCharArray(entry.szExeFile));
-            nameItem->setEditable(false);
-
-            m_processModel->appendRow({pidItem, nameItem});
-        } while (Process32NextW(snapshot, &entry));
-    }
-    CloseHandle(snapshot);
-#else
-    QDir proc("/proc");
-    const QStringList entries = proc.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString &dirName : entries) {
-        bool ok = false;
-        const qint64 pid = dirName.toLongLong(&ok);
-        if (!ok)
-            continue;
-
-        QString name;
-        QFile commFile(QString("/proc/%1/comm").arg(pid));
-        if (commFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            name = QString::fromUtf8(commFile.readAll()).trimmed();
+        if (!m_processesLoaded) {
+            m_processPicker->refresh();
+            m_processesLoaded = true;
         }
-        if (name.isEmpty())
-            continue;
-
-        auto *pidItem  = new QStandardItem;
-        auto *nameItem = new QStandardItem(name);
-
-        pidItem->setData(pid, Qt::EditRole);
-        pidItem->setData(pid, Qt::DisplayRole);
-        pidItem->setEditable(false);
-        pidItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        nameItem->setEditable(false);
-
-        m_processModel->appendRow({pidItem, nameItem});
     }
-#endif
-
-    onFilterTextChanged(m_searchEdit->text());
 }

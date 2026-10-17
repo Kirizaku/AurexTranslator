@@ -163,6 +163,19 @@ font-weight: 700;
               </property>
              </spacer>
             </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="generalShowTrayCloseNotification">
+              <property name="toolTip">
+               <string>Shown at most once, and only when the Translation window isn't visible either. Turns itself off after being shown - check it again to be reminded once more.</string>
+              </property>
+              <property name="text">
+               <string>Notify when minimized to tray</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>
@@ -297,6 +310,26 @@ font-weight: 700;
              <widget class="QKeySequenceEdit" name="generalHotkeyToggleSpeechEdit"/>
             </item>
             <item row="8" column="0">
+             <widget class="QLabel" name="generalHotkeyToggleOutputCaption">
+              <property name="text">
+               <string>Show/Hide translation window</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QKeySequenceEdit" name="generalHotkeyToggleOutputEdit"/>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="generalHotkeyToggleOverlayCaption">
+              <property name="text">
+               <string>Show/Hide in-game overlay</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QKeySequenceEdit" name="generalHotkeyToggleOverlayEdit"/>
+            </item>
+            <item row="10" column="0">
              <spacer name="horizontalSpacer_6">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -312,7 +345,7 @@ font-weight: 700;
               </property>
              </spacer>
             </item>
-            <item row="8" column="1">
+            <item row="10" column="1">
              <widget class="QLabel" name="generalPortalHotkeysHint">
               <property name="text">
                <string>Global shortcuts are registered by your desktop environment. It may ask you to assign the keys on first run. To change them later, open your desktop's global shortcut settings (KDE Plasma: System Settings → Shortcuts).</string>
@@ -322,7 +355,7 @@ font-weight: 700;
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
+            <item row="11" column="1">
              <spacer name="verticalSpacer_3">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -360,7 +393,7 @@ font-weight: 700;
               <x>0</x>
               <y>0</y>
               <width>819</width>
-              <height>702</height>
+              <height>776</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -384,7 +417,7 @@ font-weight: 700;
 }</string>
                </property>
                <property name="title">
-                <string>Screencast</string>
+                <string>Preview</string>
                </property>
                <layout class="QGridLayout" name="gridLayout">
                 <item row="1" column="0">
@@ -396,7 +429,7 @@ font-weight: 700;
                    </size>
                   </property>
                   <property name="text">
-                   <string>Original screencast</string>
+                   <string>Original frame</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -427,7 +460,7 @@ font-weight: 700;
                    </size>
                   </property>
                   <property name="text">
-                   <string>Processed screencast</string>
+                   <string>Processed frame</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -478,60 +511,88 @@ font-weight: 700;
                 <property name="fieldGrowthPolicy">
                  <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                 </property>
-                <item row="0" column="0">
-                 <spacer name="horizontalSpacer_5">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeType">
-                   <enum>QSizePolicy::Fixed</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>170</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                 <item row="0" column="1">
-                 <widget class="QPushButton" name="outputGeneralSelect">
-                  <property name="enabled">
-                   <bool>true</bool>
-                  </property>
-                  <property name="text">
-                   <string>Open selector</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QCheckBox" name="outputToggledOriginalScreencast">
-                  <property name="text">
-                   <string>Show original screencast</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
+                 <layout class="QHBoxLayout" name="outputModeLayout">
+                  <item>
+                   <widget class="QLabel" name="outputModeLabel">
+                    <property name="text">
+                     <string>Capture source</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="outputModeScreencastRadio">
+                    <property name="text">
+                     <string>Screencast</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QRadioButton" name="outputModeOverlayRadio">
+                    <property name="text">
+                     <string>Overlay</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="outputGeneralSelect">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text">
+                     <string>Open selector</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="outputModeSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QCheckBox" name="outputToggledProcessedScreencast">
+                 <widget class="QCheckBox" name="outputToggledOriginalScreencast">
                   <property name="text">
-                   <string>Show processed screencast</string>
+                   <string>Show original frame</string>
                   </property>
                   <property name="checked">
                    <bool>true</bool>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
+                <item row="3" column="1">
+                 <widget class="QCheckBox" name="outputToggledProcessedScreencast">
+                  <property name="text">
+                   <string>Show processed frame</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="5" column="0">
                  <widget class="QLabel" name="label_10">
                   <property name="text">
                    <string>Frame rate</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="1">
+                <item row="5" column="1">
                  <widget class="QComboBox" name="outputGeneralBoxFramerate">
                   <property name="currentText">
                    <string notr="true">15</string>
@@ -574,21 +635,21 @@ font-weight: 700;
                   </item>
                  </widget>
                 </item>
-                <item row="7" column="0">
+                <item row="8" column="0">
                  <widget class="QLabel" name="label_5">
                   <property name="text">
                    <string>Threshold method</string>
                   </property>
                  </widget>
                 </item>
-                <item row="9" column="1">
+                <item row="10" column="1">
                  <widget class="QCheckBox" name="outputProcessedToggledBlur">
                   <property name="text">
                    <string>Enable blur</string>
                   </property>
                  </widget>
                 </item>
-                <item row="7" column="1">
+                <item row="8" column="1">
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
                   <item>
                    <widget class="QRadioButton" name="outputProcessedSimpleThresh">
@@ -622,12 +683,89 @@ font-weight: 700;
                   </item>
                  </layout>
                 </item>
-                <item row="3" column="1">
+                <item row="4" column="1">
                  <widget class="QCheckBox" name="outputToggledScreencast">
                   <property name="text">
-                   <string>Disable screencast</string>
+                   <string>Disable capture</string>
                   </property>
                  </widget>
+                </item>
+                <item row="11" column="0">
+                 <widget class="QLabel" name="outputTextDisplayLabel">
+                  <property name="text">
+                   <string>Translation window</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="11" column="1">
+                 <layout class="QHBoxLayout" name="outputTextExternalWindowLayout">
+                  <item>
+                   <widget class="QComboBox" name="outputTextExternalWindowMode">
+                    <item>
+                     <property name="text">
+                      <string>Full</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Panel only</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Hidden</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="outputTextExternalWindowSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item row="12" column="1">
+                 <layout class="QHBoxLayout" name="outputTextInGameOverlayLayout">
+                  <item>
+                   <widget class="QCheckBox" name="outputTextInGameOverlay">
+                    <property name="text">
+                     <string>In-game text overlay</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="outputChooseGameForText">
+                    <property name="text">
+                     <string>Choose game...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="outputTextInGameOverlaySpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </item>
                </layout>
               </widget>
@@ -880,6 +1018,77 @@ font-weight: 700;
                     <size>
                      <width>170</width>
                      <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="tabOverlayStyle">
+                <attribute name="title">
+                 <string>In-game overlay</string>
+                </attribute>
+                <layout class="QFormLayout" name="overlayStyleFormLayout">
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                 </property>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="overlayInstallLabel">
+                   <property name="text">
+                    <string>Vulkan/OpenGL launcher</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <layout class="QHBoxLayout" name="overlayInstallLayout">
+                   <item>
+                    <widget class="QPushButton" name="overlayInstallButton">
+                     <property name="toolTip">
+                      <string>Registers the Vulkan implicit layer. Does not require Overlay to be running.</string>
+                     </property>
+                     <property name="text">
+                      <string>Install</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="overlayUninstallButton">
+                     <property name="toolTip">
+                      <string>Unregisters the Vulkan implicit layer.</string>
+                     </property>
+                     <property name="text">
+                      <string>Uninstall</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="overlayAppearanceLabel">
+                   <property name="text">
+                    <string>Appearance</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QPushButton" name="overlayConfigureStyleButton">
+                   <property name="toolTip">
+                    <string>Colors, font, corner rounding, margins, alignment, panel position, opacity, and what the panel shows.</string>
+                   </property>
+                   <property name="text">
+                    <string>Configure style…</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <spacer name="overlayVerticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
                     </size>
                    </property>
                   </spacer>
@@ -1756,8 +1965,8 @@ font-weight: 700;
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>833</width>
-              <height>680</height>
+              <width>576</width>
+              <height>632</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_13">

@@ -55,6 +55,7 @@ public:
 
     void setTranslationResult(const QString &source, const QString &translatorName, const QString &original, const QString &result);
     void setOriginalText(const QString &source, const QString &original, bool translationPending);
+    void setPanelOnlyMode(bool panelOnly);
     void clearInfoMessage();
     void clearResultsBySource(const QString &source);
     void clearResultsByTranslator(const QString &translatorName);
@@ -94,6 +95,7 @@ public slots:
 
 protected:
     bool event(QEvent* event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
@@ -120,8 +122,14 @@ private:
     QString m_initText = tr("Welcome!");
     QColor m_currentTextColor = Qt::white;
     QTimer *hideTimer;
+    bool m_panelOnlyMode = false;
+    int m_heightBeforePanelOnly = -1;
+    bool m_toolbarDragCandidate = false;
+    bool m_toolbarDragActive = false;
+    QPoint m_toolbarPressGlobalPos;
 
     void updateCursorShape(const QPoint& pos);
+    void applyResizeDelta(const QPoint &globalPos);
 
     QMenu *m_contextMenu;
     QSlider* m_opacitySlider;

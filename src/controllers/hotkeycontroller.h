@@ -46,6 +46,8 @@ public:
     void setToggleSpeechShortcut(const QKeySequence &seq);
     void setSpeakTextShortcut(const QKeySequence &seq);
     void setStopSpeechShortcut(const QKeySequence &seq);
+    void setToggleOutputWindowShortcut(const QKeySequence &seq);
+    void setToggleOverlayShortcut(const QKeySequence &seq);
 
     Mode mode() const { return m_mode; }
 
@@ -57,6 +59,8 @@ signals:
     void toggleSpeechTriggered();
     void speakTextTriggered();
     void stopSpeechTriggered();
+    void toggleOutputWindowTriggered();
+    void toggleOverlayTriggered();
 
 private slots:
     void onPortalActivated(const QString &shortcutId);
@@ -73,6 +77,8 @@ private:
     HotKeys *m_toggleSpeechHotKey = nullptr;
     HotKeys *m_speakTextHotKey = nullptr;
     HotKeys *m_stopSpeechHotKey = nullptr;
+    HotKeys *m_toggleOutputWindowHotKey = nullptr;
+    HotKeys *m_toggleOverlayHotKey = nullptr;
 
 #ifdef Q_OS_LINUX
     // Portal backend

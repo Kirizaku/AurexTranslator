@@ -54,21 +54,26 @@ public:
     QStringList loadedPlugins() const;
     QObject* getPlugin(const QString &name);
     QMap<QString, QStringList> validateDependencies(const QList<PluginInfo>& plugins);
+    static void syncSeedPlugins();
 
 private:
     QList<PluginInfo> m_registry;
     QMap<QString, QPluginLoader*> m_loaded;
     QString m_currentLanguage;
 
-    bool isVersionLess(const QString &a, const QString &b);
+    static bool isVersionLess(const QString &a, const QString &b);
 
     bool loadPlugin(const QString &name);
     bool unloadPlugin(const QString &name);
 
-    PluginInfo getQtPluginMeta(const QString &path);
-    PluginInfo getCppPluginMeta(const QString &path);
+    static PluginInfo readPluginMeta(const QString &path);
+    static PluginInfo getQtPluginMeta(const QString &path);
+    static PluginInfo getCppPluginMeta(const QString &path);
     static void parseCommonMeta(const QJsonObject &obj, PluginInfo &info);
-    QString getFileArch(const QString &path);
+    static QString getFileArch(const QString &path);
+
+    static void syncSeedDir(const QString &seedDir, const QString &destDir);
+    static void syncPluginFile(const QString &srcPath, const QString &dstPath);
 };
 
 #endif // PLUGINMANAGER_H

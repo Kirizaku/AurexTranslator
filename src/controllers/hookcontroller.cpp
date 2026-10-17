@@ -29,16 +29,21 @@ void HookController::setPlugin(PluginInterface *plugin)
         stop();
     }
 
+    if (m_hookPlugin == plugin) return;
     m_hookPlugin = plugin;
 
     if (!m_hookPlugin) return;
 
-    connect(m_hookPlugin, &PluginInterface::pluginMessage,
-            this, &HookController::infoMessage, Qt::UniqueConnection);
+    connect(m_hookPlugin, &PluginInterface::pluginMessage, this,
+            [this](const QString &pluginName, const QString &msg) {
+        if (pluginName == m_currentRunningPlugin) emit infoMessage(msg);
+    });
     connect(m_hookPlugin, &PluginInterface::currentOutput,
             this, &HookController::textReceived, Qt::UniqueConnection);
-    connect(m_hookPlugin, &PluginInterface::processLost,
-            this, &HookController::shouldClearResults, Qt::UniqueConnection);
+    connect(m_hookPlugin, &PluginInterface::processLost, this,
+            [this](const QString &pluginName, const QString &) {
+        if (pluginName == m_currentRunningPlugin) emit shouldClearResults();
+    });
 }
 
 void HookController::setMode(int mode)
@@ -153,7 +158,8 @@ void HookController::stop()
 {
     if (!m_hookPlugin) return;
 
-    m_hookPlugin->execute(QStringLiteral("stop"), { QString(), QString() });
+    if (!m_currentRunningPlugin.isEmpty())
+        m_hookPlugin->execute(QStringLiteral("stop"), { m_currentRunningPlugin });
 
     m_currentRunningPlugin.clear();
     m_runningEngineProcess.clear();

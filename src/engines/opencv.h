@@ -28,6 +28,7 @@ class OpenCV : public QObject
 public:
     explicit OpenCV(QObject *parent = nullptr);
     void setIsStopped(bool value) { m_stopped = value; }
+    QRectF normalizedRoi(int frameWidth, int frameHeight) const;
 
 signals:
     void currentOriginalFrame(const QImage &frame);
@@ -84,5 +85,12 @@ private:
 
     void applyBlur(cv::Mat &image);
     void applyThreshold(cv::Mat &image);
+
+    struct LetterboxTransform {
+        double scale;
+        double offsetX;
+        double offsetY;
+    };
+    static LetterboxTransform letterboxTransform(int frameWidth, int frameHeight);
 };
 #endif // OPENCV_H

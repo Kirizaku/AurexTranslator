@@ -24,6 +24,21 @@
 OpenCV::OpenCV(QObject *parent)
     : QObject{parent} {}
 
+QRectF OpenCV::normalizedRoi(int frameWidth, int frameHeight) const
+{
+    if (m_roi.width <= 0 || m_roi.height <= 0) return QRectF();
+
+    const LetterboxTransform t = letterboxTransform(frameWidth, frameHeight);
+    if (t.scale <= 0.0) return QRectF();
+
+    const double px = (m_roi.x - t.offsetX) / t.scale;
+    const double py = (m_roi.y - t.offsetY) / t.scale;
+    const double pw = m_roi.width / t.scale;
+    const double ph = m_roi.height / t.scale;
+
+    return QRectF(px / frameWidth, py / frameHeight, pw / frameWidth, ph / frameHeight);
+}
+
 void OpenCV::setCurrentRoi(QRect currentRect)
 {
     m_roi = cv::Rect(currentRect.x(), currentRect.y(), currentRect.width(), currentRect.height());
@@ -43,28 +58,19 @@ void OpenCV::setCurrentFrameBuffer(uint32_t height, uint32_t width, void* frame)
 
         if (!m_roi.empty())
         {
-            QRect primaryScreenGeometry = QApplication::primaryScreen()->geometry();
-            int screenWidth = primaryScreenGeometry.width();
-            int screenHeight = primaryScreenGeometry.height();
-            int imgWidth = m_frameOriginal.cols;
-            int imgHeight = m_frameOriginal.rows;
+            const int imgWidth = m_frameOriginal.cols;
+            const int imgHeight = m_frameOriginal.rows;
+            const LetterboxTransform t = letterboxTransform(imgWidth, imgHeight);
 
-            double scaleW = static_cast<double>(screenWidth) / imgWidth;
-            double scaleH = static_cast<double>(screenHeight) / imgHeight;
-            double scale = scaleW < scaleH ? scaleW : scaleH;
-            double dispWidth = imgWidth * scale;
-            double dispHeight = imgHeight * scale;
-            double offsetXScreen = (screenWidth - dispWidth) / 2.0;
-            double offsetYScreen = (screenHeight - dispHeight) / 2.0;
-
-            cv::Rect roi(
-                static_cast<int>((m_roi.x - offsetXScreen) / scale),
-                static_cast<int>((m_roi.y - offsetYScreen) / scale),
-                static_cast<int>(m_roi.width / scale),
-                static_cast<int>(m_roi.height / scale)
-            );
-
-            roi = roi & cv::Rect(0, 0, imgWidth, imgHeight);
+            cv::Rect roi;
+            if (t.scale > 0.0) {
+                roi = cv::Rect(
+                    static_cast<int>((m_roi.x - t.offsetX) / t.scale),
+                    static_cast<int>((m_roi.y - t.offsetY) / t.scale),
+                    static_cast<int>(m_roi.width / t.scale),
+                    static_cast<int>(m_roi.height / t.scale)
+                ) & cv::Rect(0, 0, imgWidth, imgHeight);
+            }
 
             if (roi.width > 0 && roi.height > 0)
             {
@@ -219,3 +225,23 @@ void OpenCV::applyThreshold(cv::Mat &image)
     }
 }
 
+OpenCV::LetterboxTransform OpenCV::letterboxTransform(int frameWidth, int frameHeight)
+{
+    QScreen *screen = QApplication::primaryScreen();
+    if (!screen || frameWidth <= 0 || frameHeight <= 0)
+        return { 0.0, 0.0, 0.0 };
+
+    const QRect screenGeometry = screen->geometry();
+    const int screenWidth = screenGeometry.width();
+    const int screenHeight = screenGeometry.height();
+    if (screenWidth <= 0 || screenHeight <= 0)
+        return { 0.0, 0.0, 0.0 };
+
+    const double scaleToW = static_cast<double>(screenWidth) / frameWidth;
+    const double scaleToH = static_cast<double>(screenHeight) / frameHeight;
+    const double scale = scaleToW < scaleToH ? scaleToW : scaleToH;
+    const double dispWidth = frameWidth * scale;
+    const double dispHeight = frameHeight * scale;
+
+    return { scale, (screenWidth - dispWidth) / 2.0, (screenHeight - dispHeight) / 2.0 };
+}

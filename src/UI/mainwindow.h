@@ -31,13 +31,19 @@
 #include "src/UI/hook/hooksettingsdialog.h"
 #include "textoutputwindow.h"
 #include "regionselectorwindow.h"
+#include "src/UI/overlay/overlaysettingsdialog.h"
+#include "src/UI/overlay/overlaygameswitcherdialog.h"
 #include "src/UI/widgets/previewwindow.h"
+
+class QSystemTrayIcon;
+class QCloseEvent;
 
 class TranslationController;
 class HotkeyController;
 class CaptureController;
 class OcrController;
 class HookController;
+class OverlayController;
 class ClipboardController;
 class AudioPlayer;
 class NotificationSound;
@@ -57,6 +63,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void setTrayIcon(QSystemTrayIcon *icon) { m_trayIcon = icon; }
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 signals:
     void showHistoryRequested();
     void screenCastFinished();
@@ -67,6 +79,9 @@ private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
 
     void on_outputGeneralSelect_clicked();
+    void on_outputChooseGameForText_clicked();
+    void on_outputTextExternalWindowMode_currentIndexChanged(int index);
+    void on_outputTextInGameOverlay_stateChanged(int arg1);
     void on_outputToggledOriginalScreencast_stateChanged(int arg1);
     void on_outputToggledProcessedScreencast_stateChanged(int arg1);
     void on_outputToggledScreencast_stateChanged(int arg1);
@@ -113,11 +128,20 @@ private slots:
     void setCurrentOriginalFrame(const QImage &frame);
     void setCurrentProcessedFrame(const QImage &frame);
     void setCurrentProcessedMat(const cv::Mat &frame);
+    void forwardFrameToSwitcherPreview(const QImage &frame);
 
     // ScreenCast
     void startScreenCapture();
     void stopScreenCapture();
     void clearScreencastPreview();
+    void clearPreviewFrames();
+    void updateSwitcherPreviewMessage();
+    void updateOutputGeneralSelectEnabled();
+
+    bool overlayCaptureWantsGame() const;
+    bool overlayGameManagementNeeded() const;
+    void updateOverlayGameManagement();
+    void openOverlayGameSwitcher();
 
     // Utility Actions
     void setCurrentOutput(const QString &source, const QString &output);
@@ -235,12 +259,38 @@ private:
     bool hotkeysBlocked() const;
 
     // Overlay
-    OverlayWindow *m_overlayWindow = nullptr;
-    QImage m_overlayImage;
+    RegionSelectorWindow *m_regionSelector = nullptr;
+    OverlaySettingsDialog *m_overlaySettingsDialog = nullptr;
+    OverlayGameSwitcherDialog *m_overlayGameSwitcherDialog = nullptr;
+    bool m_vulkanSetupSuggestedThisRun = false;
+    QImage m_lastFrame;
+    bool m_overlayHasActiveGame = false;
     bool m_outputWindowWasMinimized = false;
+    int m_lastVisibleOutputWindowMode = 0;
     void showHistory();
-    void restoreOutputWindowAfterOverlay();
-    void showOverlayWindow();
+    void toggleOutputWindow();
+    void showOutputWindowForced();
+    void restoreOutputWindowAfterRegionSelection();
+    void showRegionSelector();
+    void updateOverlayColorButton(class QPushButton *button, const QColor &color);
+    void pushOverlayStyleToController();
+    void pickOverlayTextColor();
+    void pickOverlayBgColor();
+    void onOverlayTransparencyChanged(int value);
+    void syncOverlayTransparencySlider();
+    void onOverlayZoneModeChanged(int index);
+    void onOverlayInstallClicked();
+    void installOverlaySupport();
+    void onOverlayUninstallClicked();
+#ifdef Q_OS_WIN
+    void onOverlayGameAddRequested(const QString &exe);
+    void onOverlayGameSwitchRequested(const QString &exe);
+    bool confirmOverlayManagementAllowed(const QString &title);
+#endif
+    void maybeSuggestVulkanSupportSetup();
+    void suggestVulkanSupportSetup();
+    void showOverlayLaunchHelp(const QString &intro);
+    void updateOverlayModeAvailability();
 
     // Screen Casting
     CaptureController *m_captureController = nullptr;
@@ -295,7 +345,20 @@ private:
     QString m_currentEnginePlugin;
     QString m_currentEngineProcess;
     HookController *m_hookController = nullptr;
+    OverlayController *m_overlayController = nullptr;
+    QColor m_overlayTextColor{255, 255, 255, 255};
+    QColor m_overlayBgColor{0, 0, 0, 255};
+    bool m_disableCaptureScreencast = false;
+    bool m_disableCaptureOverlay = false;
+    bool m_loadingOutputMode = false;
+#ifdef Q_OS_WIN
+    bool m_overlayGameManagementActive = false;
+#endif
+    bool m_overlaySubsystemsReady = false;
+    QSystemTrayIcon *m_trayIcon = nullptr;
+    bool m_quitting = false;
     QList<PluginManager::PluginInfo> m_registry;
+    bool m_overlayPluginAvailable = false;
     QMap<QString, QString> m_currentHookTexts;
     QTimer *m_hookBurstTimer = nullptr;
     QMap<QString, QString> m_hookBurstBuffer;

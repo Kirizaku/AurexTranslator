@@ -60,6 +60,14 @@ void HotkeyController::initialize(Mode mode)
         m_stopSpeechHotKey = new HotKeys(this);
         connect(m_stopSpeechHotKey, &HotKeys::activated,
                 this, &HotkeyController::stopSpeechTriggered);
+
+        m_toggleOutputWindowHotKey = new HotKeys(this);
+        connect(m_toggleOutputWindowHotKey, &HotKeys::activated,
+                this, &HotkeyController::toggleOutputWindowTriggered);
+
+        m_toggleOverlayHotKey = new HotKeys(this);
+        connect(m_toggleOverlayHotKey, &HotKeys::activated,
+                this, &HotkeyController::toggleOverlayTriggered);
     }
 #ifdef Q_OS_LINUX
     else {
@@ -106,6 +114,16 @@ void HotkeyController::setStopSpeechShortcut(const QKeySequence &seq)
     if (m_stopSpeechHotKey) m_stopSpeechHotKey->setShortcut(seq);
 }
 
+void HotkeyController::setToggleOutputWindowShortcut(const QKeySequence &seq)
+{
+    if (m_toggleOutputWindowHotKey) m_toggleOutputWindowHotKey->setShortcut(seq);
+}
+
+void HotkeyController::setToggleOverlayShortcut(const QKeySequence &seq)
+{
+    if (m_toggleOverlayHotKey) m_toggleOverlayHotKey->setShortcut(seq);
+}
+
 void HotkeyController::onPortalActivated(const QString &shortcutId)
 {
     if (shortcutId == QStringLiteral("CaptureRegion")) {
@@ -122,5 +140,9 @@ void HotkeyController::onPortalActivated(const QString &shortcutId)
         emit speakTextTriggered();
     } else if (shortcutId == QStringLiteral("StopSpeech")) {
         emit stopSpeechTriggered();
+    } else if (shortcutId == QStringLiteral("ToggleOutputWindow")) {
+        emit toggleOutputWindowTriggered();
+    } else if (shortcutId == QStringLiteral("ToggleOverlay")) {
+        emit toggleOverlayTriggered();
     }
 }

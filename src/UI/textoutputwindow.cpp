@@ -111,6 +111,12 @@ TextOutputWindow::TextOutputWindow(QWidget *parent)
     hideTimer->setSingleShot(true);
     connect(hideTimer, &QTimer::timeout, ui->toolBar, &QWidget::hide);
     connect(ui->historyButton, &QPushButton::clicked, this, &TextOutputWindow::showHistory);
+
+    ui->toolBar->installEventFilter(this);
+    for (QObject *child : ui->toolBar->children()) {
+        if (child->isWidgetType())
+            child->installEventFilter(this);
+    }
 }
 
 TextOutputWindow::~TextOutputWindow()
@@ -349,6 +355,24 @@ void TextOutputWindow::setOriginalText(const QString &source, const QString &ori
     updateText();
 }
 
+void TextOutputWindow::setPanelOnlyMode(bool panelOnly)
+{
+    if (m_panelOnlyMode == panelOnly) return;
+    m_panelOnlyMode = panelOnly;
+
+    ui->content->setVisible(!panelOnly);
+    ui->settingsButton->setVisible(!panelOnly);
+
+    if (panelOnly) {
+        m_heightBeforePanelOnly = height();
+        hideTimer->stop();
+        ui->toolBar->show();
+        resize(width(), ui->toolBar->sizeHint().height());
+    } else if (m_heightBeforePanelOnly > 0) {
+        resize(width(), m_heightBeforePanelOnly);
+    }
+}
+
 void TextOutputWindow::clearInfoMessage()
 {
     m_hasInfoMessage = false;
@@ -440,7 +464,7 @@ bool TextOutputWindow::event(QEvent* event)
     }
 
     case QEvent::Leave: {
-        hideTimer->start(1000);
+        if (!m_panelOnlyMode) hideTimer->start(1000);
         return true;
     }
 
@@ -448,35 +472,7 @@ bool TextOutputWindow::event(QEvent* event)
         QHoverEvent* hoverEvent = static_cast<QHoverEvent*>(event);
         if (m_isResizing)
         {
-            QRect newGeometry = m_dragStartGeometry;
-            QPoint delta = hoverEvent->globalPosition().toPoint() - m_dragStartPosition;
-
-            if (m_resizeLeft) {
-                newGeometry.setLeft(newGeometry.left() + delta.x());
-                if (newGeometry.width() < minimumWidth()) {
-                    newGeometry.setLeft(newGeometry.right() - minimumWidth());
-                }
-            }
-            else if (m_resizeRight) {
-                newGeometry.setRight(newGeometry.right() + delta.x());
-                if (newGeometry.width() < minimumWidth()) {
-                    newGeometry.setRight(newGeometry.left() + minimumWidth());
-                }
-            }
-
-            if (m_resizeTop) {
-                newGeometry.setTop(newGeometry.top() + delta.y());
-                if (newGeometry.height() < minimumHeight()) {
-                    newGeometry.setTop(newGeometry.bottom() - minimumHeight());
-                }
-            }
-            else if (m_resizeBottom) {
-                newGeometry.setBottom(newGeometry.bottom() + delta.y());
-                if (newGeometry.height() < minimumHeight()) {
-                    newGeometry.setBottom(newGeometry.top() + minimumHeight());
-                }
-            }
-            setGeometry(newGeometry);
+            applyResizeDelta(hoverEvent->globalPosition().toPoint());
         } else if (m_isMoving) {
             QPoint newPos = hoverEvent->globalPosition().toPoint() - m_dragPosition;
             move(newPos);
@@ -490,6 +486,81 @@ bool TextOutputWindow::event(QEvent* event)
     }
 }
 
+bool TextOutputWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::MouseButtonPress: {
+        auto *me = static_cast<QMouseEvent*>(event);
+
+        if (me->button() != Qt::LeftButton) break;
+
+        const QPoint winPos = mapFromGlobal(me->globalPosition().toPoint());
+        const int margin = 10;
+        const QRect r = rect();
+
+        m_resizeLeft = winPos.x() <= margin;
+        m_resizeRight = winPos.x() >= r.width() - margin;
+        m_resizeTop = !m_panelOnlyMode && winPos.y() <= margin;
+        m_resizeBottom = !m_panelOnlyMode && winPos.y() >= r.height() - margin;
+
+        if (m_resizeLeft || m_resizeRight || m_resizeTop || m_resizeBottom) {
+            m_isResizing = true;
+            m_dragStartPosition = me->globalPosition().toPoint();
+            m_dragStartGeometry = geometry();
+            updateCursorShape(winPos);
+            m_toolbarDragCandidate = false;
+            break;
+        }
+
+        m_toolbarDragCandidate = true;
+        m_toolbarDragActive = false;
+        m_toolbarPressGlobalPos = me->globalPosition().toPoint();
+        break;
+    }
+    case QEvent::MouseMove: {
+        auto *me = static_cast<QMouseEvent*>(event);
+        if (m_isResizing) {
+            applyResizeDelta(me->globalPosition().toPoint());
+            return true;
+        }
+
+        if (!m_toolbarDragCandidate) break;
+
+        if (!m_toolbarDragActive) {
+            if ((me->globalPosition().toPoint() - m_toolbarPressGlobalPos).manhattanLength() < 6)
+                break;
+
+            m_toolbarDragActive = true;
+            m_isMoving = true;
+            m_dragPosition = me->globalPosition().toPoint() - frameGeometry().topLeft();
+            setCursor(Qt::ClosedHandCursor);
+
+            if (auto *btn = qobject_cast<QAbstractButton*>(watched))
+                btn->setDown(false);
+        }
+        move(me->globalPosition().toPoint() - m_dragPosition);
+        return true;
+    }
+    case QEvent::MouseButtonRelease: {
+        const bool wasResizing = m_isResizing;
+        const bool wasDragging = m_toolbarDragActive;
+        m_isResizing = false;
+        m_toolbarDragCandidate = false;
+        m_toolbarDragActive = false;
+
+        if (wasResizing || wasDragging) {
+            m_isMoving = false;
+            setCursor(Qt::ArrowCursor);
+            return true;
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
 void TextOutputWindow::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
@@ -501,8 +572,11 @@ void TextOutputWindow::mousePressEvent(QMouseEvent *event)
 
         if (pos.x() <= margin) m_resizeLeft = true;
         if (pos.x() >= rect.width() - margin) m_resizeRight = true;
-        if (pos.y() <= margin) m_resizeTop = true;
-        if (pos.y() >= rect.height() - margin) m_resizeBottom = true;
+
+        if (!m_panelOnlyMode) {
+            if (pos.y() <= margin) m_resizeTop = true;
+            if (pos.y() >= rect.height() - margin) m_resizeBottom = true;
+        }
 
         if (m_resizeLeft || m_resizeRight || m_resizeTop || m_resizeBottom) {
             m_isResizing = true;
@@ -725,8 +799,8 @@ void TextOutputWindow::updateCursorShape(const QPoint& pos)
     QRect rect = this->rect();
     bool left = pos.x() <= margin;
     bool right = pos.x() >= rect.width() - margin;
-    bool top = pos.y() <= margin;
-    bool bottom = pos.y() >= rect.height() - margin;
+    bool top = !m_panelOnlyMode && pos.y() <= margin;
+    bool bottom = !m_panelOnlyMode && pos.y() >= rect.height() - margin;
 
     if ((left && top) || (right && bottom)) {
         setCursor(Qt::SizeFDiagCursor);
@@ -743,6 +817,39 @@ void TextOutputWindow::updateCursorShape(const QPoint& pos)
     else {
         setCursor(Qt::ArrowCursor);
     }
+}
+
+void TextOutputWindow::applyResizeDelta(const QPoint &globalPos)
+{
+    QRect newGeometry = m_dragStartGeometry;
+    QPoint delta = globalPos - m_dragStartPosition;
+
+    if (m_resizeLeft) {
+        newGeometry.setLeft(newGeometry.left() + delta.x());
+        if (newGeometry.width() < minimumWidth()) {
+            newGeometry.setLeft(newGeometry.right() - minimumWidth());
+        }
+    }
+    else if (m_resizeRight) {
+        newGeometry.setRight(newGeometry.right() + delta.x());
+        if (newGeometry.width() < minimumWidth()) {
+            newGeometry.setRight(newGeometry.left() + minimumWidth());
+        }
+    }
+
+    if (m_resizeTop) {
+        newGeometry.setTop(newGeometry.top() + delta.y());
+        if (newGeometry.height() < minimumHeight()) {
+            newGeometry.setTop(newGeometry.bottom() - minimumHeight());
+        }
+    }
+    else if (m_resizeBottom) {
+        newGeometry.setBottom(newGeometry.bottom() + delta.y());
+        if (newGeometry.height() < minimumHeight()) {
+            newGeometry.setBottom(newGeometry.top() + minimumHeight());
+        }
+    }
+    setGeometry(newGeometry);
 }
 
 void TextOutputWindow::createMenus()

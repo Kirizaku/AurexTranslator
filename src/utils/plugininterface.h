@@ -14,9 +14,10 @@ public:
     virtual QString execute(const QString &command, const QStringList &args = QStringList()) = 0;
 
 signals:
-    void pluginMessage(const QString &msg);
+    void pluginMessage(const QString &pluginName, const QString &msg);
     void currentOutput(const QString &source, const QString &out);
-    void processLost();
+    void processFound(const QString &pluginName, const QString &processName);
+    void processLost(const QString &pluginName, const QString &processName);
 };
 
 #define PluginInterface_iid "com.aurextranslator.PluginInterface"
