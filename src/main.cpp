@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QMenu>
 #include <QTranslator>
+#include <QLibraryInfo>
 #include <QMessageBox>
 #include <QLockFile>
 #include <QProcess>
@@ -115,7 +116,17 @@ namespace
         Log(Logger::Level::Info, QString("CPU Architecture: %1").arg(QSysInfo::currentCpuArchitecture()));
     }
 
-    void setupTranslations(QTranslator &translator, QApplication &app)
+    void installQtTranslation(QTranslator &qtTranslator, const QString &language)
+    {
+        const QString dir = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+        if (qtTranslator.load(QLocale(language), QStringLiteral("qtbase"), QStringLiteral("_"), dir)) {
+            qApp->installTranslator(&qtTranslator);
+        } else {
+            Log(Logger::Level::Info, QString("Qt translation for %1 not found in %2").arg(language, dir));
+        }
+    }
+
+    void setupTranslations(QTranslator &translator, QTranslator &qtTranslator, QApplication &app)
     {
         QJsonObject general = Config::getValue("general").toJsonObject();
         if (general["language"].toString().isEmpty()) {
@@ -124,6 +135,7 @@ namespace
                 const QString baseName = QString::fromStdString(PROJECT_NAME) + "_" + QLocale(locale).name();
                 if (translator.load(":/i18n/" + baseName)) {
                     app.installTranslator(&translator);
+                    installQtTranslation(qtTranslator, QLocale(locale).name());
                     general["language"] = QLocale(locale).name();
                     Config::setValue("general", general);
                     break;
@@ -133,6 +145,7 @@ namespace
             const QString baseName = QString::fromStdString(PROJECT_NAME) + "_" + general["language"].toString();
             if (translator.load(":/i18n/" + baseName)) {
                 qApp->installTranslator(&translator);
+                installQtTranslation(qtTranslator, general["language"].toString());
             } else {
                 Log(Logger::Level::Warning, "Failed to load translation");
             }
@@ -189,7 +202,8 @@ int main(int argc, char *argv[])
     logSystemInfo();
 
     QTranslator translator;
-    setupTranslations(translator, app);
+    QTranslator qtTranslator;
+    setupTranslations(translator, qtTranslator, app);
 
     QLockFile lock(configPath + QStringLiteral("aurextranslator.lock"));
     if (isAlreadyRunning(lock)) {
