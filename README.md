@@ -19,6 +19,9 @@ Cross-platform real-time translator for Windows and Linux (X11/XWayland) — tra
   - **OCR**: screen-region capture via Tesseract or Ollama Vision (auto or manual mode)
   - **Clipboard**: translate copied text automatically (native Wayland, XDG Portal, or Qt clipboard backend depending on your desktop)
   - **Game Text Extraction**: intercepts text output at runtime by injecting a plugin into the game's process and hooking its text output functions. Requires installing the injector (`libat-injector` + `at-injector`) and a game/engine-specific plugin — see [AurexTranslator-plugins](https://github.com/Kirizaku/AurexTranslator-plugins) for supported engines, games, and installation instructions.
+- **Translation engines** — Google (online) and Ollama (offline, AI)
+- **In-game overlay** — shows the translation directly over the game, without a separate window, and can also take the game image for OCR. D3D9–D3D12, OpenGL and Vulkan on Windows; Vulkan and OpenGL on Linux. Requires the `libat-overlay` plugin from [AurexTranslator-plugins](https://github.com/Kirizaku/AurexTranslator-plugins) (mouse input is not captured yet)
+- **Text-to-Speech** — voice the translated text with Edge TTS (online), Piper (local, offline) or a custom engine, with speech-specific text replacement rules
 - **Named config profiles** — keep separate settings per game, switch between them without re-injecting
 - **Text replacement rules** — regex-capable, scoped per source or per game
 - **Configurable text output** — whole-block or per-character reveal with tunable speed, multi-block selection with priority ordering (for games/engines with multiple simultaneous text sources)
@@ -31,8 +34,9 @@ Cross-platform real-time translator for Windows and Linux (X11/XWayland) — tra
 |---|---|
 | 🖼️ Multi-zone OCR | Capture and translate several screen regions at once instead of a single zone |
 | 📦 Native Linux packages | `.deb` (Ubuntu/Debian), AUR (Arch), `.rpm` (Fedora/openSUSE), Flatpak & Snap (universal) |
-| 🎮 In-game overlay | On-screen translation without a separate window, via graphics API hooking (DLL injection on Windows, `LD_PRELOAD` on Linux) |
-| 🔊 TTS (Text-to-Speech) | Voice output |
+| ✅ ~~In-game overlay~~ | ~~On-screen translation without a separate window, via graphics API hooking (DLL injection on Windows, `LD_PRELOAD` on Linux)~~ |
+| 🖱️ Overlay mouse input | Interact with the in-game overlay with the mouse (currently display only) |
+| ✅ ~~TTS (Text-to-Speech)~~ | ~~Voice output~~ |
 | 🌐 More translation engines | Additional providers beyond the currently supported ones |
 | 🧩 More game/engine plugins | See [AurexTranslator-plugins](https://github.com/Kirizaku/AurexTranslator-plugins) |
 
@@ -44,7 +48,7 @@ Have a feature request or want to help with one of these? Open an [issue](https:
 
 #### Common
 - CMake 3.10+
-- Qt6 (Core, Network, Widgets, Svg, LinguistTools)
+- Qt6 (Core, Network, Widgets, Svg, Multimedia, LinguistTools)
 - OpenCV (core, imgproc, imgcodecs)
 - Tesseract OCR
 
