@@ -89,6 +89,29 @@ bool hasStaleRegistration()
     }
     return false;
 }
+
+QString installedPythonOfSameVersion()
+{
+    const QVersionNumber full = QVersionNumber::fromString(PythonEnv::windowsPythonVersion());
+    const QString key = QStringLiteral("%1.%2").arg(full.majorVersion()).arg(full.minorVersion());
+
+    const QStringList roots = {
+        QStringLiteral("HKEY_CURRENT_USER\\Software\\Python\\PythonCore"),
+        QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\Python\\PythonCore"),
+    };
+
+    for (const QString &root : roots) {
+        QSettings registry(root, QSettings::NativeFormat);
+        const QString dir = registry.value(key + QStringLiteral("/InstallPath/Default")).toString();
+        if (dir.isEmpty())
+            continue;
+
+        const QString exe = QDir(dir).filePath(QStringLiteral("python.exe"));
+        if (QFileInfo::exists(exe))
+            return exe;
+    }
+    return {};
+}
 #endif
 
 QList<PythonEnv::Interpreter> interpreterCandidates()
@@ -524,6 +547,25 @@ void PythonEnv::installWindowsPython(bool systemWide)
 
     m_aborted = false;
 
+    const QString existing = installedPythonOfSameVersion();
+    if (!existing.isEmpty()) {
+        const bool existingIsEmbedded = QDir::cleanPath(QFileInfo(existing).absolutePath()).compare(QDir::cleanPath(runtimeDir()), Qt::CaseInsensitive) == 0;
+
+        emit logLine(QStringLiteral("Python %1 is already installed (%2): %3").arg(windowsPythonVersion(),
+                                    existingIsEmbedded ? QStringLiteral("embedded") : QStringLiteral("system"),
+                                    QDir::toNativeSeparators(existing)));
+
+        if (!(existingIsEmbedded && systemWide)) {
+            emit logLine(QStringLiteral("A second copy of the same version cannot be installed, "
+                                        "the installed one is used."));
+            emit finished(true, {});
+            return;
+        }
+
+        emit logLine(QStringLiteral("A second copy cannot be installed, so the installer only adds "
+                                    "this one to PATH and installs the py launcher."));
+    }
+
     if (!m_network)
         m_network = new QNetworkAccessManager(this);
 
@@ -592,13 +634,17 @@ void PythonEnv::installWindowsPython(bool systemWide)
         m_steps.clear();
         m_currentStep = -1;
 
-        if (!systemWide && hasStaleRegistration()) {
+        if (hasStaleRegistration()) {
             emit logLine(QStringLiteral("Python is still registered in Windows, but its files are missing. "
                                         "Repairing the installation."));
             Step repair{ tr("Repairing the Python installation"), path,
                        { QStringLiteral("/repair"), QStringLiteral("/passive") } };
             repair.expectedFile = runtimePython();
             m_steps.append(repair);
+
+            if (systemWide) {
+                m_steps.append({ tr("Running the installer"), path, args });
+            }
         } else {
             Step install{ tr("Running the installer"), path, args };
             if (!systemWide)
