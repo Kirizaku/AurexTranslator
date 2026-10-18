@@ -72,6 +72,23 @@ void appendRegisteredPythons(QList<PythonEnv::Interpreter> &candidates)
         }
     }
 }
+
+bool hasStaleRegistration()
+{
+    if (QFileInfo::exists(PythonEnv::runtimePython()))
+        return false;
+
+    QSettings registry(QStringLiteral("HKEY_CURRENT_USER\\Software\\Python\\PythonCore"), QSettings::NativeFormat);
+    const QString runtime = QDir::cleanPath(PythonEnv::runtimeDir());
+
+    const QStringList versions = registry.childGroups();
+    for (const QString &version : versions) {
+        const QString dir = registry.value(version + QStringLiteral("/InstallPath/Default")).toString();
+        if (!dir.isEmpty() && QDir::cleanPath(dir).compare(runtime, Qt::CaseInsensitive) == 0)
+            return true;
+    }
+    return false;
+}
 #endif
 
 QList<PythonEnv::Interpreter> interpreterCandidates()
@@ -389,10 +406,16 @@ void PythonEnv::startProcess(const Step &step)
                     return;
                 }
 
+                const Step &step = m_steps.at(m_currentStep);
+
                 if (status != QProcess::NormalExit || exitCode != 0) {
-                    failWith(tr("\"%1\" failed with code %2.")
-                                 .arg(m_steps.at(m_currentStep).title)
-                                 .arg(exitCode));
+                    if (!step.ignoreFailure) {
+                        failWith(tr("\"%1\" failed with code %2.").arg(step.title).arg(exitCode));
+                        return;
+                    }
+                    emit logLine(QStringLiteral("\"%1\" returned code %2, continuing.").arg(step.title).arg(exitCode));
+                } else if (!step.expectedFile.isEmpty() && !QFileInfo::exists(step.expectedFile)) {
+                    failWith(tr("\"%1\" finished, but %2 was not created.").arg(step.title, QDir::toNativeSeparators(step.expectedFile)));
                     return;
                 }
 
@@ -568,7 +591,21 @@ void PythonEnv::installWindowsPython(bool systemWide)
 
         m_steps.clear();
         m_currentStep = -1;
-        m_steps.append({ tr("Running the installer"), path, args });
+
+        if (!systemWide && hasStaleRegistration()) {
+            emit logLine(QStringLiteral("Python is still registered in Windows, but its files are missing. "
+                                        "Repairing the installation."));
+            Step repair{ tr("Repairing the Python installation"), path,
+                       { QStringLiteral("/repair"), QStringLiteral("/passive") } };
+            repair.expectedFile = runtimePython();
+            m_steps.append(repair);
+        } else {
+            Step install{ tr("Running the installer"), path, args };
+            if (!systemWide)
+                install.expectedFile = runtimePython();
+            
+            m_steps.append(install);
+        }
 
         runNextStep();
         });

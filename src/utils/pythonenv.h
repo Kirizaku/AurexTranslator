@@ -97,6 +97,8 @@ private:
         QString title;
         QString program;
         QStringList args;
+        QString expectedFile;
+        bool ignoreFailure = false;
     };
 
     void runNextStep();

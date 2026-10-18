@@ -2569,63 +2569,73 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>PythonEnv</name>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="317"/>
+        <location filename="../src/utils/pythonenv.cpp" line="334"/>
         <source>No suitable Python interpreter found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="324"/>
+        <location filename="../src/utils/pythonenv.cpp" line="341"/>
         <source>Creating the virtual environment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="331"/>
+        <location filename="../src/utils/pythonenv.cpp" line="348"/>
         <source>Updating pip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="337"/>
+        <location filename="../src/utils/pythonenv.cpp" line="354"/>
         <source>Installing %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="388"/>
-        <location filename="../src/utils/pythonenv.cpp" line="547"/>
+        <location filename="../src/utils/pythonenv.cpp" line="405"/>
+        <location filename="../src/utils/pythonenv.cpp" line="570"/>
         <source>Cancelled.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="393"/>
+        <location filename="../src/utils/pythonenv.cpp" line="413"/>
         <source>&quot;%1&quot; failed with code %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="411"/>
+        <location filename="../src/utils/pythonenv.cpp" line="418"/>
+        <source>&quot;%1&quot; finished, but %2 was not created.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/utils/pythonenv.cpp" line="434"/>
         <source>The system Python has no venv module. Install it, for example: sudo apt install python3-venv</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="483"/>
+        <location filename="../src/utils/pythonenv.cpp" line="506"/>
         <source>The Python environment is not there to remove anything from.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="487"/>
+        <location filename="../src/utils/pythonenv.cpp" line="510"/>
         <source>Removing %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="514"/>
+        <location filename="../src/utils/pythonenv.cpp" line="537"/>
         <source>Cannot write to %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="518"/>
+        <location filename="../src/utils/pythonenv.cpp" line="541"/>
         <source>Downloading Python %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="571"/>
+        <location filename="../src/utils/pythonenv.cpp" line="602"/>
+        <source>Repairing the Python installation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/utils/pythonenv.cpp" line="607"/>
         <source>Running the installer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2646,17 +2656,17 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/main.cpp" line="149"/>
+        <location filename="../src/main.cpp" line="163"/>
         <source>Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="154"/>
+        <location filename="../src/main.cpp" line="168"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/main.cpp" line="198"/>
+        <location filename="../src/main.cpp" line="214"/>
         <source>AurexTranslator is already running</source>
         <translation type="unfinished"></translation>
     </message>
