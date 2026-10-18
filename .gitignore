@@ -35,6 +35,9 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 
+# the hand-written Windows resource script (the application icon) is a source file, not a generated one
+!data/windows/*.rc
+
 # qtcreator generated files
 *.pro.user*
 *.qbs.user*
