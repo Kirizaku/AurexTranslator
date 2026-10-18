@@ -1,6 +1,6 @@
 # Release build for the AurexTranslator application and the plugins bundled with it.
 #
-# Push a tag like v0.0.9 to get a DRAFT release with:
+# Push a tag like 0.0.9 (or v0.0.9) to get a DRAFT release with:
 #   AurexTranslator-<ver>-Windows-x86_64.tar.gz          app + tessdata + all plugins (hook, injector, overlay)
 #   AurexTranslator-<ver>-Windows-x86_64_no-hook.tar.gz  app + tessdata + injector and overlay only
 #   AurexTranslator-<ver>-Linux-x86_64.tar.gz            AppImage + tessdata + all plugins
@@ -13,7 +13,7 @@ name: release
 
 on:
   push:
-    tags: ['v*']
+    tags: ['[0-9]*', 'v[0-9]*']
   workflow_dispatch:
     inputs:
       plugins_ref:
@@ -336,7 +336,7 @@ jobs:
   # ------------------------------------------------------------------
   release:
     name: 'Release (draft)'
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
     needs: [windows-x64, windows-x86, linux-appimage, linux-plugins]
     runs-on: ubuntu-latest
     permissions:
