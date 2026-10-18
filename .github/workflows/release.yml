@@ -1,0 +1,441 @@
+# Release build for the AurexTranslator application and the plugins bundled with it.
+#
+# Push a tag like v0.0.9 to get a DRAFT release with:
+#   AurexTranslator-<ver>-Windows-x86_64.tar.gz          app + tessdata + all plugins (hook, injector, overlay)
+#   AurexTranslator-<ver>-Windows-x86_64_no-hook.tar.gz  app + tessdata + injector and overlay only
+#   AurexTranslator-<ver>-Linux-x86_64.tar.gz            AppImage + tessdata + all plugins
+#   AurexTranslator-<ver>-Linux-x86_64_no-hook.tar.gz    AppImage + tessdata + overlay only
+#
+# The plugins are built from the current state of the plugins repository (PLUGINS_REF),
+# not from a pinned tag, so the bundled plugins are the newest ones at release time.
+
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      plugins_ref:
+        description: 'Branch or tag of the plugins repository to build'
+        default: 'main'
+        required: false
+
+env:
+  PLUGINS_REPO: ${{ vars.PLUGINS_REPO || 'Kirizaku/AurexTranslator-plugins' }}
+  PLUGINS_REF: ${{ inputs.plugins_ref || 'main' }}
+  # Tesseract language data (the accurate LSTM-only models), pinned to a commit of
+  # github.com/tesseract-ocr/tessdata_best.
+  TESSDATA_COMMIT: e12c65a915945e4c28e237a9b52bc4a8f39a0cec
+  TESSDATA_LANGS: eng rus jpn chi_sim chi_tra
+
+jobs:
+  # ------------------------------------------------------------------
+  # Windows x64: the app and the 64-bit plugins (they share the prebuilt Qt)
+  # ------------------------------------------------------------------
+  windows-x64:
+    name: 'Windows x64: app + 64-bit plugins'
+    runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg-archives
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PLUGINS_REPO }}
+          ref: ${{ env.PLUGINS_REF }}
+          token: ${{ secrets.PLUGINS_TOKEN || github.token }}
+          path: plugins
+
+      # Qt comes prebuilt (aqtinstall): building Qt from source in vcpkg takes hours and
+      # fills the runner disk. vcpkg is kept only for OpenCV and Tesseract.
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: 6.8.3
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: qtmultimedia qtshadertools
+          cache: true
+
+      # Restore and save are separate steps so that the built packages are kept even when a later
+      # step fails (a plain actions/cache saves only after a fully successful job).
+      - name: Restore vcpkg binary archives
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-app-win-x64-${{ hashFiles('app/.github/workflows/release.yml') }}
+          restore-keys: vcpkg-app-win-x64-
+
+      - name: Install dependencies with vcpkg
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+          # opencv4[core,...] turns the default features off: the app needs only core, imgproc and imgcodecs.
+          vcpkg install --triplet x64-windows-release --clean-buildtrees-after-build `
+              "opencv4[core,jpeg,png,tiff,webp,openjpeg]" tesseract
+
+      - name: Save vcpkg binary archives
+        if: ${{ always() && steps.vcpkg-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-app-win-x64-${{ hashFiles('app/.github/workflows/release.yml') }}
+
+      - name: Install the Vulkan SDK (for the Vulkan layer of the overlay)
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.3.296.0
+          install_runtime: false
+          cache: true
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Build the app
+        shell: pwsh
+        run: |
+          $tc = "$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          cmake -S app -B build-app -G Ninja -DCMAKE_BUILD_TYPE=Release `
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+                -DCMAKE_TOOLCHAIN_FILE="$tc" -DVCPKG_TARGET_TRIPLET=x64-windows-release
+          cmake --build build-app
+
+      - name: Build the x64 plugins
+        shell: pwsh
+        run: |
+          # The plugins need only Qt (the app ships the Qt DLLs they load at run time).
+          $out = "$env:GITHUB_WORKSPACE/stage/at-plugins-install"
+          cmake -S plugins -B build-plugins -G Ninja -DCMAKE_BUILD_TYPE=Release `
+                -DCMAKE_PREFIX_PATH="$env:QT_ROOT_DIR" `
+                -DPLUGINS_OUTPUT_DIR="$out" 2>&1 | Tee-Object cfg.log
+          if (Select-String -Path cfg.log -SimpleMatch 'Vulkan SDK not found') { throw 'Vulkan SDK was not found: the release would have no Vulkan layer' }
+          cmake --build build-plugins
+
+      - name: Collect the app folder
+        shell: pwsh
+        run: |
+          # Take only the exe and the DLLs (vcpkg puts the OpenCV and Tesseract DLLs next to it), not the
+          # whole build tree: it also holds generated sources, moc/rcc output and other leftovers.
+          New-Item -ItemType Directory -Force stage/app | Out-Null
+          Copy-Item build-app/aurextranslator.exe stage/app/
+          Copy-Item build-app/*.dll stage/app/
+          if (-not (Test-Path stage/app/aurextranslator.exe)) { throw 'aurextranslator.exe is missing' }
+
+          # Qt DLLs and plugins. Skipped: Qt's own translations (copied below by hand), the DirectX shader
+          # compilers (dxcompiler/dxil, about 16 MB) and plugin types the app does not use.
+          & "$env:QT_ROOT_DIR\bin\windeployqt.exe" --release --no-compiler-runtime --no-system-d3d-compiler `
+              --no-system-dxc-compiler --no-opengl-sw --no-translations `
+              --skip-plugin-types generic,networkinformation stage/app/aurextranslator.exe
+          if (-not (Test-Path stage/app/platforms/qwindows.dll)) { throw 'Qt platform plugin is missing: windeployqt did not deploy it' }
+
+          # The app does not load JPEG, GIF or ICO images through Qt (OpenCV does the image work); only the
+          # SVG image format plugin (qsvg) is needed.
+          Remove-Item stage/app/imageformats/qgif.dll, stage/app/imageformats/qico.dll, `
+                      stage/app/imageformats/qjpeg.dll -ErrorAction SilentlyContinue
+
+          # Qt Multimedia has two backends on Windows. The app only plays audio, so keep the Windows Media
+          # Foundation one and drop FFmpeg (about 20 MB); Qt falls back to the remaining backend.
+          Remove-Item stage/app/multimedia/ffmpegmediaplugin.dll -ErrorAction SilentlyContinue
+          Remove-Item stage/app/avcodec-*.dll, stage/app/avformat-*.dll, stage/app/avutil-*.dll, `
+                      stage/app/swresample-*.dll, stage/app/swscale-*.dll -ErrorAction SilentlyContinue
+
+          # Qt's own translations (standard button labels): the app loads qtbase_ru.qm from <exe>/translations.
+          New-Item -ItemType Directory -Force stage/app/translations | Out-Null
+          Copy-Item "$env:QT_ROOT_DIR\translations\qtbase_ru.qm" stage/app/translations/
+
+      - name: Download tessdata
+        shell: bash
+        run: |
+          mkdir -p stage/app/tessdata
+          for l in $TESSDATA_LANGS; do
+            curl -fsSL -o "stage/app/tessdata/$l.traineddata" \
+              "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$TESSDATA_COMMIT/$l.traineddata"
+          done
+          curl -fsSL -o stage/app/tessdata/LICENSE \
+            "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$TESSDATA_COMMIT/LICENSE"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: stage
+
+  # ------------------------------------------------------------------
+  # Windows x86: 32-bit plugins and overlay (for 32-bit games). No Qt and no vcpkg needed.
+  # ------------------------------------------------------------------
+  windows-x86:
+    name: 'Windows x86: 32-bit plugins'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PLUGINS_REPO }}
+          ref: ${{ env.PLUGINS_REF }}
+          token: ${{ secrets.PLUGINS_TOKEN || github.token }}
+          path: plugins
+
+      - name: Install the Vulkan SDK (for the Vulkan layer of the overlay)
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.3.296.0
+          install_runtime: false
+          cache: true
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
+
+      - name: Build the x86 plugins
+        shell: pwsh
+        run: |
+          $out = "$env:GITHUB_WORKSPACE/stage/at-plugins-install"
+          cmake -S plugins -B build-plugins-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release `
+                -DPLUGINS_OUTPUT_DIR="$out" 2>&1 | Tee-Object cfg.log
+          if (Select-String -Path cfg.log -SimpleMatch 'Vulkan SDK not found') { throw 'Vulkan SDK was not found: the release would have no Vulkan layer' }
+          cmake --build build-plugins-x86
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x86-plugins
+          path: stage
+
+  # ------------------------------------------------------------------
+  # Linux: AppImage on the oldest supported Ubuntu (glibc, Qt 6.2)
+  # ------------------------------------------------------------------
+  linux-appimage:
+    name: 'Linux: AppImage'
+    runs-on: ubuntu-22.04
+    env:
+      QMAKE: /usr/lib/qt6/bin/qmake6
+      APPIMAGE_EXTRACT_AND_RUN: '1'   # no FUSE on the runner
+      # Pinned tools (releases / commits of github.com/linuxdeploy/*), checked by SHA-256 below.
+      LINUXDEPLOY_URL: https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20251107-1/linuxdeploy-x86_64.AppImage
+      LINUXDEPLOY_SHA256: c20cd71e3a4e3b80c3483cef793cda3f4e990aca14014d23c544ca3ce1270b4d
+      LINUXDEPLOY_QT_URL: https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/1-alpha-20250213-1/linuxdeploy-plugin-qt-x86_64.AppImage
+      LINUXDEPLOY_QT_SHA256: 15106be885c1c48a021198e7e1e9a48ce9d02a86dd0a1848f00bdbf3c1c92724
+      LINUXDEPLOY_GST_URL: https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gstreamer/432af639725bc8b99df12351e86bb2e8a6b3585f/linuxdeploy-plugin-gstreamer.sh
+      LINUXDEPLOY_GST_SHA256: d1cf90701047aa9583c274bb66dd82db352255374fbfb8f3c4c89a05fe23bce0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          # The runner image has libunwind-14-dev, which blocks libgstreamer1.0-dev (it needs libunwind-dev).
+          sudo apt-get remove -y libunwind-14-dev || true
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build pkg-config file wget \
+            qt6-base-dev qt6-base-dev-tools libqt6svg6-dev qt6-multimedia-dev qt6-tools-dev qt6-tools-dev-tools \
+            qt6-l10n-tools qt6-translations-l10n \
+            libopencv-dev libtesseract-dev libleptonica-dev libpipewire-0.3-dev \
+            libx11-dev libxcomposite-dev libxfixes-dev libxrandr-dev libwayland-dev wayland-protocols \
+            libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb-glx0-dev libgl1-mesa-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-alsa gstreamer1.0-pipewire
+
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          install -Dm755 build/aurextranslator AppDir/usr/bin/aurextranslator
+
+      - name: Download the packaging tools
+        run: |
+          mkdir -p tools
+          fetch() {  # url sha256 file
+            wget -q -O "tools/$3" "$1"
+            echo "$2  tools/$3" | sha256sum -c -
+          }
+          fetch "$LINUXDEPLOY_URL"     "$LINUXDEPLOY_SHA256"     linuxdeploy-x86_64.AppImage
+          fetch "$LINUXDEPLOY_QT_URL"  "$LINUXDEPLOY_QT_SHA256"  linuxdeploy-plugin-qt-x86_64.AppImage
+          fetch "$LINUXDEPLOY_GST_URL" "$LINUXDEPLOY_GST_SHA256" linuxdeploy-plugin-gstreamer.sh
+          chmod +x tools/*
+
+      - name: Package the AppImage
+        run: |
+          test -f data/linux/aurextranslator.desktop || { echo 'data/linux/aurextranslator.desktop is missing'; exit 1; }
+          ICON=$(ls data/icons/aurextranslator.{png,svg} 2>/dev/null | head -n1)
+          test -n "$ICON" || { echo 'data/icons/aurextranslator.png (or .svg) is missing'; exit 1; }
+
+          export PATH="$PWD/tools:$PATH"   # linuxdeploy finds its plugins in PATH
+          export LINUXDEPLOY_OUTPUT_VERSION="${GITHUB_REF_NAME#v}"
+          export QT_SELECT=qt6
+          tools/linuxdeploy-x86_64.AppImage --appdir AppDir \
+              --executable AppDir/usr/bin/aurextranslator \
+              --desktop-file data/linux/aurextranslator.desktop \
+              --icon-file "$ICON" \
+              --plugin qt --plugin gstreamer --output appimage
+
+          mkdir -p dist
+          mv ./*.AppImage dist/
+
+      - name: Download tessdata
+        run: |
+          mkdir -p dist/tessdata
+          for l in $TESSDATA_LANGS; do
+            wget -q -O "dist/tessdata/$l.traineddata" \
+              "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$TESSDATA_COMMIT/$l.traineddata"
+          done
+          wget -q -O dist/tessdata/LICENSE "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$TESSDATA_COMMIT/LICENSE"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist
+
+  # ------------------------------------------------------------------
+  # Linux plugins: 64-bit and 32-bit libraries, built on the oldest supported Ubuntu
+  # ------------------------------------------------------------------
+  linux-plugins:
+    name: 'Linux: plugins (64/32-bit)'
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PLUGINS_REPO }}
+          ref: ${{ env.PLUGINS_REF }}
+          token: ${{ secrets.PLUGINS_TOKEN || github.token }}
+          path: plugins
+
+      - name: Enable 32-bit packages
+        run: |
+          # The runner pins its apt sources to amd64, so i386 needs its own source.
+          sudo dpkg --add-architecture i386
+          echo 'deb [arch=i386] http://archive.ubuntu.com/ubuntu jammy main universe' | sudo tee /etc/apt/sources.list.d/i386.list
+          echo 'deb [arch=i386] http://archive.ubuntu.com/ubuntu jammy-updates main universe' | sudo tee -a /etc/apt/sources.list.d/i386.list
+          sudo sed -i -E 's/^deb (http)/deb [arch=amd64] \1/' /etc/apt/sources.list || true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc-multilib g++-multilib cmake ninja-build pkg-config \
+            qt6-base-dev qt6-base-dev-tools qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools \
+            libx11-dev libxcomposite-dev libxfixes-dev libxrandr-dev libwayland-dev wayland-protocols \
+            libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libxcb-glx0-dev libgl1-mesa-dev \
+            libcap-dev libpipewire-0.3-dev \
+            libvulkan-dev libgl-dev libegl-dev \
+            libvulkan-dev:i386 libgl-dev:i386 libegl-dev:i386
+
+      - name: Build the plugins
+        run: |
+          cmake -S plugins -B build-plugins -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DPLUGINS_OUTPUT_DIR="$PWD/stage/at-plugins-install"
+          cmake --build build-plugins
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-plugins
+          path: stage
+
+  # ------------------------------------------------------------------
+  # Assemble the draft release (tag builds only)
+  # ------------------------------------------------------------------
+  release:
+    name: 'Release (draft)'
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows-x64, windows-x86, linux-appimage, linux-plugins]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.PLUGINS_REPO }}
+          ref: ${{ env.PLUGINS_REF }}
+          token: ${{ secrets.PLUGINS_TOKEN || github.token }}
+          path: plugins
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Assemble the Windows archives
+        run: |
+          set -e
+          VER="${GITHUB_REF_NAME#v}"
+          FULL="AurexTranslator-$VER-Windows-x86_64"
+          LITE="AurexTranslator-$VER-Windows-x86_64_no-hook"
+
+          mkdir -p "pkg/$FULL/at-plugins-install"
+          cp -a artifacts/win-x64/app/. "pkg/$FULL/"
+          cp -a artifacts/win-x64/at-plugins-install/. "pkg/$FULL/at-plugins-install/"
+          cp -a artifacts/win-x86-plugins/at-plugins-install/. "pkg/$FULL/at-plugins-install/"
+          find "pkg/$FULL/at-plugins-install" \( -name '*.lib' -o -name '*.exp' -o -name '*.pdb' -o -name '*.ilk' \) -delete
+
+          # Plugin dependencies that the app already ships next to the exe are not needed twice.
+          for f in "pkg/$FULL"/at-plugins-install/*.dll; do
+            b=$(basename "$f")
+            case "$b" in libat-*) continue;; esac
+            [ -e "pkg/$FULL/$b" ] && rm -f "$f"
+          done
+
+          mkdir -p "pkg/$FULL/licenses"
+          cp app/LICENSE "pkg/$FULL/licenses/LICENSE-app"
+          cp plugins/COPYING.* "pkg/$FULL/licenses/"
+          cp plugins/overlay/NOTICE "pkg/$FULL/licenses/NOTICE-overlay"
+          cp plugins/data/THIRD-PARTY-LICENSES "pkg/$FULL/licenses/"
+
+          # no-hook: only the injector and the overlay stay in at-plugins-install
+          cp -a "pkg/$FULL" "pkg/$LITE"
+          (
+            cd "pkg/$LITE/at-plugins-install"
+            find . -type f \
+              ! -name 'libat-injector.dll' \
+              ! -name 'libat-overlay_x64.dll' ! -name 'libat-overlay_x86.dll' \
+              ! -path './bin/at-injector_x64.exe' ! -path './bin/at-injector_x86.exe' \
+              -delete
+            find . -type d -empty -delete
+          )
+
+          mkdir -p out
+          tar -czf "out/$FULL.tar.gz" -C pkg "$FULL"
+          tar -czf "out/$LITE.tar.gz" -C pkg "$LITE"
+          echo "--- no-hook plugins:"; ls -R "pkg/$LITE/at-plugins-install"
+
+      - name: Assemble the Linux archives
+        run: |
+          set -e
+          VER="${GITHUB_REF_NAME#v}"
+          FULL="AurexTranslator-$VER-Linux-x86_64"
+          LITE="AurexTranslator-$VER-Linux-x86_64_no-hook"
+
+          mkdir -p "pkg/$FULL"
+          cp -a artifacts/linux/. "pkg/$FULL/"
+          cp -a artifacts/linux-plugins/at-plugins-install "pkg/$FULL/"
+
+          # upload-artifact / download-artifact do not keep file permissions. Restore the executable bits:
+          # the app registers at-injector (plugins/bin) only if the file is executable, and the AppImage
+          # has to be runnable right after unpacking.
+          chmod +x "pkg/$FULL"/*.AppImage
+          find "pkg/$FULL/at-plugins-install" -type f \( -name '*.so' -o -path '*/bin/*' \) -exec chmod +x {} +
+
+          mkdir -p "pkg/$FULL/licenses"
+          cp app/LICENSE "pkg/$FULL/licenses/LICENSE-app"
+          cp plugins/COPYING.* "pkg/$FULL/licenses/"
+          cp plugins/overlay/NOTICE "pkg/$FULL/licenses/NOTICE-overlay"
+          cp plugins/data/THIRD-PARTY-LICENSES "pkg/$FULL/licenses/"
+
+          # no-hook: only the overlay stays (on Linux it works through the Vulkan layer and the LD_PRELOAD
+          # launcher, so it does not need the injector)
+          cp -a "pkg/$FULL" "pkg/$LITE"
+          (
+            cd "pkg/$LITE/at-plugins-install"
+            find . -type f ! -name 'libat-overlay-*.so' -delete
+            find . -type d -empty -delete
+          )
+
+          tar -czf "out/$FULL.tar.gz" -C pkg "$FULL"
+          tar -czf "out/$LITE.tar.gz" -C pkg "$LITE"
+          echo "--- Linux no-hook plugins:"; ls -R "pkg/$LITE/at-plugins-install"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          draft: true
+          generate_release_notes: true
