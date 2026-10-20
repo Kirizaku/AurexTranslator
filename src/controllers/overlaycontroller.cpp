@@ -758,9 +758,17 @@ void OverlayController::recomposeAndPush()
 
 QString OverlayController::composeText() const
 {
+    QSet<QString> translated;
+    for (const auto &entry : m_entries) {
+        if (!entry.result.isEmpty())
+            translated.insert(entry.source + QChar(0x1f) + entry.original);
+    }
+
     QStringList blocks;
     for (const auto &entry : m_entries) {
         if (entry.result.isEmpty() && (!m_showOriginal || entry.original.isEmpty()))
+            continue;
+        if (entry.result.isEmpty() && translated.contains(entry.source + QChar(0x1f) + entry.original))
             continue;
 
         QStringList parts;
