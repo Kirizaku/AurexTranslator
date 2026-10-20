@@ -202,10 +202,7 @@ void MainWindow::on_availableGeometryChanged()
     m_outputWindow->move(m_screen->geometry().x() + 50, m_screen->geometry().y() + 50);
     m_regionSelector->move(m_screen->geometry().x(), m_screen->geometry().y());
 
-    if (!m_regionSelector->isHidden()) {
-        m_regionSelector->hide();
-        restoreOutputWindowAfterRegionSelection();
-    }
+    closeRegionSelector();
 }
 
 void MainWindow::on_buttonBox_clicked(QAbstractButton *button)
@@ -322,10 +319,14 @@ void MainWindow::on_outputToggledScreencast_stateChanged(int arg1)
 
 void MainWindow::on_outputTextExternalWindowMode_currentIndexChanged(int index)
 {
+    applyOutputWindowMode(index);
+}
+
+void MainWindow::applyOutputWindowMode(int index)
+{
     const bool hidden = (index == 2);
-    const bool panelOnly = (index == 1);
     m_outputWindow->setVisible(!hidden);
-    m_outputWindow->setPanelOnlyMode(panelOnly);
+    m_outputWindow->setPanelOnlyMode(index == 1);
     if (!hidden) m_lastVisibleOutputWindowMode = index;
 }
 
@@ -896,10 +897,7 @@ void MainWindow::stopScreenCapture()
 
     QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    if (!m_regionSelector->isHidden()) {
-        m_regionSelector->hide();
-        restoreOutputWindowAfterRegionSelection();
-    }
+    closeRegionSelector();
 }
 
 void MainWindow::clearScreencastPreview()
@@ -1314,14 +1312,10 @@ void MainWindow::initSubsystems()
 {
     // Overlay Window
     m_regionSelector->raise();
-    connect(m_regionSelector, &RegionSelectorWindow::hideRequested, this, [this] {
-        m_regionSelector->hide();
-        restoreOutputWindowAfterRegionSelection();
-    });
+    connect(m_regionSelector, &RegionSelectorWindow::hideRequested, this, &MainWindow::closeRegionSelector);
 
     // Output Window
-    m_outputWindow->setVisible(ui->outputTextExternalWindowMode->currentIndex() != 2);
-    m_outputWindow->setPanelOnlyMode(ui->outputTextExternalWindowMode->currentIndex() == 1);
+    applyOutputWindowMode(ui->outputTextExternalWindowMode->currentIndex());
     connect(this, &MainWindow::showHistoryRequested, m_outputWindow, &TextOutputWindow::showHistory);
     connect(m_outputWindow, &TextOutputWindow::retranslateRequested, this, &MainWindow::retranslateText);
     connect(m_outputWindow, &TextOutputWindow::selectNewRegionRequested, this, &MainWindow::selectNewRegion);
@@ -2675,53 +2669,58 @@ bool MainWindow::hotkeysBlocked() const
 
 void MainWindow::showHistory()
 {
-    if (!m_regionSelector->isHidden()) {
-        m_regionSelector->hide();
-        restoreOutputWindowAfterRegionSelection();
-    }
+    closeRegionSelector();
 
     emit showHistoryRequested();
 }
 
 void MainWindow::toggleOutputWindow()
 {
-    if (ui->outputTextExternalWindowMode->currentIndex() == 2) {
-        ui->outputTextExternalWindowMode->setCurrentIndex(m_lastVisibleOutputWindowMode);
+    const int mode = ui->outputTextExternalWindowMode->currentIndex();
+    const bool selectorClosed = closeRegionSelector();
+
+    if (mode != 2 && !selectorClosed && !m_outputWindow->isMinimized()) {
+        setOutputWindowModeNow(2);
         return;
     }
-    if (m_outputWindow->isHidden() || m_outputWindow->isMinimized()) {
-        showOutputWindowForced();
-    } else {
-        m_outputWindow->showMinimized();
-    }
+
+    if (mode == 2) setOutputWindowModeNow(m_lastVisibleOutputWindowMode);
+    m_outputWindow->showNormal();
 }
 
-void MainWindow::showOutputWindowForced()
+void MainWindow::setOutputWindowModeNow(int index)
 {
-    // Forces a real state transition instead of a NoState -> NoState no-op,
-    // otherwise the Window Manager keeps it iconified despite Qt reporting it as shown.
-    m_outputWindow->show();
-    m_outputWindow->setWindowState(Qt::WindowMinimized);
-    m_outputWindow->setWindowState(Qt::WindowNoState);
+    {
+        QSignalBlocker blocker(ui->outputTextExternalWindowMode);
+        ui->outputTextExternalWindowMode->setCurrentIndex(index);
+    }
+
+    applyOutputWindowMode(index);
+
+    QJsonObject output = Config::getValue("output").toJsonObject();
+    output["text_external_window_mode"] = index;
+    Config::setValue("output", output);
+    Config::save();
 }
 
-void MainWindow::restoreOutputWindowAfterRegionSelection()
+bool MainWindow::closeRegionSelector()
 {
-    if (m_outputWindowWasMinimized) {
-        m_outputWindow->showMinimized();
-        return;
-    }
-    showOutputWindowForced();
+    if (m_regionSelector->isHidden()) return false;
+
+    m_regionSelector->hide();
+    if (ui->outputTextExternalWindowMode->currentIndex() != 2) m_outputWindow->show();
+    return true;
 }
 
 void MainWindow::showRegionSelector()
 {
-    m_outputWindowWasMinimized = m_outputWindow->isMinimized();
-
     QRect primaryScreenGeometry = QApplication::primaryScreen()->geometry();
     m_regionSelector->setPixmap(QPixmap::fromImage(m_lastFrame.copy().scaled(primaryScreenGeometry.width() * this->devicePixelRatio(), primaryScreenGeometry.height() * this->devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
     m_regionSelector->move(m_screen->geometry().x(), m_screen->geometry().y());
-    m_outputWindow->hide();
+
+    if (ui->outputTextExternalWindowMode->currentIndex() != 2)
+        m_outputWindow->hide();
+
     m_regionSelector->showFullScreen();
 }
 

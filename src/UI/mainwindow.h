@@ -265,12 +265,12 @@ private:
     bool m_vulkanSetupSuggestedThisRun = false;
     QImage m_lastFrame;
     bool m_overlayHasActiveGame = false;
-    bool m_outputWindowWasMinimized = false;
     int m_lastVisibleOutputWindowMode = 0;
+    void applyOutputWindowMode(int index);
     void showHistory();
     void toggleOutputWindow();
-    void showOutputWindowForced();
-    void restoreOutputWindowAfterRegionSelection();
+    void setOutputWindowModeNow(int index);
+    bool closeRegionSelector();
     void showRegionSelector();
     void updateOverlayColorButton(class QPushButton *button, const QColor &color);
     void pushOverlayStyleToController();
