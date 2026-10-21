@@ -1567,6 +1567,8 @@ void MainWindow::initSubsystems()
         }
         updateSwitcherPreviewMessage();
     });
+    m_overlayController->replayGameState();
+
     connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameSelected,
             m_overlayController, &OverlayController::setActiveGame);
     connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::launchHelpRequested, this, [this] {

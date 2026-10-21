@@ -38,6 +38,7 @@ public:
     bool isPluginLoaded() const { return m_injectorPlugin != nullptr; }
     void setRegistry(const QList<PluginManager::PluginInfo> &registry);
     bool isRunning() const { return m_running; }
+    void replayGameState();
 
     QString installVulkanSupport(bool *ok = nullptr);
     QString uninstallVulkanSupport();
@@ -94,6 +95,8 @@ private:
 
     static const QString kPluginName;
 
+    void announceActiveGame(const QString &exe, quint32 pid);
+
     void pushText(const QString &text);
     void recomposeAndPush();
     QString composeText() const;
@@ -113,6 +116,11 @@ private:
     QString m_currentGame;
     bool m_knownGamesLoaded = false;
     bool m_running = false;
+
+    QStringList m_gameNames;
+    QList<quint32> m_gamePids;
+    QString m_activeGameExe;
+    quint32 m_activeGamePid = 0;
 
     QThread m_captureThread;
     OverlayCaptureServer *m_captureServer = nullptr;

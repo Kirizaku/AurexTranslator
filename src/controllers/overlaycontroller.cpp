@@ -299,12 +299,12 @@ OverlayController::OverlayController(QObject *parent)
     connect(&m_captureThread, &QThread::started, m_captureServer, &OverlayCaptureServer::start);
     connect(&m_captureThread, &QThread::finished, m_captureServer, &QObject::deleteLater);
     connect(m_captureServer, &OverlayCaptureServer::clientListChanged, this, [this](const QStringList &exeNames, const QList<quint32> &pids) {
+        m_gameNames = exeNames;
+        m_gamePids = pids;
         emit gameListChanged(exeNames, pids);
     });
     connect(m_captureServer, &OverlayCaptureServer::activeClientChanged, this, [this](const QString &exe, quint32 pid) {
-        emit infoMessage(exe.isEmpty() ? tr("[Overlay] No game active")
-                                       : tr("[Overlay] Active game: %1").arg(exe));
-        emit activeGameChanged(exe, pid);
+        announceActiveGame(exe, pid);
         emit sourceDisconnected();
     });
     m_captureThread.start();
@@ -344,6 +344,15 @@ void OverlayController::setPlugin(PluginInterface *plugin)
 void OverlayController::setRegistry(const QList<PluginManager::PluginInfo> &registry)
 {
     m_registry = registry;
+}
+
+void OverlayController::replayGameState()
+{
+    if (!m_gameNames.isEmpty())
+        emit gameListChanged(m_gameNames, m_gamePids);
+    
+    if (!m_activeGameExe.isEmpty())
+        announceActiveGame(m_activeGameExe, m_activeGamePid);
 }
 
 QString OverlayController::installVulkanSupport(bool *ok)
@@ -739,6 +748,15 @@ void OverlayController::clearResultsByTranslator(const QString &translatorName)
         }
     }
     if (changed) recomposeAndPush();
+}
+
+void OverlayController::announceActiveGame(const QString &exe, quint32 pid)
+{
+    m_activeGameExe = exe;
+    m_activeGamePid = pid;
+    emit infoMessage(exe.isEmpty() ? tr("[Overlay] No game active")
+                                   : tr("[Overlay] Active game: %1").arg(exe));
+    emit activeGameChanged(exe, pid);
 }
 
 void OverlayController::pushText(const QString &text)
