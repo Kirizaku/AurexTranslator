@@ -23,9 +23,10 @@
 #include <QUrl>
 #include <opencv2/core/mat.hpp>
 
+#include "src/engines/tesseractocr.h"
+
 class QNetworkAccessManager;
 class QTimer;
-class TesseractOcr;
 class Ollama;
 
 class OcrController : public QObject
@@ -47,6 +48,7 @@ public:
     bool isEnabled() const { return m_enabled; }
 
     void applyConfiguration();
+    bool applyTesseractConfiguration();
 
     // Tesseract settings
     void setTesseractTessdataPath(const QString &path);
@@ -54,6 +56,7 @@ public:
     void setTesseractLanguage(const QString &lang);
     void setTesseractMode(int mode);
     void setTesseractAutoInterval(double seconds);
+    void setTesseractTuning(const TesseractTuning &tuning);
     QStringList availableTesseractLanguages();
     bool isTesseractRunning() const;
     QString tesseractActiveLang() const { return m_tesseractActiveLang; }

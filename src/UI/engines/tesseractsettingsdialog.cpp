@@ -16,177 +16,166 @@
 ******************************************************************************/
 
 #include "tesseractsettingsdialog.h"
+#include "ui_tesseractsettingsdialog.h"
 #include "src/utils/logger.h"
 #include "src/utils/dialogutils.h"
 
-#include <QLabel>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QCheckBox>
-#include <QRadioButton>
-#include <QSpinBox>
-#include <QButtonGroup>
-#include <QFormLayout>
-#include <QDialogButtonBox>
-#include <QHBoxLayout>
+#include <QDir>
 #include <QFileDialog>
 
 TesseractSettingsDialog::TesseractSettingsDialog(const QString &status,
-                                                const QString &currentLanguage,
-                                                const QStringList &LanguageList,
-                                                const QString &tessdataPath,
-                                                bool useSystemTessdata,
-                                                int mode,
-                                                int autoInterval,
+                                                const TesseractConfig &config,
                                                 TesseractOcr *tesseractOcr,
                                                 QWidget *parent)
     : QDialog(parent)
+    , ui(new Ui::TesseractSettingsDialog)
+    , m_tesseractOcr(tesseractOcr)
 {
-    m_tesseractOcr = tesseractOcr;
+    ui->setupUi(this);
 
-    setWindowTitle("Tesseract");
+    ui->applyHintLabel->setForegroundRole(QPalette::PlaceholderText);
 
-    // Status
-    QLabel *statusTitleLabel = new QLabel(tr("Status"));
-    m_statusLabel = new QLabel(status);
-    
-    // Language
-    QLabel *comboBoxLabel = new QLabel(tr("Language"));
-    m_comboBox = new QComboBox;
-    m_comboBox->addItems(LanguageList);
+    ui->splitter->setCollapsible(0, false);
+    ui->splitter->setStretchFactor(0, 0);
+    ui->splitter->setStretchFactor(1, 1);
+    ui->splitter->setSizes({480, 420});
 
-    int index = LanguageList.indexOf(currentLanguage);
-    if (index != -1) {
-        m_comboBox->setCurrentIndex(index);
-    }
+    ui->psmComboBox->addItem(tr("Auto (by region size)"), TesseractTuning::PsmAuto);
+    ui->psmComboBox->addItem(tr("Single block"), TesseractTuning::PsmBlock);
+    ui->psmComboBox->addItem(tr("Single line"), TesseractTuning::PsmLine);
+    ui->psmComboBox->addItem(tr("Sparse text"), TesseractTuning::PsmSparse);
 
-    QPushButton *updateButton = new QPushButton();
-    updateButton->setText(tr("Update list"));
-    connect(updateButton, &QPushButton::clicked, this, &TesseractSettingsDialog::on_updateLanguagesButton_clicked);
-
-    QHBoxLayout *langLayout = new QHBoxLayout;
-    langLayout->addWidget(m_comboBox);
-    langLayout->addWidget(updateButton);
-
-    // Tessdata path
-    QLabel *pathLabel = new QLabel(tr("Tessdata path"));
-    m_pathLineEdit = new QLineEdit;
-    m_pathLineEdit->setText(tessdataPath);
-
-    QPushButton *browseButton = new QPushButton(tr("Browse"));
-    connect(browseButton, &QPushButton::clicked, this, [this]() {
-        QString path = QFileDialog::getExistingDirectory(this, "Select Tessdata Directory", m_pathLineEdit->text());
+    connect(ui->browseButton, &QPushButton::clicked, this, [this]() {
+        QString path = QFileDialog::getExistingDirectory(this, "Select Tessdata Directory", ui->tessdataPathEdit->text());
         if (!path.isEmpty()) {
-            m_pathLineEdit->setText(path);
+            ui->tessdataPathEdit->setText(path);
         }
     });
 
-    QHBoxLayout *pathLayout = new QHBoxLayout;
-    pathLayout->addWidget(m_pathLineEdit);
-    pathLayout->addWidget(browseButton);
-
-    // Use system tessdata checkbox
-    m_systemTessdataCheckBox = new QCheckBox(tr("Use system tessdata"));
-    m_systemTessdataCheckBox->setChecked(useSystemTessdata);
-
-    // Processing mode
-    QLabel *modeLabel = new QLabel(tr("Processing mode"));
-    m_autoRadio = new QRadioButton(tr("Automatic"));
-    m_manualRadio = new QRadioButton(tr("Manual"));
-    
-    m_modeGroup = new QButtonGroup(this);
-    m_modeGroup->addButton(m_autoRadio, int(Mode::Auto));
-    m_modeGroup->addButton(m_manualRadio, int(Mode::Manual));
-    
-    if (mode == 0) {
-        m_autoRadio->setChecked(true);
-    } else {
-        m_manualRadio->setChecked(true);
-    }
-
-    QHBoxLayout *modeLayout = new QHBoxLayout;
-    modeLayout->addWidget(m_autoRadio);
-    modeLayout->addWidget(m_manualRadio);
-
-    // Auto OCR interval
-    QLabel *intervalLabel = new QLabel(tr("Auto OCR interval (sec)"));
-    m_intervalSpinBox = new QSpinBox;
-    m_intervalSpinBox->setRange(1, 3600);
-    m_intervalSpinBox->setSuffix(" sec");
-    m_intervalSpinBox->setValue(autoInterval);
-
-    connect(m_manualRadio, &QRadioButton::toggled, this, [this](bool checked) {
-        m_intervalSpinBox->setEnabled(!checked);
+    connect(ui->resetButton, &QPushButton::clicked, this, [this]() {
+        const TesseractTuning defaults;
+        ui->skipUnchangedCheckBox->setChecked(defaults.skipUnchanged);
+        ui->filterNoiseCheckBox->setChecked(defaults.filterNoise);
+        ui->sensitivitySlider->setValue(defaults.changeSensitivity);
+        ui->toleranceSlider->setValue(defaults.textTolerance);
+        ui->confidenceSlider->setValue(defaults.minConfidence);
+        ui->psmComboBox->setCurrentIndex(ui->psmComboBox->findData(defaults.psm));
     });
 
-    // Apply font styles
-    QFont labelFont;
-    labelFont.setBold(true);
-    statusTitleLabel->setFont(labelFont);
-    comboBoxLabel->setFont(labelFont);
-    pathLabel->setFont(labelFont);
-    modeLabel->setFont(labelFont);
-    intervalLabel->setFont(labelFont);
+    connect(ui->sensitivitySlider, &QSlider::valueChanged, this, &TesseractSettingsDialog::updateValueLabels);
+    connect(ui->toleranceSlider, &QSlider::valueChanged, this, &TesseractSettingsDialog::updateValueLabels);
+    connect(ui->confidenceSlider, &QSlider::valueChanged, this, &TesseractSettingsDialog::updateValueLabels);
 
-    // Dialog buttons
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    connect(ui->manualRadio, &QRadioButton::toggled, this, &TesseractSettingsDialog::updateEnabledState);
+    connect(ui->skipUnchangedCheckBox, &QCheckBox::toggled, this, &TesseractSettingsDialog::updateEnabledState);
+    connect(ui->filterNoiseCheckBox, &QCheckBox::toggled, this, &TesseractSettingsDialog::updateEnabledState);
 
-    // Form layout
-    QFormLayout *formLayout = new QFormLayout;
-    formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    formLayout->addRow(statusTitleLabel, m_statusLabel);
-    formLayout->addRow(comboBoxLabel, langLayout);
-    formLayout->addRow(pathLabel, pathLayout);
-    formLayout->addRow("", m_systemTessdataCheckBox);
-    formLayout->addRow(modeLabel, modeLayout);
-    formLayout->addRow(intervalLabel, m_intervalSpinBox);
+    auto applyLive = [this]() {
+        if (!m_loading) m_tesseractOcr->setTuning(currentTuning());
+    };
+    
+    connect(ui->skipUnchangedCheckBox, &QCheckBox::toggled, this, applyLive);
+    connect(ui->filterNoiseCheckBox, &QCheckBox::toggled, this, applyLive);
+    connect(ui->sensitivitySlider, &QSlider::valueChanged, this, applyLive);
+    connect(ui->toleranceSlider, &QSlider::valueChanged, this, applyLive);
+    connect(ui->confidenceSlider, &QSlider::valueChanged, this, applyLive);
+    connect(ui->psmComboBox, &QComboBox::currentIndexChanged, this, applyLive);
 
-    // Main layout
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(formLayout);
-    mainLayout->addStretch();
-    mainLayout->addWidget(buttonBox);
-    setLayout(mainLayout);
-    adjustSize();
+    // Apply is available only while the dialog differs from what is currently applied
+    auto onChanged = [this]() {
+        if (!m_loading) updateApplyButton();
+    };
+    connect(ui->languageComboBox, &QComboBox::currentIndexChanged, this, onChanged);
+    connect(ui->tessdataPathEdit, &QLineEdit::textChanged, this, onChanged);
+    connect(ui->systemTessdataCheckBox, &QCheckBox::toggled, this, onChanged);
+    connect(ui->manualRadio, &QRadioButton::toggled, this, onChanged);
+    connect(ui->intervalSpinBox, &QSpinBox::valueChanged, this, onChanged);
+    connect(ui->skipUnchangedCheckBox, &QCheckBox::toggled, this, onChanged);
+    connect(ui->filterNoiseCheckBox, &QCheckBox::toggled, this, onChanged);
+    connect(ui->sensitivitySlider, &QSlider::valueChanged, this, onChanged);
+    connect(ui->toleranceSlider, &QSlider::valueChanged, this, onChanged);
+    connect(ui->confidenceSlider, &QSlider::valueChanged, this, onChanged);
+    connect(ui->psmComboBox, &QComboBox::currentIndexChanged, this, onChanged);
+
+    connect(m_tesseractOcr, &TesseractOcr::statsUpdated, this, [this](int runs, int skipped, int duplicates, int sent) {
+        ui->previewHintLabel->hide();
+        ui->readValueLabel->setText(QString::number(runs));
+        ui->skippedUnchangedValueLabel->setText(QString::number(skipped));
+        ui->skippedSameValueLabel->setText(QString::number(duplicates));
+        ui->sentValueLabel->setText(QString::number(sent));
+    });
+    connect(m_tesseractOcr, &TesseractOcr::recognized, this, [this](const QString &text, const QString &dropped) {
+        ui->recognizedEdit->setPlainText(text);
+        ui->droppedEdit->setPlainText(dropped);
+    });
+    connect(ui->buttonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton *button) {
+        if (ui->buttonBox->buttonRole(button) == QDialogButtonBox::ApplyRole) emit applyRequested();
+    });
+    connect(this, &QDialog::rejected, this, [this]() { m_tesseractOcr->setTuning(m_originalConfig.tuning); });
+
+    setValues(status, config);
 }
 
-TesseractSettingsDialog::~TesseractSettingsDialog() {}
-
-QString TesseractSettingsDialog::getCurrentLanguage() const
+TesseractSettingsDialog::~TesseractSettingsDialog()
 {
-    return m_comboBox->currentText();
+    delete ui;
 }
 
-QStringList TesseractSettingsDialog::getLanguageList() const
+void TesseractSettingsDialog::setValues(const QString &status, const TesseractConfig &config)
 {
-    QStringList items;
-    for (int i = 0; i < m_comboBox->count(); ++i) {
-        items << m_comboBox->itemText(i);
+    m_loading = true;
+    m_originalConfig = config;
+
+    ui->statusLabel->setText(status);
+
+    ui->languageComboBox->clear();
+    ui->languageComboBox->addItems(config.languages);
+    const int index = config.languages.indexOf(config.language);
+    if (index != -1) {
+        ui->languageComboBox->setCurrentIndex(index);
     }
-    return items;
+
+    ui->tessdataPathEdit->setText(config.tessdataPath);
+    ui->systemTessdataCheckBox->setChecked(config.useSystemTessdata);
+    (config.mode == Auto ? ui->autoRadio : ui->manualRadio)->setChecked(true);
+    ui->intervalSpinBox->setValue(config.autoInterval);
+
+    const TesseractTuning &tuning = config.tuning;
+    ui->skipUnchangedCheckBox->setChecked(tuning.skipUnchanged);
+    ui->filterNoiseCheckBox->setChecked(tuning.filterNoise);
+    ui->sensitivitySlider->setValue(tuning.changeSensitivity);
+    ui->toleranceSlider->setValue(tuning.textTolerance);
+    ui->confidenceSlider->setValue(tuning.minConfidence);
+    ui->psmComboBox->setCurrentIndex(std::max(0, ui->psmComboBox->findData(tuning.psm)));
+    updateValueLabels();
+
+    ui->previewHintLabel->setText(tr("Waiting for frames..."));
+    ui->previewHintLabel->show();
+    for (QLabel *counter : {ui->readValueLabel, ui->skippedUnchangedValueLabel, ui->skippedSameValueLabel, ui->sentValueLabel}) {
+        counter->setText(QStringLiteral("0"));
+    }
+    ui->recognizedEdit->clear();
+    ui->droppedEdit->clear();
+
+    m_loading = false;
+    updateEnabledState();
+    updateApplyButton();
+    m_tesseractOcr->resetStats();
 }
 
-QString TesseractSettingsDialog::getTessdataPath() const
+TesseractConfig TesseractSettingsDialog::getConfig() const
 {
-    return m_pathLineEdit->text();
-}
-
-bool TesseractSettingsDialog::getUseSystemTessdata() const
-{
-    return m_systemTessdataCheckBox->isChecked();
-}
-
-int TesseractSettingsDialog::getMode() const
-{
-    return static_cast<Mode>(m_modeGroup->checkedId());
-}
-
-int TesseractSettingsDialog::getAutoInterval() const
-{
-    return m_intervalSpinBox->value();
+    TesseractConfig config;
+    config.language = ui->languageComboBox->currentText();
+    for (int i = 0; i < ui->languageComboBox->count(); ++i) {
+        config.languages << ui->languageComboBox->itemText(i);
+    }
+    config.tessdataPath = ui->tessdataPathEdit->text();
+    config.useSystemTessdata = ui->systemTessdataCheckBox->isChecked();
+    config.mode = ui->manualRadio->isChecked() ? Manual : Auto;
+    config.autoInterval = ui->intervalSpinBox->value();
+    config.tuning = currentTuning();
+    return config;
 }
 
 void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
@@ -206,11 +195,11 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
         m_tesseractOcr->stop();
     }
 
-    m_comboBox->clear();
+    ui->languageComboBox->clear();
     m_tesseractOcr->setTessdataPath("");
 
-    if (!m_systemTessdataCheckBox->isChecked()) {
-        QString tessdataPath = m_pathLineEdit->text();
+    if (!ui->systemTessdataCheckBox->isChecked()) {
+        QString tessdataPath = ui->tessdataPathEdit->text();
         QDir dir(tessdataPath);
         bool isValidTessdataDir = dir.exists() && !dir.entryList({"*.traineddata"}, QDir::Files).isEmpty();
         if (!isValidTessdataDir) {
@@ -236,8 +225,42 @@ void TesseractSettingsDialog::on_updateLanguagesButton_clicked()
     }
 
     for (const auto& language : languages) {
-        m_comboBox->addItem(QString::fromStdString(language));
+        ui->languageComboBox->addItem(QString::fromStdString(language));
     }
 
     restoreState();
+}
+
+TesseractTuning TesseractSettingsDialog::currentTuning() const
+{
+    TesseractTuning tuning;
+    tuning.skipUnchanged = ui->skipUnchangedCheckBox->isChecked();
+    tuning.filterNoise = ui->filterNoiseCheckBox->isChecked();
+    tuning.changeSensitivity = ui->sensitivitySlider->value();
+    tuning.textTolerance = ui->toleranceSlider->value();
+    tuning.minConfidence = ui->confidenceSlider->value();
+    tuning.psm = ui->psmComboBox->currentData().toInt();
+    return tuning;
+}
+
+void TesseractSettingsDialog::updateValueLabels()
+{
+    ui->sensitivityValueLabel->setText(QString::number(ui->sensitivitySlider->value()));
+    ui->toleranceValueLabel->setText(tr("%1 chars").arg(ui->toleranceSlider->value()));
+    ui->confidenceValueLabel->setText(QString::number(ui->confidenceSlider->value()));
+}
+
+void TesseractSettingsDialog::updateEnabledState()
+{
+    const bool manual = ui->manualRadio->isChecked();
+    const bool skip = ui->skipUnchangedCheckBox->isChecked();
+    ui->intervalSpinBox->setEnabled(!manual);
+    ui->sensitivitySlider->setEnabled(!manual && skip);
+    ui->toleranceSlider->setEnabled(skip);
+    ui->confidenceSlider->setEnabled(ui->filterNoiseCheckBox->isChecked());
+}
+
+void TesseractSettingsDialog::updateApplyButton()
+{
+    ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(!getConfig().sameSettings(m_originalConfig));
 }

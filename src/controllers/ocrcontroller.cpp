@@ -77,6 +77,14 @@ void OcrController::applyConfiguration()
     }
 }
 
+bool OcrController::applyTesseractConfiguration()
+{
+    if (!m_enabled || m_engine != Tesseract) return false;
+
+    configureTesseract();
+    return true;
+}
+
 // ===============================================================
 // Tesseract settings
 // ===============================================================
@@ -106,6 +114,11 @@ void OcrController::setTesseractAutoInterval(double seconds)
 {
     m_tesseractAutoInterval = seconds;
     if (m_tesseractOcr) m_tesseractOcr->setDelay(seconds);
+}
+
+void OcrController::setTesseractTuning(const TesseractTuning &tuning)
+{
+    if (m_tesseractOcr) m_tesseractOcr->setTuning(tuning);
 }
 
 QStringList OcrController::availableTesseractLanguages()

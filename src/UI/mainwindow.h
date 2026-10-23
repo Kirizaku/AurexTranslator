@@ -18,6 +18,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QPointer>
 #include <QWidget>
 #include <QNetworkProxy>
 #include <QTableWidgetItem>
@@ -267,6 +268,13 @@ private:
     bool m_overlayHasActiveGame = false;
     int m_lastVisibleOutputWindowMode = 0;
     void applyOutputWindowMode(int index);
+    void loadTesseractSettings(const QJsonObject &tesseract);
+    void saveTesseractSettings(QJsonObject &tesseract) const;
+    void applyTesseractToController();
+    bool tesseractDialogDiffers() const;
+    void readTesseractDialogValues();
+    void applyTesseractSettings();
+    QString tesseractStatusText() const;
     void showHistory();
     void toggleOutputWindow();
     void setOutputWindowModeNow(int index);
@@ -317,20 +325,15 @@ private:
 
     OcrEngine m_ocrEngine = OcrEngine::Tesseract;
 
-    TesseractSettingsDialog *m_tesseractSettingsDialog = nullptr;
-    QString m_tesseractSelectedLang = "";
+    QPointer<TesseractSettingsDialog> m_tesseractSettingsDialog;
+    TesseractConfig m_tesseract;
     QString m_tesseractActiveLang = "";
-    QStringList m_tesserractLangList;
-    QString m_tesseractTessdataPath = "./tessdata";
-    bool m_tesseractUseSystemTessdata = false;
 
     enum ProcessingMode {
         Auto,
         Manual
     };
 
-    int m_tesseractMode = Auto;
-    int m_tesseractAutoInterval = 1;
 
     int m_ollamaVisionMode = Manual;
     int m_ollamaVisionAutoInterval = 10;

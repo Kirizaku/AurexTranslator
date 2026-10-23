@@ -22,14 +22,27 @@
 
 #include "../engines/tesseractocr.h"
 
-class QLabel;
-class QComboBox;
-class QLineEdit;
-class QCheckBox;
-class QRadioButton;
-class QSpinBox;
-class QButtonGroup;
-class QPlainTextEdit;
+namespace Ui {
+class TesseractSettingsDialog;
+}
+
+struct TesseractConfig
+{
+    QString language;
+    QStringList languages;
+    QString tessdataPath = QStringLiteral("./tessdata");
+    bool useSystemTessdata = false;
+    int mode = 0;
+    int autoInterval = 1;
+    TesseractTuning tuning;
+
+    bool sameSettings(const TesseractConfig &other) const
+    {
+        return language == other.language && tessdataPath == other.tessdataPath
+            && useSystemTessdata == other.useSystemTessdata && mode == other.mode
+            && autoInterval == other.autoInterval && tuning == other.tuning;
+    }
+};
 
 class TesseractSettingsDialog : public QDialog
 {
@@ -37,36 +50,30 @@ class TesseractSettingsDialog : public QDialog
 
 public:
     explicit TesseractSettingsDialog(const QString &status,
-                                    const QString &currentLanguage,
-                                    const QStringList &LanguageList,
-                                    const QString &tessdataPath,
-                                    bool useSystemTessdata,
-                                    int mode,
-                                    int autoInterval,
+                                    const TesseractConfig &config,
                                     TesseractOcr *m_tesseractOcr,
                                     QWidget *parent = nullptr);
     ~TesseractSettingsDialog();
 
-    QString getCurrentLanguage() const;
-    QStringList getLanguageList() const;
-    QString getTessdataPath() const;
-    bool getUseSystemTessdata() const;
-    int getMode() const;
-    int getAutoInterval() const;
+    void setValues(const QString &status, const TesseractConfig &config);
+    TesseractConfig getConfig() const;
+
+signals:
+    void applyRequested();
 
 private slots:
     void on_updateLanguagesButton_clicked();
 
 private:
+    TesseractTuning currentTuning() const;
+    void updateValueLabels();
+    void updateEnabledState();
+    void updateApplyButton();
+
+    Ui::TesseractSettingsDialog *const ui;
     TesseractOcr *m_tesseractOcr;
-    QLabel *m_statusLabel;
-    QComboBox *m_comboBox;
-    QLineEdit *m_pathLineEdit;
-    QCheckBox *m_systemTessdataCheckBox;
-    QRadioButton *m_autoRadio;
-    QRadioButton *m_manualRadio;
-    QSpinBox *m_intervalSpinBox;
-    QButtonGroup *m_modeGroup;
+    TesseractConfig m_originalConfig;
+    bool m_loading = false;
 
     enum Mode {
         Auto,

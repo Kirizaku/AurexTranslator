@@ -73,7 +73,7 @@ set(PROJECT_SOURCES
     src/UI/widgets/hoverlabel.h src/UI/widgets/hoverlabel.cpp
     src/UI/widgets/processlogwindow.h src/UI/widgets/processlogwindow.cpp
     src/UI/engines/ollamasettingsdialog.h src/UI/engines/ollamasettingsdialog.cpp
-    src/UI/engines/tesseractsettingsdialog.h src/UI/engines/tesseractsettingsdialog.cpp
+    src/UI/engines/tesseractsettingsdialog.h src/UI/engines/tesseractsettingsdialog.cpp src/UI/forms/tesseractsettingsdialog.ui
     src/UI/engines/googlesettingsdialog.h src/UI/engines/googlesettingsdialog.cpp
     src/UI/engines/pipersettingsdialog.h src/UI/engines/pipersettingsdialog.cpp
     src/UI/engines/customsettingsdialog.h src/UI/engines/customsettingsdialog.cpp

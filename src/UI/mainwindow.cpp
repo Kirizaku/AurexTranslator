@@ -369,40 +369,118 @@ void MainWindow::on_textProcessingOCREngineToggled_stateChanged(int arg1)
     ui->textProcessingOCREngineOllamaVisionRadio->setEnabled(arg1);
 }
 
-void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
+void MainWindow::loadTesseractSettings(const QJsonObject &tesseract)
 {
-    const QString status = QStringLiteral("<b>%1%2</b>").arg(
+    const TesseractTuning defaults;
+    TesseractTuning &tuning = m_tesseract.tuning;
+
+    m_tesseract.language = tesseract.value("lang").toString();
+    m_tesseractActiveLang = m_tesseract.language;
+    m_tesseract.useSystemTessdata = tesseract["is_systemdata"].toBool();
+    m_tesseract.tessdataPath = tesseract["path_tessdata"].toString(QStringLiteral("./tessdata"));
+    m_tesseract.mode = tesseract["mode"].toInt();
+    m_tesseract.autoInterval = tesseract["delay"].toInt(1);
+    tuning.skipUnchanged = tesseract["skip_unchanged"].toBool(defaults.skipUnchanged);
+    tuning.filterNoise = tesseract["filter_noise"].toBool(defaults.filterNoise);
+    tuning.changeSensitivity = qBound(0, tesseract["change_sensitivity"].toInt(defaults.changeSensitivity), 100);
+    tuning.textTolerance = qBound(0, tesseract["text_tolerance"].toInt(defaults.textTolerance), 10);
+    tuning.minConfidence = qBound(0, tesseract["min_confidence"].toInt(defaults.minConfidence), 80);
+    tuning.psm = qBound(0, tesseract["psm"].toInt(defaults.psm), int(TesseractTuning::PsmSparse));
+
+    m_ocrController->setTesseractMode(m_tesseract.mode);
+    m_ocrController->setTesseractAutoInterval(m_tesseract.autoInterval);
+    m_ocrController->setTesseractTuning(tuning);
+}
+
+void MainWindow::saveTesseractSettings(QJsonObject &tesseract) const
+{
+    const TesseractTuning &tuning = m_tesseract.tuning;
+
+    tesseract["lang"] = m_tesseract.language;
+    tesseract["is_systemdata"] = m_tesseract.useSystemTessdata;
+    tesseract["path_tessdata"] = m_tesseract.tessdataPath;
+    tesseract["mode"] = m_tesseract.mode;
+    tesseract["delay"] = m_tesseract.autoInterval;
+    tesseract["skip_unchanged"] = tuning.skipUnchanged;
+    tesseract["filter_noise"] = tuning.filterNoise;
+    tesseract["change_sensitivity"] = tuning.changeSensitivity;
+    tesseract["text_tolerance"] = tuning.textTolerance;
+    tesseract["min_confidence"] = tuning.minConfidence;
+    tesseract["psm"] = tuning.psm;
+}
+
+void MainWindow::applyTesseractToController()
+{
+    m_ocrController->setTesseractTessdataPath(m_tesseract.tessdataPath);
+    m_ocrController->setTesseractUseSystemTessdata(m_tesseract.useSystemTessdata);
+    m_ocrController->setTesseractLanguage(m_tesseractActiveLang);
+    m_ocrController->setTesseractMode(m_tesseract.mode);
+    m_ocrController->setTesseractAutoInterval(m_tesseract.autoInterval);
+    m_ocrController->setTesseractTuning(m_tesseract.tuning);
+}
+
+bool MainWindow::tesseractDialogDiffers() const
+{
+    return !m_tesseract.sameSettings(m_tesseractSettingsDialog->getConfig());
+}
+
+void MainWindow::readTesseractDialogValues()
+{
+    m_tesseract = m_tesseractSettingsDialog->getConfig();
+}
+
+void MainWindow::applyTesseractSettings()
+{
+    readTesseractDialogValues();
+
+    QJsonObject textProcessing = Config::getValue("text_processing").toJsonObject();
+    QJsonObject tesseract = textProcessing.value("tesseract").toObject();
+    saveTesseractSettings(tesseract);
+    textProcessing["tesseract"] = tesseract;
+    Config::setValue("text_processing", textProcessing);
+    Config::save();
+
+    m_tesseractActiveLang = m_tesseract.language;
+    applyTesseractToController();
+    if (m_ocrController->applyTesseractConfiguration()) {
+        m_tesseract.languages = m_ocrController->availableTesseractLanguages();
+    }
+
+    m_tesseractSettingsDialog->setValues(tesseractStatusText(), m_tesseract);
+}
+
+QString MainWindow::tesseractStatusText() const
+{
+    return QStringLiteral("<b>%1%2</b>").arg(
         m_ocrController->isTesseractRunning() ? tr("Active") : tr("Inactive"),
         m_tesseractActiveLang.isEmpty() ? QString() : QStringLiteral(" [%1]").arg(m_tesseractActiveLang)
     );
+}
 
-    m_tesseractSettingsDialog = new TesseractSettingsDialog(status,
-                                                            m_tesseractSelectedLang,
-                                                            m_tesserractLangList,
-                                                            m_tesseractTessdataPath,
-                                                            m_tesseractUseSystemTessdata,
-                                                            m_tesseractMode,
-                                                            m_tesseractAutoInterval,
-                                                            m_ocrController->tesseract(),
-                                                            this);
+void MainWindow::on_textProcessingOCREngineTesseractSettingsButton_clicked()
+{
+    if (m_tesseractSettingsDialog) {
+        m_tesseractSettingsDialog->raise();
+        m_tesseractSettingsDialog->activateWindow();
+        return;
+    }
 
-    m_tesseractSettingsDialog->setWindowModality(Qt::WindowModal);
+    m_tesseractSettingsDialog = new TesseractSettingsDialog(tesseractStatusText(), m_tesseract, m_ocrController->tesseract(), this);
+
     m_tesseractSettingsDialog->setAttribute(Qt::WA_DeleteOnClose);
 
     connect(m_tesseractSettingsDialog, &QDialog::finished, this, [this](int result) {
-        if (result == QDialog::Accepted) {
-            m_tesseractSelectedLang = m_tesseractSettingsDialog->getCurrentLanguage();
-            m_tesserractLangList = m_tesseractSettingsDialog->getLanguageList();
-            m_tesseractUseSystemTessdata = m_tesseractSettingsDialog->getUseSystemTessdata();
-            m_tesseractTessdataPath = m_tesseractSettingsDialog->getTessdataPath();
-            m_tesseractMode = m_tesseractSettingsDialog->getMode();
-            m_tesseractAutoInterval = m_tesseractSettingsDialog->getAutoInterval();
+        if (result != QDialog::Accepted) return;
 
-            m_textProcessingChanged = true;
-            ui->textProcessingOCREngineTesseractRadio->setProperty("changed", true);
-            ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
-        }
+        const bool changed = tesseractDialogDiffers();
+        readTesseractDialogValues();
+        if (!changed) return;
+
+        m_textProcessingChanged = true;
+        ui->textProcessingOCREngineTesseractRadio->setProperty("changed", true);
+        ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
     });
+    connect(m_tesseractSettingsDialog, &TesseractSettingsDialog::applyRequested, this, &MainWindow::applyTesseractSettings);
 
     m_tesseractSettingsDialog->show();
 }
@@ -3708,6 +3786,10 @@ void MainWindow::loadConfig()
     ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(false);
     setPropertyChanged(false);
 
+    if (m_tesseractSettingsDialog) {
+        m_tesseractSettingsDialog->setValues(tesseractStatusText(), m_tesseract);
+    }
+
     activateProfileForHook();
 }
 
@@ -3953,15 +4035,7 @@ void MainWindow::loadTextProcessingSettings(const QJsonObject& textProcessing)
         if (widgetChanged(ui->textProcessingOCREngineTesseractRadio))
             ui->textProcessingOCREngineTesseractRadio->setChecked(tesseract["is_tesseract"].toBool(true));
 
-        m_tesseractActiveLang = tesseract.value("lang").toString();
-        m_tesseractUseSystemTessdata = tesseract["is_systemdata"].toBool();
-        m_tesseractTessdataPath = tesseract["path_tessdata"].toString(QStringLiteral("./tessdata"));
-        m_tesseractMode = tesseract["mode"].toInt();
-        m_tesseractAutoInterval = tesseract["delay"].toDouble(1);
-        m_tesseractSelectedLang = m_tesseractActiveLang;
-
-        m_ocrController->setTesseractMode(m_tesseractMode);
-        m_ocrController->setTesseractAutoInterval(m_tesseractAutoInterval);
+        loadTesseractSettings(tesseract);
 
         // Ollama Vision
         QJsonObject ollama_vision = textProcessing["ollama_vision"].toObject();
@@ -4244,11 +4318,7 @@ void MainWindow::loadOcrSettings()
                                    : OcrController::OllamaVision);
     m_ocrController->setEnabled(isEnabled);
 
-    m_ocrController->setTesseractTessdataPath(m_tesseractTessdataPath);
-    m_ocrController->setTesseractUseSystemTessdata(m_tesseractUseSystemTessdata);
-    m_ocrController->setTesseractLanguage(m_tesseractActiveLang);
-    m_ocrController->setTesseractMode(m_tesseractMode);
-    m_ocrController->setTesseractAutoInterval(m_tesseractAutoInterval);
+    applyTesseractToController();
 
     m_ocrController->setOllamaVisionPrompt(m_ollamaVisionPrompt);
     m_ocrController->setOllamaVisionMode(m_ollamaVisionMode);
@@ -4259,7 +4329,7 @@ void MainWindow::loadOcrSettings()
 
     // Refresh language list from Tesseract (only meaningful for Tesseract path).
     if (m_ocrEngine == OcrEngine::Tesseract && tesseractChanged) {
-        m_tesserractLangList = m_ocrController->availableTesseractLanguages();
+        m_tesseract.languages = m_ocrController->availableTesseractLanguages();
     }
 }
 
@@ -5124,11 +5194,7 @@ void MainWindow::saveConfig()
         if (widgetChanged(ui->textProcessingOCREngineTesseractRadio))
             tesseract["is_tesseract"] = ui->textProcessingOCREngineTesseractRadio->isChecked();
 
-        tesseract["lang"] = m_tesseractSelectedLang;
-        tesseract["is_systemdata"] = m_tesseractUseSystemTessdata;
-        tesseract["path_tessdata"] = m_tesseractTessdataPath;
-        tesseract["mode"] = m_tesseractMode;
-        tesseract["delay"] = m_tesseractAutoInterval;
+        saveTesseractSettings(tesseract);
 
         // Ollama Vision
         QJsonObject ollama_vision = textProcessing.value("ollama_vision").toObject();

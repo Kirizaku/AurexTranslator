@@ -587,7 +587,7 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1440"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2128"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2202"/>
         <source>Clipboard</source>
         <translation>Буфер обмена</translation>
     </message>
@@ -887,13 +887,13 @@ Save anyway?</source>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1816"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1934"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2008"/>
         <source>Create environment</source>
         <translation>Создать окружение</translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1823"/>
-        <location filename="../src/UI/mainwindow.cpp" line="700"/>
+        <location filename="../src/UI/mainwindow.cpp" line="779"/>
         <source>Install Python</source>
         <translation>Установить Python</translation>
     </message>
@@ -948,27 +948,27 @@ Save anyway?</source>
         <translation>Пакеты</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2955"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2963"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2985"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3040"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3048"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3067"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3034"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3042"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3064"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3119"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3127"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3146"/>
         <source>Load preset</source>
         <translation>Загрузить пресет</translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1601"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3452"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3531"/>
         <source>Bind current game</source>
         <translation>Привязать текущую игру</translation>
     </message>
     <message>
         <location filename="../src/UI/forms/mainwindow.ui" line="1050"/>
         <location filename="../src/UI/forms/mainwindow.ui" line="1945"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1943"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1976"/>
-        <location filename="../src/UI/mainwindow.cpp" line="4583"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2017"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2050"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4654"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
@@ -1134,102 +1134,102 @@ Save anyway?</source>
         <translation>Сила размытия</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1897"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1971"/>
         <source>Not found</source>
         <translation>Не найден</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1899"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1973"/>
         <source>Ready</source>
         <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1900"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1974"/>
         <source>Not created yet</source>
         <translation>Еще не создано</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1919"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1993"/>
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1919"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1993"/>
         <source>Not installed</source>
         <translation>Не установлен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1933"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2007"/>
         <source>Update environment</source>
         <translation>Обновить окружение</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1943"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2017"/>
         <source>Reinstall</source>
         <translation>Переустановить</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2078"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2152"/>
         <source>Your own server</source>
         <translation>Ваш сервер</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2267"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2341"/>
         <source>Not running</source>
         <translation>Не запущен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2270"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2344"/>
         <source>Starting...</source>
         <translation>Запуск...</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2274"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2348"/>
         <source>Ready at %1, no voice chosen yet</source>
         <translation>Готов на %1, голос еще не выбран</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2275"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2349"/>
         <source>Ready at %1, voice %2</source>
         <translation>Готов на %1, голос %2</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2279"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2353"/>
         <source>Failed</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2284"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2358"/>
         <source>Not applied yet — %1 is still in use</source>
         <translation>Еще не применено — сейчас используется %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2345"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2419"/>
         <source>The list comes from the service; switch speech on and apply once to read it.</source>
         <translation>Список приходит от сервиса: включите озвучку и один раз нажмите «Применить», чтобы его получить.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2347"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2421"/>
         <source>The server has not reported its voices yet.</source>
         <translation>Сервер еще не сообщил свои голоса.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2348"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2422"/>
         <source>Open the engine settings to download a voice.</source>
         <translation>Откройте настройки движка, чтобы загрузить голос.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2406"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2480"/>
         <source>Open the engine settings and download a voice first.</source>
         <translation>Сначала откройте настройки движка и загрузите голос.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="701"/>
+        <location filename="../src/UI/mainwindow.cpp" line="780"/>
         <source>Python %1 will be downloaded from python.org (about 30 MB).</source>
         <translation>Python %1 будет загружен с python.org (около 30 МБ).</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="706"/>
+        <location filename="../src/UI/mainwindow.cpp" line="785"/>
         <source>For this program only — installed into its own folder, adds nothing to PATH and leaves the rest of the system alone.
 
 System-wide — an ordinary installation, available to other programs as well.</source>
@@ -1238,22 +1238,22 @@ System-wide — an ordinary installation, available to other programs as well.</
 Для всей системы — обычная установка, доступная и другим программам.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="710"/>
+        <location filename="../src/UI/mainwindow.cpp" line="789"/>
         <source>For this program only</source>
         <translation>Только для этой программы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="711"/>
+        <location filename="../src/UI/mainwindow.cpp" line="790"/>
         <source>System-wide</source>
         <translation>Для всей системы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1962"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2036"/>
         <source>Install %1</source>
         <translation>Установить %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1963"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2037"/>
         <source>These packages will be installed from PyPI:
 
 %1</source>
@@ -1262,30 +1262,30 @@ System-wide — an ordinary installation, available to other programs as well.</
 %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1969"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2043"/>
         <source>They are third-party code under their own licenses.
 Destination: %1</source>
         <translation>Это сторонний код со своими лицензиями.
 Куда: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="727"/>
+        <location filename="../src/UI/mainwindow.cpp" line="806"/>
         <source>Select a Python interpreter</source>
         <translation>Выберите интерпретатор Python</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="773"/>
-        <location filename="../src/UI/mainwindow.cpp" line="781"/>
+        <location filename="../src/UI/mainwindow.cpp" line="852"/>
+        <location filename="../src/UI/mainwindow.cpp" line="860"/>
         <source>Remove component</source>
         <translation>Удаление компонента</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="774"/>
+        <location filename="../src/UI/mainwindow.cpp" line="853"/>
         <source>Everything %1 installed is also being used by another component, so there is nothing here to remove.</source>
         <translation>Все, что установил компонент %1, используется и другим компонентом, так что удалять здесь нечего.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="782"/>
+        <location filename="../src/UI/mainwindow.cpp" line="861"/>
         <source>Remove %1?
 
 These packages go: %2
@@ -1298,155 +1298,155 @@ Anything they pulled in with them stays, and so does anything downloaded separat
 Все, что они притянули за собой, останется, как и загруженное отдельно — голоса и языковые пакеты лежат в собственной папке движка, их это не затронет.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2076"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2150"/>
         <source>On this machine</source>
         <translation>На этом компьютере</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2077"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2151"/>
         <source>Over the internet</source>
         <translation>Через интернет</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2122"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2196"/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2123"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2197"/>
         <source>Original</source>
         <translation>Оригинал</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2125"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2199"/>
         <source>Any source</source>
         <translation>Любой источник</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2126"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2200"/>
         <source>Screen (Tesseract)</source>
         <translation>Экран (Tesseract)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2127"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2201"/>
         <source>Screen (Ollama Vision)</source>
         <translation>Экран (Ollama Vision)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2131"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2205"/>
         <source>Whichever answers first</source>
         <translation>Кто ответит первым</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2136"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2210"/>
         <source>Manual (hotkey or button)</source>
         <translation>Ручной (горячая клавиша или кнопка)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2138"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2212"/>
         <source>Interrupt the current phrase</source>
         <translation>Прерывать текущую фразу</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2139"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2213"/>
         <source>Let the current phrase finish</source>
         <translation>Дожидаться конца фразы</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2145"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2219"/>
         <source>Speaks with the settings as applied. Press Apply first to hear a change.</source>
         <translation>Озвучивает с примененными настройками. Чтобы услышать изменения, сначала нажмите «Применить».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2147"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2221"/>
         <source>Settings for the chosen engine</source>
         <translation>Настройки выбранного движка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2148"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2222"/>
         <source>Engine settings</source>
         <translation>Настройки движка</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2160"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2234"/>
         <source>Edge TTS speaks through a Microsoft service rather than on this machine, so every phrase - translated or original - is sent over the internet, and nothing is spoken without a connection. The download itself is a small one.</source>
         <translation>Edge TTS озвучивает через сервис Microsoft, а не на этом компьютере, поэтому каждая фраза — и перевод, и оригинал — отправляется в интернет, а без соединения ничего не произносится. Сама загрузка при этом небольшая.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1811"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1885"/>
         <source>Open Original Screencast in New Window</source>
         <translation>Открыть оригинальную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1814"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1888"/>
         <source>Open Processed Screencast in New Window</source>
         <translation>Открыть обработанную трансляцию в новом окне</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2655"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2729"/>
         <source>Original Screencast Preview</source>
         <translation>Оригинальная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2660"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2734"/>
         <source>Processed Screencast Preview</source>
         <translation>Обработанная трансляция - предпросмотр</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="374"/>
+        <location filename="../src/UI/mainwindow.cpp" line="455"/>
         <source>Active</source>
         <translation>Активен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="374"/>
+        <location filename="../src/UI/mainwindow.cpp" line="455"/>
         <source>Inactive</source>
         <translation>Неактивен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1056"/>
-        <location filename="../src/UI/mainwindow.cpp" line="1068"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1132"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1144"/>
         <source>Warning</source>
         <translation>Внимание</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1056"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1132"/>
         <source>No screencast selected for OCR</source>
         <translation>Для OCR не выбрана трансляция</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2959"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3079"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3195"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3450"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3494"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3558"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3582"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3038"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3158"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3274"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3529"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3573"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3637"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3661"/>
         <source>Default</source>
         <translation>По умолчанию</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3200"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3279"/>
         <source>A ready-made TTS preset &quot;%1&quot; is available.</source>
         <translation>Есть готовый TTS-пресет «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2967"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3207"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3046"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3286"/>
         <source>Add to current</source>
         <translation>В текущий</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="928"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1004"/>
         <source>Select the Overlay capture source to see a preview</source>
         <translation>Для предпросмотра выберите источник захвата «Оверлей»</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="930"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1006"/>
         <source>Preview is off: capture is disabled</source>
         <translation>Предпросмотр выключен: захват отключен</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3201"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3280"/>
         <source>It adds text-normalization rules under Text processing → String replacement, where you can also load it yourself later.
 
 Load it into a new profile, or add it to the current profile &quot;%1&quot;?</source>
@@ -1455,151 +1455,151 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
 Загрузить в новый профиль или добавить в текущий профиль «%1»?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3208"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3287"/>
         <source>Not now</source>
         <translation>Не сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3554"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3578"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3633"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3657"/>
         <source>Profile name:</source>
         <translation>Имя профиля:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3559"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3583"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3638"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3662"/>
         <source>A profile with this name already exists.</source>
         <translation>Профиль с таким именем уже существует.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3614"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3693"/>
         <source>Delete profile &quot;%1&quot; and all its rules?</source>
         <translation>Удалить профиль «%1» и все его правила?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4334"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4405"/>
         <source>Text color</source>
         <translation>Цвет текста</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4346"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4417"/>
         <source>Background color</source>
         <translation>Цвет фона</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4398"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4469"/>
         <source>This registers the Vulkan implicit layer for every Vulkan process on the system (Global mode). It stays idle except for games you actually add. Continue?</source>
         <translation>Неявный слой Vulkan будет зарегистрирован для всех Vulkan-процессов в системе (глобальный режим). Он бездействует везде, кроме добавленных вами игр. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4405"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4476"/>
         <source>Install overlay support</source>
         <translation>Установка поддержки оверлея</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4420"/>
-        <location filename="../src/UI/mainwindow.cpp" line="4425"/>
-        <location filename="../src/UI/mainwindow.cpp" line="4461"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4491"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4496"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4532"/>
         <source>Overlay setup</source>
         <translation>Настройка оверлея</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4427"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4498"/>
         <source>&lt;ol&gt;&lt;li&gt;Enable Overlay capture (with &quot;Disable capture&quot; unchecked), or check &quot;In-game overlay&quot;, in Output settings.&lt;/li&gt;&lt;li&gt;Click &quot;Add game...&quot; and pick the running process.&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;This loads the overlay into every Vulkan process on the system, but only draws anything for games you&apos;ve actually added.&lt;/p&gt;</source>
         <translation>&lt;ol&gt;&lt;li&gt;В настройках вывода включите захват «Оверлей» (со снятым флажком «Отключить захват») или отметьте «Оверлей в игре».&lt;/li&gt;&lt;li&gt;Нажмите «Добавить игру...» и выберите запущенный процесс.&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Оверлей загружается во все Vulkan-процессы в системе, но рисует только в добавленных вами играх.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4448"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4519"/>
         <source>This removes the Vulkan layer and the launcher script. Games will no longer get the overlay until it&apos;s installed again. Continue?</source>
         <translation>Будут удалены слой Vulkan и скрипт запуска. Игры перестанут получать оверлей, пока вы не установите его снова. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4453"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4524"/>
         <source>Uninstall overlay support</source>
         <translation>Удаление поддержки оверлея</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4444"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4515"/>
         <source>This unregisters the Vulkan implicit layer. Games will no longer pick it up until it&apos;s installed again. Continue?</source>
         <translation>Регистрация неявного слоя Vulkan будет отменена. Игры перестанут его подхватывать, пока он не будет установлен снова. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4467"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4538"/>
         <source>Add Game</source>
         <translation>Добавление игры</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4473"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4544"/>
         <source>Switch Game</source>
         <translation>Смена игры</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4481"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4552"/>
         <source>Enable Overlay capture (with &quot;Disable capture&quot; unchecked), or check &quot;In-game overlay&quot;, in Output settings first.</source>
         <translation>Сначала в настройках вывода включите захват «Оверлей» (со снятым флажком «Отключить захват») или отметьте «Оверлей в игре».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4500"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4571"/>
         <source>Set Up Vulkan Overlay</source>
         <translation>Настройка оверлея Vulkan</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4508"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4579"/>
         <source>Set Up In-Game Overlay</source>
         <translation>Настройка оверлея в игре</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4545"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4616"/>
         <source>Vulkan overlay support is now set up. Restart any Vulkan game that&apos;s already running for the layer to take effect - one launched from now on will be picked up automatically.</source>
         <translation>Поддержка оверлея Vulkan настроена. Перезапустите уже запущенные Vulkan-игры, чтобы слой начал действовать, - игры, запущенные после этого, подхватят его автоматически.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4558"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4629"/>
         <source>How to launch a game with the overlay</source>
         <translation>Как запустить игру с оверлеем</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4596"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4667"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4604"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4675"/>
         <source>Steam (Launch Options):</source>
         <translation>Steam (параметры запуска):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4605"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4676"/>
         <source>Another launcher/shortcut (replace with the game&apos;s own path):</source>
         <translation>Другой лаунчер или ярлык (подставьте путь к игре):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4824"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4895"/>
         <source>Add to plugin hooks</source>
         <translation>Добавить в хуки плагина</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4852"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4923"/>
         <source>%1 settings</source>
         <translation>Настройки: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4899"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4970"/>
         <source>Active profile: %1</source>
         <translation>Активный профиль: %1</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4904"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4975"/>
         <source>%1 (active)</source>
         <translation>%1 (активный)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="480"/>
-        <location filename="../src/UI/mainwindow.cpp" line="487"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2966"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3206"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3554"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3559"/>
+        <location filename="../src/UI/mainwindow.cpp" line="559"/>
+        <location filename="../src/UI/mainwindow.cpp" line="566"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3045"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3285"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3633"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3638"/>
         <source>New profile</source>
         <translation>Новый профиль</translation>
     </message>
@@ -1614,7 +1614,7 @@ Load it into a new profile, or add it to the current profile &quot;%1&quot;?</so
         <translation>Это можно изменить в настройках. Больше это уведомление не появится.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="418"/>
+        <location filename="../src/UI/mainwindow.cpp" line="497"/>
         <source>The injector will get the CAP_SYS_PTRACE capability, so it no longer asks for a password. This is close to root-level access: any program running as your user will be able to use it to attach to other processes.
 
 The permission is removed whenever the plugin is updated and can be granted again here. Continue?</source>
@@ -1623,190 +1623,190 @@ The permission is removed whenever the plugin is updated and can be granted agai
 Право снимается при каждом обновлении плагина, его можно выдать заново здесь. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="423"/>
-        <location filename="../src/UI/mainwindow.cpp" line="429"/>
+        <location filename="../src/UI/mainwindow.cpp" line="502"/>
+        <location filename="../src/UI/mainwindow.cpp" line="508"/>
         <source>Allow without password</source>
         <translation>Разрешить без пароля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="481"/>
+        <location filename="../src/UI/mainwindow.cpp" line="560"/>
         <source>Profile name (snapshots the current settings):</source>
         <translation>Имя профиля (сохранит текущие настройки):</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="488"/>
-        <location filename="../src/UI/mainwindow.cpp" line="533"/>
+        <location filename="../src/UI/mainwindow.cpp" line="567"/>
+        <location filename="../src/UI/mainwindow.cpp" line="612"/>
         <source>A profile named &apos;%1&apos; already exists.</source>
         <translation>Профиль с именем «%1» уже существует.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="506"/>
+        <location filename="../src/UI/mainwindow.cpp" line="585"/>
         <source>Load profile</source>
         <translation>Загрузка профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="507"/>
+        <location filename="../src/UI/mainwindow.cpp" line="586"/>
         <source>Could not load profile &apos;%1&apos;.</source>
         <translation>Не удалось загрузить профиль «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="524"/>
-        <location filename="../src/UI/mainwindow.cpp" line="532"/>
-        <location filename="../src/UI/mainwindow.cpp" line="538"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3578"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3583"/>
+        <location filename="../src/UI/mainwindow.cpp" line="603"/>
+        <location filename="../src/UI/mainwindow.cpp" line="611"/>
+        <location filename="../src/UI/mainwindow.cpp" line="617"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3657"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3662"/>
         <source>Rename profile</source>
         <translation>Переименование профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="525"/>
+        <location filename="../src/UI/mainwindow.cpp" line="604"/>
         <source>New name:</source>
         <translation>Новое имя:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="538"/>
+        <location filename="../src/UI/mainwindow.cpp" line="617"/>
         <source>Rename failed.</source>
         <translation>Не удалось переименовать.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="551"/>
-        <location filename="../src/UI/mainwindow.cpp" line="557"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3614"/>
+        <location filename="../src/UI/mainwindow.cpp" line="630"/>
+        <location filename="../src/UI/mainwindow.cpp" line="636"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3693"/>
         <source>Delete profile</source>
         <translation>Удаление профиля</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="932"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1008"/>
         <source>Waiting for a frame...</source>
         <translation>Ожидание кадра...</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1068"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1144"/>
         <source>Select an OCR region first</source>
         <translation>Сначала выделите область OCR</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1538"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1610"/>
         <source>Select a font file</source>
         <translation>Выберите файл шрифта</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1540"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1612"/>
         <source>Font files (*.ttf *.otf *.ttc)</source>
         <translation>Файлы шрифтов (*.ttf *.otf *.ttc)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1579"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1653"/>
         <source>Launch the game through the at-overlay wrapper so its hook connects here automatically:</source>
         <translation>Запустите игру через обертку at-overlay, чтобы ее хук подключился сюда автоматически:</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="1602"/>
+        <location filename="../src/UI/mainwindow.cpp" line="1676"/>
         <source>Vulkan layer</source>
         <translation>Слой Vulkan</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2565"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2639"/>
         <source>System default</source>
         <translation>По умолчанию</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2904"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2983"/>
         <source>No presets found</source>
         <translation>Пресеты не найдены</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2907"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2986"/>
         <source>Load from file…</source>
         <translation>Загрузить из файла…</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2908"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2987"/>
         <source>Export current profile…</source>
         <translation>Экспорт текущего профиля…</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2909"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2988"/>
         <source>Open presets folder</source>
         <translation>Открыть папку пресетов</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2955"/>
-        <location filename="../src/UI/mainwindow.cpp" line="2985"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3048"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3034"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3064"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3127"/>
         <source>This preset file could not be read.</source>
         <translation>Не удалось прочитать файл пресета.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2964"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3043"/>
         <source>Load preset &quot;%1&quot;.</source>
         <translation>Загрузить пресет «%1».</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2965"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3044"/>
         <source>Load it into a new profile, or add it to the current profile &quot;%1&quot;?</source>
         <translation>Загрузить в новый профиль или добавить в текущий профиль «%1»?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3040"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3109"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3119"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3188"/>
         <source>Preset files (*.json)</source>
         <translation>Файлы пресетов (*.json)</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3067"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3146"/>
         <source>The preset could not be copied into the presets folder.</source>
         <translation>Не удалось скопировать пресет в папку пресетов.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3095"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3108"/>
-        <location filename="../src/UI/mainwindow.cpp" line="3119"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3174"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3187"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3198"/>
         <source>Export preset</source>
         <translation>Экспорт пресета</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3095"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3174"/>
         <source>This profile has no rules to export.</source>
         <translation>В этом профиле нет правил для экспорта.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3119"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3198"/>
         <source>The preset could not be written.</source>
         <translation>Не удалось записать файл пресета.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3199"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3278"/>
         <source>TTS preset</source>
         <translation>TTS-пресет</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3367"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3446"/>
         <source>None</source>
         <translation>— нет —</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="3453"/>
+        <location filename="../src/UI/mainwindow.cpp" line="3532"/>
         <source>&quot;%1&quot; already auto-selects the profile &quot;%2&quot;. Move it to this profile?</source>
         <translation>Игра «%1» уже автоматически выбирает профиль «%2». Перенести ее сюда?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="552"/>
+        <location filename="../src/UI/mainwindow.cpp" line="631"/>
         <source>The active profile can&apos;t be deleted. Load another profile first.</source>
         <translation>Активный профиль нельзя удалить. Сначала загрузите другой профиль.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="558"/>
+        <location filename="../src/UI/mainwindow.cpp" line="637"/>
         <source>Delete profile &apos;%1&apos;? This cannot be undone.</source>
         <translation>Удалить профиль «%1»? Это действие необратимо.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4403"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4474"/>
         <source>This installs a Vulkan layer and a launcher script for Vulkan and OpenGL games. Continue?</source>
         <translation>Будут установлены слой Vulkan и скрипт запуска для игр на Vulkan и OpenGL. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4501"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4572"/>
         <source>Vulkan overlay support isn&apos;t set up yet. This registers the Vulkan implicit layer for every Vulkan process on the system. It stays idle except for games you actually add. Continue?
 
 You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/OpenGL launcher &gt; Install.</source>
@@ -1815,7 +1815,7 @@ You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/O
 Это можно сделать и позже: Настройки вывода &gt; Оверлей в игре &gt; Запуск Vulkan/OpenGL &gt; Установить.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4509"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4580"/>
         <source>In-game overlay support isn&apos;t set up yet. This installs a Vulkan layer and a launcher script for Vulkan and OpenGL games. Continue?
 
 You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/OpenGL launcher &gt; Install.</source>
@@ -1824,42 +1824,42 @@ You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/O
 Это можно сделать и позже: Настройки вывода &gt; Оверлей в игре &gt; Запуск Vulkan/OpenGL &gt; Установить.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4521"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4592"/>
         <source>Don&apos;t show this again</source>
         <translation>Больше не показывать</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4574"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4645"/>
         <source>The launcher script couldn&apos;t be created because the overlay launcher plugin isn&apos;t deployed. The Vulkan layer is registered, but it only activates for games started with AT_OVERLAY_ENABLE=1.</source>
         <translation>Скрипт запуска не удалось создать, потому что плагин запуска оверлея не развернут. Слой Vulkan зарегистрирован, но включается только для игр, запущенных с AT_OVERLAY_ENABLE=1.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4577"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4648"/>
         <source>Overlay support isn&apos;t installed yet. Install it to get the launch command.</source>
         <translation>Поддержка оверлея еще не установлена. Установите ее, чтобы получить команду запуска.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4825"/>
+        <location filename="../src/UI/mainwindow.cpp" line="4896"/>
         <source>Only blocks of these groups can be added: %1. Blocks of other groups come from the plugin&apos;s built-in hooks, which are already installed.</source>
         <translation>Добавить можно только блоки групп: %1. Блоки остальных групп берутся из встроенных хуков плагина, они уже установлены.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4967"/>
+        <location filename="../src/UI/mainwindow.cpp" line="5038"/>
         <source>Restart Required</source>
         <translation>Требуется перезапуск</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4968"/>
+        <location filename="../src/UI/mainwindow.cpp" line="5039"/>
         <source>Your changes will take effect the next time you start AurexTranslator.</source>
         <translation>Ваши изменения вступят в силу при следующем запуске AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4970"/>
+        <location filename="../src/UI/mainwindow.cpp" line="5041"/>
         <source>Restart Now</source>
         <translation>Перезапустить сейчас</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="4971"/>
+        <location filename="../src/UI/mainwindow.cpp" line="5042"/>
         <source>Later</source>
         <translation>Перезапустить позже</translation>
     </message>
@@ -1879,7 +1879,7 @@ You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/O
         <translation>Остановить озвучку</translation>
     </message>
     <message>
-        <location filename="../src/UI/mainwindow.cpp" line="2135"/>
+        <location filename="../src/UI/mainwindow.cpp" line="2209"/>
         <source>Automatic</source>
         <translation>Автоматический</translation>
     </message>
@@ -1970,74 +1970,74 @@ You can also set it up later: Output settings &gt; In-game overlay &gt; Vulkan/O
 <context>
     <name>OverlayController</name>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="305"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="757"/>
         <source>[Overlay] No game active</source>
         <translation>[Overlay] Нет активной игры</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="306"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="758"/>
         <source>[Overlay] Active game: %1</source>
         <translation>[Overlay] Активная игра: %1</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="355"/>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="367"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="364"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="376"/>
         <source>The overlay plugin isn&apos;t deployed to %1 - reinstall AurexTranslator.</source>
         <translation>Плагин оверлея не найден в %1 - переустановите AurexTranslator.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="360"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="369"/>
         <source>Vulkan layer registered. Enable Overlay capture or check &quot;In-game overlay&quot; in Output settings, then click &quot;Add game...&quot; to pick a running process.</source>
         <translation>Слой Vulkan зарегистрирован. Включите захват «Оверлей» или отметьте «Оверлей в игре» в настройках вывода, затем нажмите «Добавить игру...» и выберите запущенный процесс.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="373"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="382"/>
         <source>Vulkan layer and launcher installed. Use the command below as your game&apos;s launch command (e.g. Steam Launch Options).</source>
         <translation>Слой Vulkan и скрипт запуска установлены. Используйте команду ниже как команду запуска игры (например, в параметрах запуска Steam).</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="377"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="386"/>
         <source>Vulkan layer registered, but the launcher script couldn&apos;t be created because the overlay launcher plugin isn&apos;t deployed. Without it the layer only activates for games started with AT_OVERLAY_ENABLE=1.</source>
         <translation>Слой Vulkan зарегистрирован, но скрипт запуска не удалось создать, потому что плагин запуска оверлея не развернут. Без него слой включается только для игр, запущенных с AT_OVERLAY_ENABLE=1.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="382"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="391"/>
         <source>Launcher installed. Use the command below as your game&apos;s launch command (e.g. Steam Launch Options) - the Vulkan layer plugin isn&apos;t deployed, so Vulkan games won&apos;t get an overlay.</source>
         <translation>Лаунчер установлен. Используйте команду ниже как команду запуска игры (например, в параметрах запуска Steam) — плагин слоя Vulkan не развернут, поэтому Vulkan-игры останутся без оверлея.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="387"/>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="428"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="396"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="437"/>
         <source>Overlay mode is not supported on this platform yet</source>
         <translation>Режим оверлея пока не поддерживается на этой платформе</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="405"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="414"/>
         <source>Nothing to uninstall - the Vulkan layer was not registered.</source>
         <translation>Удалять нечего - слой Vulkan не был зарегистрирован.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="406"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="415"/>
         <source>Vulkan layer unregistered. Its panel will disappear from the currently running game within a couple of seconds, but the layer itself stays loaded in that game&apos;s memory until it&apos;s restarted - it just won&apos;t do anything there anymore, and no other game will pick it up at all.</source>
         <translation>Регистрация слоя Vulkan отменена. Панель исчезнет из запущенной игры через пару секунд, но сам слой останется в памяти игры до ее перезапуска - он больше ничего там не делает, а другие игры его не подхватят.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="411"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="420"/>
         <source>Vulkan layer unregistered.</source>
         <translation>Регистрация слоя Vulkan отменена.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="425"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="434"/>
         <source>Vulkan/OpenGL launcher uninstalled.</source>
         <translation>Запуск Vulkan/OpenGL удален.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="426"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="435"/>
         <source>Nothing to uninstall - the launcher was not installed.</source>
         <translation>Удалять нечего - средство запуска не было установлено.</translation>
     </message>
     <message>
-        <location filename="../src/controllers/overlaycontroller.cpp" line="853"/>
+        <location filename="../src/controllers/overlaycontroller.cpp" line="879"/>
         <source>[Overlay] Plugin &apos;libat-overlay&apos; is not available</source>
         <translation>[Overlay] Плагин «libat-overlay» недоступен</translation>
     </message>
@@ -2590,73 +2590,74 @@ Installed voices still work. You can change the repository address, or put model
 <context>
     <name>PythonEnv</name>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="334"/>
+        <location filename="../src/utils/pythonenv.cpp" line="357"/>
         <source>No suitable Python interpreter found.</source>
         <translation>Подходящий интерпретатор Python не найден.</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="341"/>
+        <location filename="../src/utils/pythonenv.cpp" line="364"/>
         <source>Creating the virtual environment</source>
         <translation>Создание виртуального окружения</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="348"/>
+        <location filename="../src/utils/pythonenv.cpp" line="371"/>
         <source>Updating pip</source>
         <translation>Обновление pip</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="354"/>
+        <location filename="../src/utils/pythonenv.cpp" line="377"/>
         <source>Installing %1</source>
         <translation>Установка %1</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="405"/>
-        <location filename="../src/utils/pythonenv.cpp" line="570"/>
+        <location filename="../src/utils/pythonenv.cpp" line="428"/>
+        <location filename="../src/utils/pythonenv.cpp" line="612"/>
         <source>Cancelled.</source>
         <translation>Отменено.</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="413"/>
+        <location filename="../src/utils/pythonenv.cpp" line="436"/>
         <source>&quot;%1&quot; failed with code %2.</source>
         <translation>Шаг «%1» завершился с кодом %2.</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="418"/>
+        <location filename="../src/utils/pythonenv.cpp" line="441"/>
         <source>&quot;%1&quot; finished, but %2 was not created.</source>
         <translation>Шаг «%1» завершился, но файл %2 не был создан.</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="434"/>
+        <location filename="../src/utils/pythonenv.cpp" line="457"/>
         <source>The system Python has no venv module. Install it, for example: sudo apt install python3-venv</source>
         <translation>В системном Python нет модуля venv. Установите его, например: sudo apt install python3-venv</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="506"/>
+        <location filename="../src/utils/pythonenv.cpp" line="529"/>
         <source>The Python environment is not there to remove anything from.</source>
         <translation>Окружение Python не создано, удалять нечего.</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="510"/>
+        <location filename="../src/utils/pythonenv.cpp" line="533"/>
         <source>Removing %1</source>
         <translation>Удаление %1</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="537"/>
+        <location filename="../src/utils/pythonenv.cpp" line="579"/>
         <source>Cannot write to %1</source>
         <translation>Не удалось записать в %1</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="541"/>
+        <location filename="../src/utils/pythonenv.cpp" line="583"/>
         <source>Downloading Python %1</source>
         <translation>Загрузка Python %1</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="602"/>
+        <location filename="../src/utils/pythonenv.cpp" line="640"/>
         <source>Repairing the Python installation</source>
         <translation>Восстановление установки Python</translation>
     </message>
     <message>
-        <location filename="../src/utils/pythonenv.cpp" line="607"/>
+        <location filename="../src/utils/pythonenv.cpp" line="646"/>
+        <location filename="../src/utils/pythonenv.cpp" line="649"/>
         <source>Running the installer</source>
         <translation>Запуск установщика</translation>
     </message>
@@ -2690,13 +2691,6 @@ Installed voices still work. You can change the repository address, or put model
         <location filename="../src/main.cpp" line="214"/>
         <source>AurexTranslator is already running</source>
         <translation>AurexTranslator уже запущен</translation>
-    </message>
-</context>
-<context>
-    <name>QPlatformTheme</name>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Закрыть</translation>
     </message>
 </context>
 <context>
@@ -2743,76 +2737,227 @@ Installed voices still work. You can change the repository address, or put model
     </message>
 </context>
 <context>
+    <name>TesseractOcr</name>
+    <message>
+        <location filename="../src/engines/tesseractocr.cpp" line="311"/>
+        <source>(words: %1)</source>
+        <translation>(слова: %1)</translation>
+    </message>
+</context>
+<context>
     <name>TesseractSettingsDialog</name>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="51"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="50"/>
         <source>Status</source>
         <translation>Статус</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="55"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="69"/>
         <source>Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="65"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="81"/>
         <source>Update list</source>
         <translation>Обновить список</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="73"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="99"/>
         <source>Tessdata path</source>
         <translation>Путь к tessdata</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="77"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="111"/>
         <source>Browse</source>
         <translation>Обзор</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="90"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="120"/>
         <source>Use system tessdata</source>
         <translation>Использовать системный tessdata</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="94"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="136"/>
         <source>Processing mode</source>
         <translation>Режим обработки</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="95"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="145"/>
         <source>Automatic</source>
         <translation>Автоматический</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="96"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="152"/>
         <source>Manual</source>
         <translation>Ручной</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="113"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="170"/>
         <source>Auto OCR interval (sec)</source>
         <translation>Интервал авто-распознавания (сек)</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="218"/>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="204"/>
+        <source>Skip unchanged frames and repeated text</source>
+        <translation>Пропускать неизмененные кадры и повторы текста</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="200"/>
+        <source>Reads a frame only when the picture changed and ignores results that
+repeat the previous text. Fewer requests to the translator.</source>
+        <translation>Читает кадр, только если картинка изменилась, и игнорирует результаты,
+повторяющие предыдущий текст. Меньше запросов к переводчику.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="177"/>
+        <source> sec</source>
+        <translation> сек</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="320"/>
+        <source>Filter out noise</source>
+        <translation>Отфильтровывать шум</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="317"/>
+        <source>Drops low-confidence words and lines that do not look like text.</source>
+        <translation>Отбрасывает слова с низкой уверенностью и строки, не похожие на текст.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="441"/>
+        <source>Read</source>
+        <translation>Прочитано</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="458"/>
+        <source>Skipped (picture unchanged)</source>
+        <translation>Пропущено (картинка не менялась)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="475"/>
+        <source>Skipped (same text)</source>
+        <translation>Пропущено (тот же текст)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="492"/>
+        <source>Sent</source>
+        <translation>Отправлено</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="220"/>
+        <source>Change sensitivity</source>
+        <translation>Чувствительность к изменениям</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="190"/>
+        <source>Settings above take effect after Apply, settings below apply immediately.</source>
+        <translation>Настройки выше применяются после нажатия «Применить», настройки ниже — сразу.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="229"/>
+        <source>How much of the picture has to change before it is read again.
+Higher reads more often, lower skips small changes.</source>
+        <translation>Насколько должна измениться картинка, чтобы ее прочитали заново.
+Выше — читает чаще, ниже — пропускает мелкие изменения.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="273"/>
+        <source>Ignore text differences</source>
+        <translation>Игнорировать различия в тексте</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="282"/>
+        <source>A result that differs from the previous text by at most this many characters
+is not sent on. Hides OCR flicker between similar results.</source>
+        <translation>Результат, отличающийся от предыдущего текста не более чем на столько символов,
+дальше не передается. Скрывает мерцание OCR между похожими результатами.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="336"/>
+        <source>Minimum word confidence</source>
+        <translation>Минимальная уверенность слова</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="345"/>
+        <source>Words Tesseract is less sure about than this are dropped as noise.
+Higher removes more garbage but can lose stylized text.</source>
+        <translation>Слова, в которых Tesseract уверен меньше этого значения, отбрасываются как шум.
+Выше — меньше мусора, но можно потерять стилизованный текст.</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="389"/>
+        <source>Text layout</source>
+        <translation>Разметка текста</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="43"/>
+        <source>Auto (by region size)</source>
+        <translation>Авто (по размеру области)</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="44"/>
+        <source>Single block</source>
+        <translation>Один блок</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="45"/>
+        <source>Single line</source>
+        <translation>Одна строка</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="46"/>
+        <source>Sparse text</source>
+        <translation>Разреженный текст</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="399"/>
+        <source>Reset to defaults</source>
+        <translation>Сбросить по умолчанию</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="152"/>
+        <source>Waiting for frames...</source>
+        <translation>Ожидание кадров...</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="515"/>
+        <source>Recognized</source>
+        <translation>Распознано</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="541"/>
+        <source>Filtered out</source>
+        <translation>Отфильтровано</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/forms/tesseractsettingsdialog.ui" line="428"/>
+        <source>Live preview</source>
+        <translation>Предпросмотр в реальном времени</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="249"/>
+        <source>%1 chars</source>
+        <translation>%1 симв</translation>
+    </message>
+    <message>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="207"/>
         <source>Invalid Tesseract Data Directory</source>
         <translation>Недопустимая директория Tesseract</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="219"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="208"/>
         <source>The specified Tesseract data directory does not exist or is invalid.
 Please provide a valid path or try using the system default directory.</source>
         <translation>Указанная директория с данными Tesseract не существует или содержит ошибки.
 Проверьте правильность пути к tessdata или используйте системную директорию по умолчанию.</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="231"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="220"/>
         <source>No Tesseract available languages found</source>
         <translation>Не найдены языковые данные Tesseract</translation>
     </message>
     <message>
-        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="232"/>
+        <location filename="../src/UI/engines/tesseractsettingsdialog.cpp" line="221"/>
         <source>Tesseract could not find any language data in system locations.
 Please install Tesseract language packs or specify a custom &apos;tessdata&apos; directory.</source>
         <translation>Tesseract не обнаружил языковые данные в стандартных системных расположениях.
