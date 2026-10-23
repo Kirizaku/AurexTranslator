@@ -130,6 +130,7 @@ private:
 
     void updateCursorShape(const QPoint& pos);
     void applyResizeDelta(const QPoint &globalPos);
+    void fitPanelHeight();
 
     QMenu *m_contextMenu;
     QSlider* m_opacitySlider;

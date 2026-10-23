@@ -367,10 +367,13 @@ void TextOutputWindow::setPanelOnlyMode(bool panelOnly)
         m_heightBeforePanelOnly = height();
         hideTimer->stop();
         ui->toolBar->show();
-        resize(width(), ui->toolBar->sizeHint().height());
-    } else if (m_heightBeforePanelOnly > 0) {
-        resize(width(), m_heightBeforePanelOnly);
+        fitPanelHeight();
+        return;
     }
+
+    setMaximumHeight(QWIDGETSIZE_MAX);
+    if (m_heightBeforePanelOnly > 0) resize(width(), m_heightBeforePanelOnly);
+    updateText();
 }
 
 void TextOutputWindow::clearInfoMessage()
@@ -489,6 +492,10 @@ bool TextOutputWindow::event(QEvent* event)
 bool TextOutputWindow::eventFilter(QObject *watched, QEvent *event)
 {
     switch (event->type()) {
+    case QEvent::LayoutRequest: {
+        if (m_panelOnlyMode && watched == ui->toolBar) fitPanelHeight();
+        break;
+    }
     case QEvent::MouseButtonPress: {
         auto *me = static_cast<QMouseEvent*>(event);
 
@@ -727,6 +734,8 @@ void TextOutputWindow::updateMargin()
 
 void TextOutputWindow::updateText()
 {
+    if (m_panelOnlyMode) return;
+
     QStringList allTexts;
 
     if (m_hasInfoMessage && !m_currentInfoMessage.isEmpty()) {
@@ -850,6 +859,13 @@ void TextOutputWindow::applyResizeDelta(const QPoint &globalPos)
         }
     }
     setGeometry(newGeometry);
+}
+
+void TextOutputWindow::fitPanelHeight()
+{
+    const int panelHeight = ui->toolBar->sizeHint().height();
+    setMaximumHeight(panelHeight);
+    resize(width(), panelHeight);
 }
 
 void TextOutputWindow::createMenus()
