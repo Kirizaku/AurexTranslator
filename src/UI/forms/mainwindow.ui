@@ -1104,143 +1104,161 @@ font-weight: 700;
         </layout>
        </widget>
        <widget class="QWidget" name="translatorPage">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QVBoxLayout" name="verticalLayout_5" stretch="0,0,1">
          <item>
-          <widget class="QTabWidget" name="tabWidget">
-           <property name="enabled">
-            <bool>true</bool>
+          <widget class="QGroupBox" name="translatorsGroup">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {
+font-weight: 700;
+}</string>
            </property>
-           <property name="currentIndex">
-            <number>0</number>
+           <property name="title">
+            <string>Translators</string>
            </property>
-           <widget class="QWidget" name="tabOnline">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <attribute name="title">
-             <string>Online</string>
-            </attribute>
-            <layout class="QGridLayout" name="gridLayout_2">
-             <item row="4" column="0">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+           <layout class="QVBoxLayout" name="translatorsGroupLayout">
+            <item>
+             <widget class="QFrame" name="translatorsList">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+              <layout class="QGridLayout" name="translatorsListLayout" columnstretch="0,0,0,0,1">
+               <property name="horizontalSpacing">
+                <number>16</number>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="0">
-              <widget class="QCheckBox" name="translatorOnlineGoogleToggled">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string notr="true">Google</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="translatorOnlineGoogleSettingsButton">
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="accessibleName">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string notr="true">...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Expanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="tabOffline">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <attribute name="title">
-             <string>Offline</string>
-            </attribute>
-            <layout class="QGridLayout" name="gridLayout_6">
-             <item row="0" column="0">
-              <widget class="QCheckBox" name="translatorOfflineOllamaToggled">
-               <property name="text">
-                <string notr="true">Ollama (AI)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="translatorOfflineOllamaSettingsButton">
-               <property name="maximumSize">
-                <size>
-                 <width>30</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="accessibleName">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string notr="true">...</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="translatorOnlineGoogleToggled">
+                 <property name="text">
+                  <string notr="true">Google</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="2">
+                <widget class="QLabel" name="translatorGoogleType">
+                 <property name="text">
+                  <string>Online</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="3">
+                <widget class="QLabel" name="translatorOnlineGoogleSummary"/>
+               </item>
+               <item row="0" column="1">
+                <widget class="QPushButton" name="translatorOnlineGoogleSettingsButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string notr="true">...</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0" colspan="5">
+                <widget class="Line" name="translatorsListSeparator">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QCheckBox" name="translatorOfflineOllamaToggled">
+                 <property name="text">
+                  <string notr="true">Ollama (AI)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="translatorOllamaType">
+                 <property name="text">
+                  <string>Offline</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="3">
+                <widget class="QLabel" name="translatorOfflineOllamaSummary"/>
+               </item>
+               <item row="2" column="1">
+                <widget class="QPushButton" name="translatorOfflineOllamaSettingsButton">
+                 <property name="maximumSize">
+                  <size>
+                   <width>30</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string notr="true">...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
           </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="translatorProtectionGroup">
+           <property name="styleSheet">
+            <string notr="true">QGroupBox {
+font-weight: 700;
+}</string>
+           </property>
+           <property name="title">
+            <string>Protection</string>
+           </property>
+           <layout class="QVBoxLayout" name="translatorProtectionGroupLayout">
+            <item>
+             <widget class="QFrame" name="translatorProtectionPanel">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
+              </property>
+             <layout class="QVBoxLayout" name="translatorProtectionLayout">
+              <item>
+               <widget class="QCheckBox" name="translatorProtectionCheckBox">
+                <property name="text">
+                 <string>Protect translators from request bursts</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="translatorProtectionHint">
+                <property name="text">
+                 <string>Only the latest text from each source is sent, requests are spaced out, a rate limit causes a short pause and repeated texts come from a cache. Prevents online translators from blocking you.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="translatorPageSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
          </item>
         </layout>
        </widget>
@@ -1965,8 +1983,8 @@ font-weight: 700;
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>576</width>
-              <height>632</height>
+              <width>833</width>
+              <height>680</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_13">

@@ -20,6 +20,14 @@
 
 #include <QObject>
 #include <QUrl>
+#include <QHash>
+#include <QCache>
+#include <QObject>
+#include <QStringList>
+#include <QTimer>
+#include <QElapsedTimer>
+
+#include "src/translations/translationresult.h"
 
 class QNetworkAccessManager;
 class Google;
@@ -35,6 +43,9 @@ public:
     // Translator enable/disable
     void setGoogleEnabled(bool enabled);
     void setOllamaEnabled(bool enabled);
+
+    // Queue, rate limit pause and cache
+    void setProtectionEnabled(bool enabled) { m_protectionEnabled = enabled; }
 
     // Google settings
     void setGoogleSourceLang(const QString &lang);
@@ -59,13 +70,45 @@ signals:
                           const QString &translated);
 
 private:
+    struct Pipeline {
+        QString name;
+        int minIntervalMs = 0;
+        int pauseMs = 0;
+        int maxPauseMs = 0;
+        std::function<QString(const QString &)> cacheKey;
+        std::function<void(const QString &, std::function<void(TranslationResult)>)> send;
+
+        QCache<QString, QString> cache{200};
+        QHash<QString, QString> pending;
+        QStringList order;
+        QTimer timer;
+        qint64 nextSendMs = 0;
+        qint64 pausedUntilMs = 0;
+        int failures = 0;
+    };
+
+    void enqueue(Pipeline &pipeline, const QString &source, const QString &text);
+    void schedule(Pipeline &pipeline);
+    void sendNext(Pipeline &pipeline);
+    void dispatch(Pipeline &pipeline, const QString &source, const QString &text);
+    void finish(Pipeline &pipeline, const QString &source, const QString &text, const TranslationResult &result);
+    void clearQueue(Pipeline &pipeline);
+    QString pauseMessage(const Pipeline &pipeline) const;
+
+    QElapsedTimer m_clock;
+    bool m_protectionEnabled = true;
+
     Google *m_google = nullptr;
     bool m_googleEnabled = false;
+    QString m_googleSourceLang;
+    QString m_googleTargetLang;
+    Pipeline m_googlePipeline;
 
     Ollama *m_ollama = nullptr;
     bool m_ollamaEnabled = false;
     QString m_ollamaModel;
     QString m_ollamaPrompt;
+    Pipeline m_ollamaPipeline;
 };
 
 #endif // TRANSLATIONCONTROLLER_H

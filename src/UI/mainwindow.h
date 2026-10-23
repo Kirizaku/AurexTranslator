@@ -268,6 +268,7 @@ private:
     bool m_overlayHasActiveGame = false;
     int m_lastVisibleOutputWindowMode = 0;
     void applyOutputWindowMode(int index);
+    void updateTranslatorSummaries();
     void loadTesseractSettings(const QJsonObject &tesseract);
     void saveTesseractSettings(QJsonObject &tesseract) const;
     void applyTesseractToController();

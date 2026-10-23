@@ -28,7 +28,7 @@ Google::Google(QNetworkAccessManager *manager, QObject *parent)
 
 Google::~Google() {}
 
-void Google::translateText(QString text, std::function<void(QString)> callback)
+void Google::translateText(QString text, std::function<void(TranslationResult)> callback)
 {
     QUrl url("https://translate.googleapis.com/translate_a/single");
     QUrlQuery query;
@@ -45,26 +45,34 @@ void Google::translateText(QString text, std::function<void(QString)> callback)
 
     QNetworkReply *reply = m_manager->get(request);
 
-    connect(reply, &QNetworkReply::finished, [=]() {
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray response = reply->readAll();
-            QJsonDocument jsonDoc = QJsonDocument::fromJson(response);
-            QJsonArray jsonArray = jsonDoc.array();
-
-            if (!jsonArray.isEmpty() && jsonArray[0].isArray()) {
-                QJsonArray translations = jsonArray[0].toArray();
-                QString translatedText;
-
-                for (const QJsonValue &val : translations) {
-                    if (val.isArray() && !val.toArray().isEmpty()) {
-                        translatedText += val.toArray()[0].toString();
-                    }
-                }
-                callback(translatedText);
-            }
-        } else {
-            callback("Translation failed:" + reply->errorString());
-        }
+    connect(reply, &QNetworkReply::finished, this, [reply, callback]() {
+        const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        const bool failed = (reply->error() != QNetworkReply::NoError);
+        const QString error = reply->errorString();
+        const QJsonArray jsonArray = QJsonDocument::fromJson(reply->readAll()).array();
         reply->deleteLater();
+
+        if (status == 429) {
+            callback({TranslationResult::RateLimited, QString()});
+            return;
+        }
+
+        if (failed) {
+            callback({TranslationResult::Error, error});
+            return;
+        }
+
+        QString translatedText;
+        for (const QJsonValue &val : jsonArray.first().toArray()) {
+            if (val.isArray() && !val.toArray().isEmpty()) {
+                translatedText += val.toArray()[0].toString();
+            }
+        }
+
+        if (translatedText.isEmpty()) {
+            callback({TranslationResult::Error, tr("no translation in the response")});
+            return;
+        }
+        callback({TranslationResult::Ok, translatedText});
     });
 }

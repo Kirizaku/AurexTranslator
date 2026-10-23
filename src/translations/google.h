@@ -21,13 +21,15 @@
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
 
+#include "translationresult.h"
+
 class Google : public QObject
 {
     Q_OBJECT
 public:
     explicit Google(QNetworkAccessManager *manager, QObject *parent = nullptr);
     ~Google();
-    void translateText(QString text, std::function<void(QString)> callback);
+    void translateText(QString text, std::function<void(TranslationResult)> callback);
 
     void setSourceLang(const QString &sourceLangCode) { sourceLang = sourceLangCode; }
     void setTargetLang(const QString &targetLangCode) { targetLang = targetLangCode; }

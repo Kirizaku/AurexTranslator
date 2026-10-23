@@ -110,7 +110,7 @@ set(PROJECT_SOURCES
     src/utils/metadatareader.cpp src/utils/metadatareader.h
     src/utils/dialogutils.h
 
-    src/translations/google.cpp src/translations/google.h
+    src/translations/google.cpp src/translations/google.h src/translations/translationresult.h
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

@@ -354,6 +354,7 @@ void MainWindow::on_translatorOnlineGoogleSettingsButton_clicked()
             m_googleTargetLang = dialog->getTargetLang();
             m_translationController->setGoogleSourceLang(m_googleSourceLang);
             m_translationController->setGoogleTargetLang(m_googleTargetLang);
+            updateTranslatorSummaries();
 
             m_translatorChanged = true;
             ui->buttonBox->button(QDialogButtonBox::Apply)->setEnabled(true);
@@ -367,6 +368,15 @@ void MainWindow::on_textProcessingOCREngineToggled_stateChanged(int arg1)
 {
     ui->textProcessingOCREngineTesseractRadio->setEnabled(arg1);
     ui->textProcessingOCREngineOllamaVisionRadio->setEnabled(arg1);
+}
+
+void MainWindow::updateTranslatorSummaries()
+{
+    ui->translatorOnlineGoogleSummary->setText(m_googleSourceLang.isEmpty() && m_googleTargetLang.isEmpty()
+                                          ? tr("Not configured") : QStringLiteral("%1 → %2").
+                                           arg(m_googleSourceLang, m_googleTargetLang));
+
+    ui->translatorOfflineOllamaSummary->setText(m_ollamaCurrentModel.isEmpty() ? tr("No model selected") : m_ollamaCurrentModel);
 }
 
 void MainWindow::loadTesseractSettings(const QJsonObject &tesseract)
@@ -1054,6 +1064,7 @@ void MainWindow::openOllamaSettings()
             m_translationController->setOllamaUrl(m_ollamaUrl);
             m_translationController->setOllamaModel(m_ollamaCurrentModel);
             m_translationController->setOllamaPrompt(m_ollamaTranslationPrompt);
+            updateTranslatorSummaries();
 
             m_ocrController->setOllamaUrl(m_ollamaUrl);
             m_ocrController->setOllamaModel(m_ollamaCurrentModel);
@@ -1157,6 +1168,11 @@ void MainWindow::setupBaseUI()
 {
     ui->setupUi(this);
 
+    for (QLabel *muted : {ui->translatorProtectionHint, ui->translatorGoogleType, ui->translatorOnlineGoogleSummary,
+                          ui->translatorOllamaType, ui->translatorOfflineOllamaSummary}) {
+        muted->setForegroundRole(QPalette::PlaceholderText);
+    }
+
     auto *outputModeGroup = new QButtonGroup(this);
     outputModeGroup->addButton(ui->outputModeScreencastRadio);
     outputModeGroup->addButton(ui->outputModeOverlayRadio);
@@ -1236,6 +1252,7 @@ void MainWindow::setupBaseUI()
         m_overlaySettingsDialog->ui->overlayShowTranslatorNameCheck,
         ui->translatorOnlineGoogleToggled,
         ui->translatorOfflineOllamaToggled,
+        ui->translatorProtectionCheckBox,
         ui->textProcessingOCREngineToggled,
         ui->textProcessingOCREngineTesseractRadio,
         ui->textProcessingOCREngineOllamaVisionRadio,
@@ -1789,6 +1806,7 @@ void MainWindow::setupSettingsConnections()
     // Translator
     connect(ui->translatorOnlineGoogleToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOnlineGoogleToggled));
     connect(ui->translatorOfflineOllamaToggled, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorOfflineOllamaToggled));
+    connect(ui->translatorProtectionCheckBox, &QCheckBox::stateChanged, this, bind(m_translatorChanged, ui->translatorProtectionCheckBox));
 
     // Text Processing
     connect(ui->textProcessingOCREngineToggled, &QCheckBox::stateChanged, this, bind(m_textProcessingChanged, ui->textProcessingOCREngineToggled));
@@ -3966,6 +3984,11 @@ void MainWindow::loadOutputSettings(const QJsonObject& output)
 
 void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
 {
+    if (widgetChanged(ui->translatorProtectionCheckBox))
+        ui->translatorProtectionCheckBox->setChecked(translator["request_protection"].toBool(true));
+    
+    m_translationController->setProtectionEnabled(ui->translatorProtectionCheckBox->isChecked());
+
     QJsonObject translator_online = translator["translator_online"].toObject();
     if (!translator_online.isEmpty()) {
         QJsonObject google = translator_online["google"].toObject();
@@ -4010,6 +4033,8 @@ void MainWindow::loadTranslatorSettings(const QJsonObject& translator)
         m_outputWindow->clearResultsByTranslator("Ollama");
         m_overlayController->clearResultsByTranslator("Ollama");
     }
+
+    updateTranslatorSummaries();
 
     // A translator just switched on has nothing to work with until the next text
     // shows up, so hand it what is on screen right now
@@ -5153,6 +5178,9 @@ void MainWindow::saveConfig()
     // Translator
     if (m_translatorChanged) {
         QJsonObject translator = Config::getValue("translator").toJsonObject();
+        if (widgetChanged(ui->translatorProtectionCheckBox))
+            translator["request_protection"] = ui->translatorProtectionCheckBox->isChecked();
+
         QJsonObject translator_online = translator.value("translator_online").toObject();
         QJsonObject google = translator_online.value("google").toObject();
 
