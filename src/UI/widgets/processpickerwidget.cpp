@@ -21,6 +21,7 @@
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSet>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QTreeView>
@@ -86,9 +87,17 @@ void ProcessPickerWidget::refresh()
 
     PROCESSENTRY32W entry;
     entry.dwSize = sizeof(entry);
+    QSet<QString> seenProcessNames;
 
     if (Process32FirstW(snapshot, &entry)) {
         do {
+            const QString processName = QString::fromWCharArray(entry.szExeFile);
+            const QString processNameKey = processName.toCaseFolded();
+            if (seenProcessNames.contains(processNameKey))
+                continue;
+            
+            seenProcessNames.insert(processNameKey);
+
             auto *pidItem  = new QStandardItem;
             auto *nameItem = new QStandardItem;
 
@@ -98,7 +107,7 @@ void ProcessPickerWidget::refresh()
             pidItem->setEditable(false);
             pidItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-            nameItem->setText(QString::fromWCharArray(entry.szExeFile));
+            nameItem->setText(processName);
             nameItem->setEditable(false);
 
             m_model->appendRow({pidItem, nameItem});

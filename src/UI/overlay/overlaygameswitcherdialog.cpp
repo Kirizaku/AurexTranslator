@@ -19,12 +19,36 @@
 
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QSet>
 #include <QVBoxLayout>
 
 #ifdef Q_OS_WIN
 #include "overlayprocesspickerdialog.h"
 #include <QMessageBox>
 #endif
+
+namespace {
+
+QString gameNameKey(const QString &name)
+{
+#ifdef Q_OS_WIN
+    return name.toCaseFolded();
+#else
+    return name;
+#endif
+}
+
+bool containsGameName(const QStringList &names, const QString &name)
+{
+    const QString key = gameNameKey(name);
+    for (const QString &candidate : names) {
+        if (gameNameKey(candidate) == key)
+            return true;
+    }
+    return false;
+}
+
+} // namespace
 
 OverlayGameSwitcherDialog::OverlayGameSwitcherDialog(QWidget *parent)
     : QDialog(parent)
@@ -179,11 +203,25 @@ void OverlayGameSwitcherDialog::rebuildList()
     m_list->clear();
 
     QMap<QString, QList<quint32>> connectedByName;
-    for (int i = 0; i < m_connectedGames.size() && i < m_connectedPids.size(); ++i)
-        connectedByName[m_connectedGames[i]].append(m_connectedPids[i]);
+    for (int i = 0; i < m_connectedGames.size() && i < m_connectedPids.size(); ++i) {
+        const QString key = gameNameKey(m_connectedGames[i]);
+        auto &pids = connectedByName[key];
+        const quint32 pid = m_connectedPids[i];
+        if (!pids.contains(pid))
+            pids.append(pid);
+    }
 
-    QStringList allExe = m_connectedGames + m_searchingGames + m_injectingGames + m_otherKnownGames;
-    allExe.removeDuplicates();
+    QStringList allExe;
+    QSet<QString> seenNames;
+    const QStringList nameSources = m_connectedGames + m_searchingGames + m_injectingGames + m_otherKnownGames;
+    for (const QString &exe : nameSources) {
+        const QString key = gameNameKey(exe);
+        if (key.isEmpty() || seenNames.contains(key))
+            continue;
+
+        seenNames.insert(key);
+        allExe.append(exe);
+    }
     allExe.sort(Qt::CaseInsensitive);
 
     if (allExe.isEmpty()) {
@@ -192,8 +230,8 @@ void OverlayGameSwitcherDialog::rebuildList()
     } else {
         for (const QString &exe : allExe) {
             QString suffix, tooltip;
-            if (!m_connectedGames.contains(exe)) {
-                if (m_injectingGames.contains(exe)) {
+            if (!containsGameName(m_connectedGames, exe)) {
+                if (containsGameName(m_injectingGames, exe)) {
                     suffix = tr(" (injecting...)");
                     tooltip = tr(
                         "Once the DLL is actually loaded, the connection is only "
@@ -201,13 +239,13 @@ void OverlayGameSwitcherDialog::rebuildList()
                         "games skip entirely while minimized - so this can stay "
                         "here well after injection itself has already succeeded. "
                         "If it doesn't clear, bring the game to the foreground.");
-                } else if (m_searchingGames.contains(exe)) {
+                } else if (containsGameName(m_searchingGames, exe)) {
                     suffix = tr(" (waiting for the game to start...)");
                 } else {
                     suffix = tr(" (not running - click to switch)");
                 }
             }
-            addRows(exe, connectedByName.value(exe), suffix, tooltip);
+            addRows(exe, connectedByName.value(gameNameKey(exe)), suffix, tooltip);
         }
         selectRow(previouslySelected, previouslySelectedPid);
     }
@@ -236,7 +274,7 @@ void OverlayGameSwitcherDialog::selectRow(const QString &exe, quint32 pid)
         if (e.isEmpty()) return false;
         for (int i = 0; i < m_list->count(); ++i) {
             QListWidgetItem *it = m_list->item(i);
-            if (it->data(Qt::UserRole).toString() == e &&
+            if (gameNameKey(it->data(Qt::UserRole).toString()) == gameNameKey(e) &&
                 (p == 0 || it->data(Qt::UserRole + 1).toUInt() == p)) {
                 m_list->setCurrentItem(it);
                 return true;
@@ -277,8 +315,8 @@ void OverlayGameSwitcherDialog::onAddClicked()
     const QString exe = picker.selectedProcess();
     if (exe.isEmpty()) return;
 
-    if (m_searchingGames.contains(exe) || m_injectingGames.contains(exe) ||
-        m_otherKnownGames.contains(exe)) {
+    if (containsGameName(m_searchingGames, exe) || containsGameName(m_injectingGames, exe) ||
+        containsGameName(m_otherKnownGames, exe)) {
         QMessageBox::information(this, tr("Add Game"),
             tr("\"%1\" is already in your list of games - select it in the "
                "list to switch to it.").arg(exe));
