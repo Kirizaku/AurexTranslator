@@ -1361,10 +1361,15 @@ void MainWindow::initPlugins()
     ui->textProcessingBindingRow->setVisible(hookPluginReady);
     ui->textProcessingBindingHelp->setVisible(hookPluginReady);
 
-    m_overlayPluginAvailable = std::any_of(m_registry.cbegin(), m_registry.cend(),
-        [](const PluginManager::PluginInfo &i) {
-            return i.name == "libat-overlay" || i.name == "libat-overlay-vulkan";
+    const bool overlayBackendReady = std::any_of(m_registry.cbegin(), m_registry.cend(),
+        [&dependencyErrors](const PluginManager::PluginInfo &i) {
+            return (i.name == "libat-overlay" || i.name == "libat-overlay-vulkan") && !dependencyErrors.contains(i.name);
         });
+#ifdef Q_OS_WIN
+    m_overlayPluginAvailable = hookPluginReady && overlayBackendReady;
+#else
+    m_overlayPluginAvailable = overlayBackendReady;
+#endif
 
     // Push the current target's plugin config again: a reload dropped whatever
     // the plugin had been told before
