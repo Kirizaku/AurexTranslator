@@ -1662,6 +1662,7 @@ void MainWindow::initSubsystems()
         }
         updateSwitcherPreviewMessage();
     });
+    connect(m_overlayController, &OverlayController::selectedGameChanged, m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::setSelectedGame);
     m_overlayController->replayGameState();
 
     connect(m_overlayGameSwitcherDialog, &OverlayGameSwitcherDialog::gameSelected,

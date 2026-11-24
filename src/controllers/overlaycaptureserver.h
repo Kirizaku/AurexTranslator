@@ -85,7 +85,7 @@ private:
     void removeSession(int index);
     void activate(int index);
     void pushAllTo(int index);
-    void applySwitchRequest();
+    void applySwitchRequest(bool sessionsChanged = false);
     void pushDirtyState();
     void closeAllSessions();
     void emitClientList();

@@ -42,6 +42,7 @@ public slots:
     void setManagedGames(const QStringList &searchingGames, const QStringList &injectingGames);
     void setKnownGames(const QStringList &otherGames);
 #endif
+    void setSelectedGame(const QString &exe);
     void setActiveGame(const QString &exe, quint32 pid);
     void setPreviewFrame(const QImage &frame);
     void clearPreview();
@@ -86,6 +87,7 @@ private:
 
     QString m_activeExe;
     quint32 m_activePid = 0;
+    QString m_lastSelectedExe;
 
     QStringList m_searchingGames;
     QStringList m_injectingGames;

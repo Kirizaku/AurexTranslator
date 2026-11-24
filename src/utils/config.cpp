@@ -176,6 +176,13 @@ void Config::load()
     for (auto it = profileObj.begin(); it != profileObj.end(); ++it)
         m_instance->m_settings[it.key()] = it.value();
 
+    const auto globalOutput = root.value("output").toObject();
+    if (globalOutput.contains("overlay_last_selected_game")) {
+        auto output = m_instance->m_settings.value("output").toObject();
+        output["overlay_last_selected_game"] = globalOutput.value("overlay_last_selected_game");
+        m_instance->m_settings["output"] = output;
+    }
+
     m_instance->m_isLoaded = settingsExists && profileExists;
 }
 
@@ -190,7 +197,15 @@ void Config::save()
     for (auto it = m_instance->m_settings.begin(); it != m_instance->m_settings.end(); ++it) {
         if (it.key() == kMetaKey)
             continue;
-        if (baseSections().contains(it.key()))
+        if (it.key() == "output") {
+            auto output = it.value().toObject();
+            if (output.contains("overlay_last_selected_game")) {
+                QJsonObject globalOutput;
+                globalOutput["overlay_last_selected_game"] = output.take("overlay_last_selected_game");
+                baseRoot["output"] = globalOutput;
+            }
+            profileObj[it.key()] = output;
+        } else if (baseSections().contains(it.key()))
             baseRoot[it.key()] = it.value();
         else
             profileObj[it.key()] = it.value();
@@ -223,6 +238,8 @@ bool Config::loadProfile(const QString& name)
 
     const QJsonObject profileObj = readJsonFile(profilePath(name));
 
+    const auto selectedGame = m_instance->m_settings.value("output").toObject().value("overlay_last_selected_game");
+
     // Drop the current profile sections, then apply the loaded ones
     QStringList toRemove;
     for (auto it = m_instance->m_settings.begin(); it != m_instance->m_settings.end(); ++it) {
@@ -235,6 +252,12 @@ bool Config::loadProfile(const QString& name)
 
     for (auto it = profileObj.begin(); it != profileObj.end(); ++it)
         m_instance->m_settings[it.key()] = it.value();
+
+    if (!selectedGame.isUndefined()) {
+        auto output = m_instance->m_settings.value("output").toObject();
+        output["overlay_last_selected_game"] = selectedGame;
+        m_instance->m_settings["output"] = output;
+    }
 
     QJsonObject meta = metaObject();
     meta[kActiveKey] = name;

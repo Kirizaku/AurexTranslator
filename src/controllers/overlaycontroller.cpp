@@ -43,6 +43,8 @@ const QString OverlayController::kPluginName = QStringLiteral("libat-overlay");
 
 namespace {
 
+constexpr auto kLastSelectedGame = "overlay_last_selected_game";
+
 QString pluginsDirPath()
 {
     return Config::getConfigDirPath() + QStringLiteral("plugins/");
@@ -295,6 +297,11 @@ OverlayController::OverlayController(QObject *parent)
     : QObject(parent)
 {
     m_captureServer = new OverlayCaptureServer;
+    const QString selected = selectedGame();
+    saveSelectedGame(selected);
+#ifdef Q_OS_LINUX
+    m_captureServer->setActiveClient(selected, 0);
+#endif
     m_captureServer->moveToThread(&m_captureThread);
     connect(&m_captureThread, &QThread::started, m_captureServer, &OverlayCaptureServer::start);
     connect(&m_captureThread, &QThread::finished, m_captureServer, &QObject::deleteLater);
@@ -348,6 +355,7 @@ void OverlayController::setRegistry(const QList<PluginManager::PluginInfo> &regi
 
 void OverlayController::replayGameState()
 {
+    emit selectedGameChanged(selectedGame());
     if (!m_gameNames.isEmpty())
         emit gameListChanged(m_gameNames, m_gamePids);
     
@@ -505,7 +513,27 @@ void OverlayController::restorePersistedGames()
 {
 #ifdef Q_OS_WIN
     ensureKnownGamesLoaded();
-    if (!m_currentGame.isEmpty() && m_knownGames.contains(m_currentGame)) {
+    const QString selected = selectedGame();
+    const QString previousCurrent = m_currentGame;
+    m_currentGame.clear();
+    if (!selected.isEmpty()) {
+        for (const QString &exe : m_knownGames) {
+            if (exe.compare(selected, Qt::CaseInsensitive) == 0) {
+                m_currentGame = exe;
+                break;
+            }
+        }
+    }
+
+    if (selected != m_currentGame) {
+        saveSelectedGame(m_currentGame);
+    }
+    if (previousCurrent != m_currentGame) {
+        saveKnownGames();
+        emitKnownGamesChanged();
+    }
+    m_captureServer->setActiveClient(m_currentGame, 0);
+    if (!m_currentGame.isEmpty()) {
         if (!startManaging(m_currentGame)) {
             m_currentGame.clear();
             saveKnownGames();
@@ -542,8 +570,11 @@ void OverlayController::removeGame(const QString &exe)
 #ifdef Q_OS_WIN
     if (!m_knownGames.contains(exe)) return;
     m_knownGames.remove(exe);
+    if (selectedGame().compare(exe, Qt::CaseInsensitive) == 0)
+        saveSelectedGame({});
 
     if (exe == m_currentGame) {
+        m_captureServer->setActiveClient(QString(), 0);
         auto it = m_managedGames.find(exe);
         if (it != m_managedGames.end()) {
             stopGameSession(exe);
@@ -581,7 +612,9 @@ void OverlayController::switchToGame(const QString &exe)
         }
     }
 
+    saveSelectedGame(exe);
     m_currentGame = exe;
+    m_captureServer->setActiveClient(exe, 0);
     if (!startManaging(exe))
         m_currentGame.clear();
 
@@ -639,8 +672,33 @@ void OverlayController::setPreviewActive(bool active)
     recomposeAndPush();
 }
 
+QString OverlayController::selectedGame() const
+{
+    const auto output = Config::getValue("output").toJsonObject();
+    if (output.contains(kLastSelectedGame)) return output.value(kLastSelectedGame).toString();
+    return Config::getValue("general").toJsonObject().value(kLastSelectedGame).toString();
+}
+
+void OverlayController::saveSelectedGame(const QString &exe)
+{
+    auto output = Config::getValue("output").toJsonObject();
+    auto general = Config::getValue("general").toJsonObject();
+    if (output.value(kLastSelectedGame).toString() == exe && !general.contains(kLastSelectedGame))
+        return;
+
+    output[kLastSelectedGame] = exe;
+    Config::setValue("output", output);
+    if (general.contains(kLastSelectedGame)) {
+        general.remove(kLastSelectedGame);
+        Config::setValue("general", general);
+    }
+    Config::save();
+    emit selectedGameChanged(exe);
+}
+
 void OverlayController::setActiveGame(const QString &exe, quint32 pid)
 {
+    saveSelectedGame(exe);
     m_captureServer->setActiveClient(exe, pid);
 }
 

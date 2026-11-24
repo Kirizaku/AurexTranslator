@@ -285,7 +285,7 @@ void OverlayCaptureServer::addSession(const ClientSession &session)
     }
 
     m_sessions.push_back(session);
-    if (m_activeIndex < 0) activate((int)m_sessions.size() - 1);
+    applySwitchRequest(true);
     emitClientList();
 }
 
@@ -297,14 +297,11 @@ void OverlayCaptureServer::removeSession(int index)
 
     if (index == m_activeIndex) {
         m_activeIndex = -1;
-        if (m_sessions.empty()) {
-            emit activeClientChanged(QString(), 0);
-        } else {
-            activate(0);
-        }
+        emit activeClientChanged(QString(), 0);
     } else if (index < m_activeIndex) {
         --m_activeIndex;
     }
+    applySwitchRequest(true);
     emitClientList();
 }
 
@@ -334,9 +331,9 @@ void OverlayCaptureServer::pushAllTo(int index)
     sendText(index);
 }
 
-void OverlayCaptureServer::applySwitchRequest()
+void OverlayCaptureServer::applySwitchRequest(bool sessionsChanged)
 {
-    if (!m_switchRequested.exchange(false)) return;
+    if (!m_switchRequested.exchange(false) && !sessionsChanged) return;
 
     QString target;
     quint32 targetPid = 0;
@@ -346,13 +343,23 @@ void OverlayCaptureServer::applySwitchRequest()
         targetPid = m_pendingActivePid;
     }
 
-    for (int i = 0; i < (int)m_sessions.size(); ++i) {
-        if (m_sessions[i].exe == target && (targetPid == 0 || m_sessions[i].pid == targetPid)) {
-            activate(i);
-            return;
+#ifdef Q_OS_WIN
+    constexpr auto nameCase = Qt::CaseInsensitive;
+#else
+    constexpr auto nameCase = Qt::CaseSensitive;
+#endif
+    int matchingGame = -1;
+    if (!target.isEmpty()) {
+        for (int i = 0; i < (int)m_sessions.size(); ++i) {
+            if (m_sessions[i].exe.compare(target, nameCase) != 0) continue;
+            if (targetPid == 0 || m_sessions[i].pid == targetPid) {
+                activate(i);
+                return;
+            }
+            if (matchingGame < 0) matchingGame = i;
         }
     }
-    activate(-1);
+    activate(matchingGame);
 }
 
 void OverlayCaptureServer::pushDirtyState()

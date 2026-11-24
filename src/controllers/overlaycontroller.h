@@ -79,6 +79,7 @@ public slots:
     void clearResultsByTranslator(const QString &translatorName);
 
 signals:
+    void selectedGameChanged(const QString &exe);
     void infoMessage(const QString &message);
     void hiddenChanged(bool hidden);
     void sourceDisconnected();
@@ -89,6 +90,8 @@ signals:
     void knownGamesChanged(const QStringList &otherGames);
 
 private:
+    QString selectedGame() const;
+    void saveSelectedGame(const QString &exe);
     struct ManagedGame {
         bool processFound = false;
     };

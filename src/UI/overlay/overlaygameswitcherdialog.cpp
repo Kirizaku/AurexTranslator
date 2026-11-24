@@ -131,6 +131,9 @@ void OverlayGameSwitcherDialog::setActiveGame(const QString &exe, quint32 pid)
         return;
     }
 
+#ifdef Q_OS_WIN
+    if (!m_lastSelectedExe.isEmpty() || !m_managedExe.isEmpty()) return;
+#endif
     m_updatingProgrammatically = true;
     selectRow(exe, pid);
     m_updatingProgrammatically = false;
@@ -194,6 +197,13 @@ void OverlayGameSwitcherDialog::rescalePreview()
     m_preview->setPixmap(QPixmap::fromImage(m_lastFrame).scaled(m_preview->size() * devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
 
+void OverlayGameSwitcherDialog::setSelectedGame(const QString &exe)
+{
+    if (m_lastSelectedExe == exe) return;
+    m_lastSelectedExe = exe;
+    rebuildList();
+}
+
 void OverlayGameSwitcherDialog::rebuildList()
 {
     const QString previouslySelected = currentSelectedExe();
@@ -231,17 +241,9 @@ void OverlayGameSwitcherDialog::rebuildList()
         for (const QString &exe : allExe) {
             QString suffix, tooltip;
             if (!containsGameName(m_connectedGames, exe)) {
-                if (containsGameName(m_injectingGames, exe)) {
-                    suffix = tr(" (injecting...)");
-                    tooltip = tr(
-                        "Once the DLL is actually loaded, the connection is only "
-                        "made from inside the game's own present call, which some "
-                        "games skip entirely while minimized - so this can stay "
-                        "here well after injection itself has already succeeded. "
-                        "If it doesn't clear, bring the game to the foreground.");
-                } else if (containsGameName(m_searchingGames, exe)) {
+                if (containsGameName(m_searchingGames, exe)) {
                     suffix = tr(" (waiting for the game to start...)");
-                } else {
+                } else if (!containsGameName(m_injectingGames, exe)) {
                     suffix = tr(" (not running - click to switch)");
                 }
             }
@@ -282,9 +284,14 @@ void OverlayGameSwitcherDialog::selectRow(const QString &exe, quint32 pid)
         }
         return false;
     };
+    if (!m_lastSelectedExe.isEmpty()) {
+        if (gameNameKey(exe) == gameNameKey(m_lastSelectedExe) && trySelect(exe, pid)) return;
+        if (!trySelect(m_lastSelectedExe, 0)) m_list->setCurrentRow(-1);
+        return;
+    }
     if (trySelect(exe, pid)) return;
-    if (trySelect(m_activeExe, m_activePid)) return;
-    trySelect(m_managedExe, 0);
+    if (trySelect(m_managedExe, 0)) return;
+    trySelect(m_activeExe, m_activePid);
 }
 
 void OverlayGameSwitcherDialog::addRows(const QString &exe, const QList<quint32> &pids,
@@ -329,6 +336,7 @@ void OverlayGameSwitcherDialog::onAddClicked()
 void OverlayGameSwitcherDialog::onRemoveClicked()
 {
     const QString exe = currentSelectedExe();
-    if (!exe.isEmpty()) emit gameRemoveRequested(exe);
+    if (exe.isEmpty()) return;
+    emit gameRemoveRequested(exe);
 }
 #endif
