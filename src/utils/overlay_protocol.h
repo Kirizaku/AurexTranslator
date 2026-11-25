@@ -66,11 +66,36 @@ static_assert(sizeof(struct capture_client_data) == CAPTURE_CLIENT_DATA_SIZE, "s
 struct capture_control_data {
     uint8_t capturing;            // text overlay session active
     uint8_t allow_frame_capture;  // frame delivery permitted (independent of the above)
-    uint8_t padding[30];
+    uint8_t device_uuid_valid;
+    uint8_t device_uuid[16];
+    uint8_t padding[13];
 } AT_PACKED;
 
 #define CAPTURE_CONTROL_DATA_SIZE 32
 static_assert(sizeof(struct capture_control_data) == CAPTURE_CONTROL_DATA_SIZE, "size mismatch");
+
+struct capture_gpu_texture_data {
+    uint8_t type;
+    uint8_t nfd;
+    int32_t width;
+    int32_t height;
+    int32_t format;
+    int32_t strides[4];
+    int32_t offsets[4];
+    uint64_t modifier;
+    uint32_t winid;
+    uint8_t flip;
+    uint32_t color_space;
+    uint8_t device_uuid[16];
+    uint8_t padding[49];
+} AT_PACKED;
+
+#define CAPTURE_GPU_TEXTURE_DATA_TYPE 11
+#define CAPTURE_GPU_TEXTURE_DATA_SIZE 128
+static_assert(sizeof(struct capture_gpu_texture_data) == CAPTURE_GPU_TEXTURE_DATA_SIZE, "size mismatch");
+
+#define CAPTURE_GPU_FALLBACK_DATA_TYPE 12
+#define CAPTURE_GPU_READY_DATA_TYPE 30
 
 struct capture_text_data {
     uint8_t  type;       // CAPTURE_TEXT_DATA_TYPE
@@ -135,6 +160,10 @@ static_assert(sizeof(struct capture_font_data) == CAPTURE_FONT_DATA_HEADER_SIZE,
 #define AT_OVERLAY_FRAME_MAX_WIDTH   3840
 #define AT_OVERLAY_FRAME_MAX_HEIGHT  2160
 #define AT_OVERLAY_FRAME_FORMAT_BGRA8 1
+#define AT_OVERLAY_FRAME_FORMAT_D3D11_SHARED 2
+/* For D3D11 shared textures, stride carries these flags instead of a pitch */
+#define AT_OVERLAY_D3D11_FLAG_KEYED_MUTEX 0x1u
+#define AT_OVERLAY_D3D11_FLAG_FLIP_Y 0x2u
 
 struct at_overlay_frame_header {
     uint32_t width;

@@ -38,6 +38,7 @@ find_package(OpenCV REQUIRED COMPONENTS core imgproc imgcodecs)
 find_package(PkgConfig)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
     find_package(Qt6 COMPONENTS DBus)
     find_package(Qt6 REQUIRED COMPONENTS Core)
     find_package(X11 REQUIRED)
@@ -224,6 +225,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         X11::Xfixes
         X11::Xrandr
         ${LIBPIPIPEWIRE_LIBRARIES}
+        OpenGL::EGL
+        OpenGL::GL
 )
     if(WAYLAND_CLIENT_FOUND AND WAYLAND_SCANNER)
         list(APPEND LINUX_LIBS wlr_data_control_protocol)
@@ -248,7 +251,7 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE version)
+    target_link_libraries(${PROJECT_NAME} PRIVATE version d3d11 dxgi)
 endif()
 
 target_include_directories(${PROJECT_NAME}

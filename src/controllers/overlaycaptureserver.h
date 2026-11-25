@@ -27,6 +27,9 @@
 #include <atomic>
 #include <deque>
 #include <thread>
+#ifdef Q_OS_LINUX
+#include "src/utils/overlay_protocol.h"
+#endif
 
 class OverlayCaptureServer : public QObject
 {
@@ -54,7 +57,7 @@ signals:
     void activeClientChanged(const QString &exe, quint32 pid);
 
 private:
-    enum class MessageKind { Control, Style, Font, Text };
+    enum class MessageKind { Control, Style, Font, Text, GpuFallback };
     struct Outgoing {
         MessageKind kind;
         QByteArray data;
@@ -67,6 +70,16 @@ private:
         std::deque<Outgoing> outbox;
         qsizetype frontOffset = 0;
         bool dead = false;
+        bool gpuFallbackRequested = false;
+#ifdef Q_OS_LINUX
+        capture_gpu_texture_data gpuTexture{};
+        uint64_t gpuTextureGeneration = 0;
+        bool gpuFramePending = false;
+        int gpuFds[4] = {-1, -1, -1, -1};
+        QByteArray incomingGpuTexture;
+        int incomingGpuFds[4] = {-1, -1, -1, -1};
+        int incomingGpuFdCount = 0;
+#endif
     };
 
     static ClientSession sessionFromHello(qintptr conn, const uint8_t *data, size_t size);
@@ -79,6 +92,8 @@ private:
     void sendHideText(int index);
     void sendStyle(int index);
     void sendFont(int index);
+    void requestGpuFallback(int index);
+    void requestForcedCpuFallback(int index);
 
     // Server thread only
     void addSession(const ClientSession &session);
@@ -89,6 +104,14 @@ private:
     void pushDirtyState();
     void closeAllSessions();
     void emitClientList();
+#ifdef Q_OS_LINUX
+    bool receiveClientData(ClientSession &session);
+    void processGpuFrames();
+    void releaseGpuTexture(ClientSession &session);
+    uint8_t m_gpuDeviceUuid[16] = {};
+    bool m_gpuDeviceUuidValid = false;
+    uint64_t m_nextGpuTextureGeneration = 0;
+#endif
 
     std::vector<ClientSession> m_sessions;
     int m_activeIndex = -1;

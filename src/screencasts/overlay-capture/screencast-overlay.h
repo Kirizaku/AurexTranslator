@@ -22,8 +22,13 @@
 #include <QMutex>
 #include <QWaitCondition>
 
+#include <cstdint>
+#include <vector>
+
 #ifdef Q_OS_WIN
 #include <windows.h>
+#include <d3d11.h>
+#include <dxgi.h>
 #elif defined(Q_OS_LINUX)
 #include <semaphore.h>
 #endif
@@ -63,6 +68,17 @@ private:
     HANDLE m_mapping = nullptr;
     HANDLE m_evRequest = nullptr;
     HANDLE m_evReady = nullptr;
+    ID3D11Device* m_gpuDevice = nullptr;
+    ID3D11DeviceContext* m_gpuContext = nullptr;
+    ID3D11Texture2D* m_gpuTexture = nullptr;
+    ID3D11Texture2D* m_gpuStaging = nullptr;
+    IDXGIKeyedMutex* m_gpuMutex = nullptr;
+    bool m_gpuKeyedMutex = true;
+    uint64_t m_gpuSharedHandle = 0;
+    uint32_t m_gpuGeneration = 0;
+    uint32_t m_gpuWidth = 0;
+    uint32_t m_gpuHeight = 0;
+    uint32_t m_gpuFormat = 0;
 #elif defined(Q_OS_LINUX)
     int m_shmFd = -1;
     sem_t *m_semRequest = nullptr;
@@ -74,6 +90,12 @@ private:
 
     bool ensureHandles();
     bool ensureMapping();
+#ifdef Q_OS_WIN
+    bool readD3D11SharedFrame(uint64_t sharedHandle, uint32_t width, uint32_t height,
+                              uint32_t format, uint32_t generation, uint32_t &outHeight,
+                              uint32_t &outWidth, void* &outData, bool keyedMutex, bool flipY);
+    void releaseD3D11SharedFrame();
+#endif
     bool requestAndReadFrame(uint32_t &outHeight, uint32_t &outWidth, void* &outData);
     void cleanup();
 };

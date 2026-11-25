@@ -18,10 +18,15 @@
 #include "screencast-overlay.h"
 #include "src/utils/overlay_protocol.h"
 
+#include <cstddef>
+#include <cstring>
+
 #ifdef Q_OS_LINUX
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#elif defined(Q_OS_WIN)
+#include <dxgi1_2.h>
 #endif
 
 ScreenCastOverlay::ScreenCastOverlay(QObject *parent)
@@ -135,6 +140,179 @@ bool ScreenCastOverlay::ensureMapping()
 #endif
 }
 
+#ifdef Q_OS_WIN
+void ScreenCastOverlay::releaseD3D11SharedFrame()
+{
+    if (m_gpuMutex) { m_gpuMutex->Release(); m_gpuMutex = nullptr; }
+    if (m_gpuStaging) { m_gpuStaging->Release(); m_gpuStaging = nullptr; }
+    if (m_gpuTexture) { m_gpuTexture->Release(); m_gpuTexture = nullptr; }
+    if (m_gpuContext) { m_gpuContext->Release(); m_gpuContext = nullptr; }
+    if (m_gpuDevice) { m_gpuDevice->Release(); m_gpuDevice = nullptr; }
+    m_gpuSharedHandle = 0;
+    m_gpuGeneration = 0;
+    m_gpuWidth = m_gpuHeight = m_gpuFormat = 0;
+    m_gpuKeyedMutex = true;
+}
+
+bool ScreenCastOverlay::readD3D11SharedFrame(uint64_t sharedHandle, uint32_t width,
+                                            uint32_t height, uint32_t format,
+                                            uint32_t generation,
+                                            uint32_t &outHeight, uint32_t &outWidth,
+                                            void* &outData, bool keyedMutex, bool flipY)
+{
+    if (!sharedHandle || width == 0 || height == 0 ||
+        width > AT_OVERLAY_FRAME_MAX_WIDTH || height > AT_OVERLAY_FRAME_MAX_HEIGHT) {
+        return false;
+    }
+
+    if (m_gpuSharedHandle != sharedHandle || m_gpuGeneration != generation ||
+        m_gpuWidth != width ||
+        m_gpuHeight != height || m_gpuFormat != format ||
+        m_gpuKeyedMutex != keyedMutex || !m_gpuTexture || !m_gpuStaging) {
+        releaseD3D11SharedFrame();
+
+        IDXGIFactory1* factory = nullptr;
+        if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)) || !factory)
+            return false;
+
+        const HANDLE handle = reinterpret_cast<HANDLE>(static_cast<uintptr_t>(sharedHandle));
+        bool opened = false;
+        for (UINT index = 0; !opened; ++index) {
+            IDXGIAdapter1* adapter = nullptr;
+            const HRESULT enumResult = factory->EnumAdapters1(index, &adapter);
+            if (enumResult == DXGI_ERROR_NOT_FOUND) break;
+            if (FAILED(enumResult) || !adapter) continue;
+
+            ID3D11Device* device = nullptr;
+            ID3D11DeviceContext* context = nullptr;
+            D3D_FEATURE_LEVEL level = {};
+            HRESULT hr = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, nullptr,
+                D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0, D3D11_SDK_VERSION,
+                &device, &level, &context);
+            adapter->Release();
+            if (FAILED(hr) || !device || !context) {
+                if (context) context->Release();
+                if (device) device->Release();
+                continue;
+            }
+
+            ID3D11Texture2D* texture = nullptr;
+            hr = device->OpenSharedResource(handle, __uuidof(ID3D11Texture2D),
+                                             (void**)&texture);
+            if (FAILED(hr) || !texture) {
+                context->Release();
+                device->Release();
+                continue;
+            }
+
+            D3D11_TEXTURE2D_DESC desc = {};
+            texture->GetDesc(&desc);
+            if (desc.Width != width || desc.Height != height || desc.Format != format ||
+                desc.SampleDesc.Count != 1 ||
+                (desc.Format != DXGI_FORMAT_B8G8R8A8_UNORM &&
+                 desc.Format != DXGI_FORMAT_B8G8R8X8_UNORM &&
+                 desc.Format != DXGI_FORMAT_R8G8B8A8_UNORM &&
+                 desc.Format != DXGI_FORMAT_R10G10B10A2_UNORM)) {
+                texture->Release();
+                context->Release();
+                device->Release();
+                continue;
+            }
+
+            IDXGIKeyedMutex* keyed = nullptr;
+            if (keyedMutex) {
+                hr = texture->QueryInterface(__uuidof(IDXGIKeyedMutex), (void**)&keyed);
+                if (FAILED(hr) || !keyed) {
+                    texture->Release();
+                    context->Release();
+                    device->Release();
+                    continue;
+                }
+            }
+
+            D3D11_TEXTURE2D_DESC stagingDesc = desc;
+            stagingDesc.Usage = D3D11_USAGE_STAGING;
+            stagingDesc.BindFlags = 0;
+            stagingDesc.MiscFlags = 0;
+            stagingDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            ID3D11Texture2D* staging = nullptr;
+            hr = device->CreateTexture2D(&stagingDesc, nullptr, &staging);
+            if (FAILED(hr) || !staging) {
+                if (keyed) keyed->Release();
+                texture->Release();
+                context->Release();
+                device->Release();
+                continue;
+            }
+
+            m_gpuDevice = device;
+            m_gpuContext = context;
+            m_gpuTexture = texture;
+            m_gpuStaging = staging;
+            m_gpuMutex = keyed;
+            m_gpuKeyedMutex = keyedMutex;
+            m_gpuSharedHandle = sharedHandle;
+            m_gpuGeneration = generation;
+            m_gpuWidth = width;
+            m_gpuHeight = height;
+            m_gpuFormat = format;
+            opened = true;
+        }
+        factory->Release();
+        if (!opened) return false;
+    }
+
+    if (m_gpuMutex && m_gpuMutex->AcquireSync(1, 1000) != S_OK) return false;
+    m_gpuContext->CopyResource(m_gpuStaging, m_gpuTexture);
+    if (m_gpuMutex && m_gpuMutex->ReleaseSync(0) != S_OK) return false;
+
+    D3D11_MAPPED_SUBRESOURCE mapped = {};
+    if (FAILED(m_gpuContext->Map(m_gpuStaging, 0, D3D11_MAP_READ, 0, &mapped)))
+        return false;
+
+    const size_t dstPitch = (size_t)width * 4;
+    m_frameCopy.resize(dstPitch * height);
+    const uint8_t* src = static_cast<const uint8_t*>(mapped.pData);
+    uint8_t* dst = m_frameCopy.data();
+    for (uint32_t y = 0; y < height; ++y) {
+        const uint32_t srcY = flipY ? height - 1 - y : y;
+        const uint8_t* srcRow = src + (size_t)srcY * mapped.RowPitch;
+        uint8_t* dstRow = dst + (size_t)y * dstPitch;
+        if (format == DXGI_FORMAT_R10G10B10A2_UNORM) {
+            for (uint32_t x = 0; x < width; ++x) {
+                uint32_t pixel;
+                memcpy(&pixel, srcRow + x * 4, sizeof(pixel));
+                const uint32_t r = pixel & 0x3ffu;
+                const uint32_t g = (pixel >> 10) & 0x3ffu;
+                const uint32_t b = (pixel >> 20) & 0x3ffu;
+                dstRow[x * 4 + 0] = static_cast<uint8_t>((b * 255u + 511u) / 1023u);
+                dstRow[x * 4 + 1] = static_cast<uint8_t>((g * 255u + 511u) / 1023u);
+                dstRow[x * 4 + 2] = static_cast<uint8_t>((r * 255u + 511u) / 1023u);
+                dstRow[x * 4 + 3] = static_cast<uint8_t>((pixel >> 30) * 85u);
+            }
+        } else if (format == DXGI_FORMAT_R8G8B8A8_UNORM) {
+            for (uint32_t x = 0; x < width; ++x) {
+                dstRow[x * 4 + 0] = srcRow[x * 4 + 2];
+                dstRow[x * 4 + 1] = srcRow[x * 4 + 1];
+                dstRow[x * 4 + 2] = srcRow[x * 4 + 0];
+                dstRow[x * 4 + 3] = srcRow[x * 4 + 3];
+            }
+        } else {
+            memcpy(dstRow, srcRow, dstPitch);
+            if (format == DXGI_FORMAT_B8G8R8X8_UNORM) {
+                for (uint32_t x = 0; x < width; ++x) dstRow[x * 4 + 3] = 0xff;
+            }
+        }
+    }
+    m_gpuContext->Unmap(m_gpuStaging, 0);
+
+    outHeight = height;
+    outWidth = width;
+    outData = m_frameCopy.data();
+    return true;
+}
+#endif
+
 bool ScreenCastOverlay::requestAndReadFrame(uint32_t &outHeight, uint32_t &outWidth, void* &outData)
 {
     if (!ensureHandles()) return false;
@@ -156,7 +334,50 @@ bool ScreenCastOverlay::requestAndReadFrame(uint32_t &outHeight, uint32_t &outWi
     if (!ensureMapping()) return false;
 
     auto* hdr = reinterpret_cast<const at_overlay_frame_header*>(m_view);
-    const uint32_t width  = hdr->width;
+#ifdef Q_OS_WIN
+    if (hdr->format == AT_OVERLAY_FRAME_FORMAT_D3D11_SHARED) {
+        const uint64_t handle = (uint64_t)hdr->reserved[0] |
+                               ((uint64_t)hdr->reserved[1] << 32);
+        return readD3D11SharedFrame(handle, hdr->width, hdr->height, hdr->reserved[2],
+                                    hdr->frame_counter, outHeight, outWidth, outData,
+                                    (hdr->stride & AT_OVERLAY_D3D11_FLAG_KEYED_MUTEX) != 0,
+                                    (hdr->stride & AT_OVERLAY_D3D11_FLAG_FLIP_Y) != 0);
+    }
+#endif
+    const uint8_t* src = reinterpret_cast<const uint8_t*>(m_view) + AT_OVERLAY_FRAME_HEADER_SIZE;
+
+#ifdef Q_OS_LINUX
+    const auto* sequence = reinterpret_cast<const uint32_t*>(reinterpret_cast<const uint8_t*>(m_view) + offsetof(at_overlay_frame_header, reserved));
+    for (int attempt = 0; attempt < 4; ++attempt) {
+        const uint32_t before = __atomic_load_n(sequence, __ATOMIC_ACQUIRE);
+        if (before & 1u) continue;
+
+        const uint32_t width = hdr->width;
+        const uint32_t height = hdr->height;
+        const uint32_t stride = hdr->stride;
+        if (width == 0 || height == 0 ||
+            width > AT_OVERLAY_FRAME_MAX_WIDTH || height > AT_OVERLAY_FRAME_MAX_HEIGHT || stride < width * 4 ||
+            AT_OVERLAY_FRAME_HEADER_SIZE + (size_t)stride * height > (size_t)AT_OVERLAY_FRAME_MAPPING_SIZE) {
+            return false;
+        }
+
+        const uint32_t dstPitch = width * 4;
+        m_frameCopy.resize((size_t)dstPitch * height);
+        for (uint32_t y = 0; y < height; ++y)
+            memcpy(m_frameCopy.data() + (size_t)y * dstPitch, src + (size_t)y * stride, dstPitch);
+
+        const uint32_t after = __atomic_load_n(sequence, __ATOMIC_ACQUIRE);
+        if (before != after || (after & 1u)) continue;
+
+        outHeight = height;
+        outWidth = width;
+        outData = m_frameCopy.data();
+        return true;
+    }
+
+    return false;
+#else
+    const uint32_t width = hdr->width;
     const uint32_t height = hdr->height;
     const uint32_t stride = hdr->stride;
     if (width == 0 || height == 0 ||
@@ -167,20 +388,20 @@ bool ScreenCastOverlay::requestAndReadFrame(uint32_t &outHeight, uint32_t &outWi
 
     const uint32_t dstPitch = width * 4;
     m_frameCopy.resize((size_t)dstPitch * height);
-    const uint8_t* src = reinterpret_cast<const uint8_t*>(m_view) + AT_OVERLAY_FRAME_HEADER_SIZE;
-    for (uint32_t y = 0; y < height; ++y) {
+    for (uint32_t y = 0; y < height; ++y)
         memcpy(m_frameCopy.data() + (size_t)y * dstPitch, src + (size_t)y * stride, dstPitch);
-    }
 
     outHeight = height;
     outWidth = width;
     outData = m_frameCopy.data();
     return true;
+#endif
 }
 
 void ScreenCastOverlay::cleanup()
 {
 #ifdef Q_OS_WIN
+    releaseD3D11SharedFrame();
     if (m_view) { UnmapViewOfFile(m_view); m_view = nullptr; }
     if (m_mapping) { CloseHandle(m_mapping); m_mapping = nullptr; }
     if (m_evRequest) { CloseHandle(m_evRequest); m_evRequest = nullptr; }
