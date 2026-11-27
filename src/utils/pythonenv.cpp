@@ -68,7 +68,7 @@ void appendRegisteredPythons(QList<PythonEnv::Interpreter> &candidates)
 
             const QString exe = QDir(dir).filePath(QStringLiteral("python.exe"));
             if (QFileInfo::exists(exe))
-                candidates.append({exe, {}, {}});
+                candidates.append(PythonEnv::Interpreter{exe, {}, {}});
         }
     }
 }
@@ -119,17 +119,17 @@ QList<PythonEnv::Interpreter> interpreterCandidates()
     QList<PythonEnv::Interpreter> candidates;
 
 #ifdef Q_OS_LINUX
-    candidates.append({QStringLiteral("python3"), {}, {}});
-    candidates.append({QStringLiteral("python"), {}, {}});
+    candidates.append(PythonEnv::Interpreter{QStringLiteral("python3"), {}, {}});
+    candidates.append(PythonEnv::Interpreter{QStringLiteral("python"), {}, {}});
 
     for (int minor = 14; minor >= PythonEnv::kMinMinor; --minor)
-        candidates.append({QStringLiteral("python3.%1").arg(minor), {}, {}});
+        candidates.append(PythonEnv::Interpreter{QStringLiteral("python3.%1").arg(minor), {}, {}});
 #else
     if (QFileInfo::exists(PythonEnv::runtimePython()))
-        candidates.append({PythonEnv::runtimePython(), {}, {}});
+        candidates.append(PythonEnv::Interpreter{PythonEnv::runtimePython(), {}, {}});
 
-    candidates.append({QStringLiteral("py"), {QStringLiteral("-3")}, {}});
-    candidates.append({QStringLiteral("python"), {}, {}});
+    candidates.append(PythonEnv::Interpreter{QStringLiteral("py"), {QStringLiteral("-3")}, {}});
+    candidates.append(PythonEnv::Interpreter{QStringLiteral("python"), {}, {}});
     appendRegisteredPythons(candidates);
 #endif
 
@@ -293,7 +293,7 @@ PythonEnv::Interpreter PythonEnv::detectSystemPython()
 
     QList<Interpreter> candidates;
     if (!m_preferred.isEmpty())
-        candidates.append({m_preferred, {}, {}});
+        candidates.append(Interpreter{m_preferred, {}, {}});
     else
         candidates = interpreterCandidates();
 
